@@ -20,6 +20,7 @@ function planner() {
     modalSearch: '',
     modalLimit: 24,
 
+    initialized: false,
     configured: false,
     mode: 'docker',
     mealieReachable: false,
@@ -147,6 +148,8 @@ function planner() {
         await this.initMobileScroll();
       } catch (e) {
         this.toast('Failed to reach backend. Is the server running?');
+      } finally {
+        this.initialized = true;
       }
     },
 

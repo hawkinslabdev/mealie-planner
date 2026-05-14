@@ -170,7 +170,7 @@
   </div>
 
   <!-- empty state -->
-  <div x-show="!configured && !settingsOpen" class="empty-state">
+  <div x-show="initialized && !configured && !settingsOpen" class="empty-state">
     <span class="empty-state__emoji">🍽</span>
     <p class="empty-state__title">Connect to Mealie</p>
     <p class="empty-state__desc">Add your Mealie URL and API token to start planning.</p>
