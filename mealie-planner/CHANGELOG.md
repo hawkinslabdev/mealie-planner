@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.2
+## 0.1.3
 
 - Fix: add-on failed to load after update; pages showed a blank error screen
 - Update: all Python dependencies updated to latest stable versions
