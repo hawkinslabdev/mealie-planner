@@ -17,16 +17,9 @@ We want to make it incredibly simple to plan your meals for the week ahead. Mana
 
 ### Home Assistant
 
-Use this link to directly add the repository to your Home Assistant instance:
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=hawkinslabdev&repository=mealie-planner&category=integration)
 
-[![Add repository to Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fhawkinslabdev%2Fmealie-planner)
-
-_or_
-
-1. Go to **Settings → Add-ons → Add-on Store**
-2. Click **⋮ → Repositories**
-3. Paste `https://github.com/hawkinslabdev/mealie-planner` and click **Add**
-4. Search for **Mealie Quick Planner** and click **Install**
+Via [HACS](https://hacs.xyz/), or manually go to **Settings → Add-ons → Add-on Store → ⋮ → Repositories** and paste `https://github.com/hawkinslabdev/mealie-planner`.
 
 ### Docker Compose
 
