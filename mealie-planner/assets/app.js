@@ -400,7 +400,12 @@ function planner() {
       this.settingsSaving = true; this.settingsError = null;
       try {
         await this._post('/api/config', this.settingsForm);
-        this.configured = true; this.mealieReachable = true; this.settingsOpen = false;
+        const status = await this._fetch('/api/status');
+        this.configured      = status.configured;
+        this.mealieReachable = status.mealie_reachable;
+        this.mealieVersion   = status.version;
+        this.settingsForm.api_token = '';
+        this.settingsOpen = false;
         await Promise.all([this.loadMealPlan(), this.loadRecipes()]);
       } catch (e) {
         this.settingsError = e.message || 'Save failed.';

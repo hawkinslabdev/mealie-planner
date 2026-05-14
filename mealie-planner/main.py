@@ -500,7 +500,7 @@ async def get_config():
 
 class ConfigPayload(BaseModel):
     mealie_url: str
-    api_token: str
+    api_token: str = ""  # empty = keep existing token
 
 
 @app.post("/api/config")
@@ -514,8 +514,16 @@ async def save_config(payload: ConfigPayload, request: Request):
     if not _rate_limiter.check(request, key="config", max_hits=10):
         raise HTTPException(status_code=429, detail="Too many requests.")
 
+    # If no token supplied, reuse the stored one
+    token_to_use = payload.api_token
+    if not token_to_use:
+        _, existing = get_credentials()
+        if not existing:
+            raise HTTPException(status_code=422, detail="API token is required for initial setup.")
+        token_to_use = existing
+
     # Validate against Mealie before saving
-    headers = {"Authorization": f"Bearer {payload.api_token}"}
+    headers = {"Authorization": f"Bearer {token_to_use}"}
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             resp = await client.get(
@@ -528,7 +536,7 @@ async def save_config(payload: ConfigPayload, request: Request):
     except httpx.HTTPError:
         raise HTTPException(status_code=422, detail="Could not reach Mealie at the provided URL.")
 
-    _write_credentials(payload.mealie_url, encrypt_token(payload.api_token))
+    _write_credentials(payload.mealie_url, encrypt_token(token_to_use))
     asyncio.create_task(refresh_recipe_cache())
     return {"ok": True}
 

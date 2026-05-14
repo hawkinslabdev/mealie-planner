@@ -70,7 +70,7 @@
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
       </button>
-      <button id="logout-btn" class="icon-btn" title="Log out">
+      <button id="logout-btn" class="icon-btn" title="Log out" x-show="mode !== 'haos'">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
           <polyline points="16 17 21 12 16 7"/>
@@ -92,17 +92,25 @@
           </template>
           <template x-if="mode === 'haos'">
             <div class="form-stack">
+              <template x-if="configured">
+                <div class="notice">
+                  <span x-show="mealieReachable">Connected to Mealie<span x-show="mealieVersion"> &mdash; <strong x-text="mealieVersion"></strong></span></span>
+                  <span x-show="!mealieReachable">Configured but Mealie is currently unreachable</span>
+                </div>
+              </template>
               <div class="form-field">
                 <label class="form-label" for="mealie-url">Instance URL</label>
                 <input id="mealie-url" type="url" x-model="settingsForm.mealie_url" placeholder="https://mealie.yourdomain.com" class="form-input">
               </div>
               <div class="form-field">
                 <label class="form-label" for="mealie-token">API token</label>
-                <input id="mealie-token" type="password" x-model="settingsForm.api_token" placeholder="Your Mealie API token" class="form-input">
+                <input id="mealie-token" type="password" x-model="settingsForm.api_token"
+                       :placeholder="configured ? 'Leave blank to keep current token' : 'Your Mealie API token'"
+                       class="form-input">
               </div>
               <p x-show="settingsError" class="error-msg" x-text="settingsError"></p>
               <button @click="saveSettings()" :disabled="settingsSaving" class="btn btn-primary btn-full">
-                <span x-show="!settingsSaving">Save & validate</span>
+                <span x-show="!settingsSaving" x-text="configured ? 'Update' : 'Save & validate'"></span>
                 <span x-show="settingsSaving">Validating…</span>
               </button>
             </div>
