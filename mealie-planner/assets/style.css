@@ -93,6 +93,7 @@
      background: var(--bg);
      -webkit-font-smoothing: antialiased;
      min-height: 100vh;
+     overscroll-behavior-y: contain;
 }
  .mono {
      font-family: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
@@ -999,6 +1000,7 @@
 }
  .chip[draggable="true"] {
      cursor: grab;
+     touch-action: none;
 }
  .chip[draggable="true"]:hover {
      transform: translateY(-1px);
@@ -1018,6 +1020,7 @@
 }
  .mobile-recipe-row[draggable="true"] {
      cursor: grab;
+     touch-action: none;
 }
  .mobile-slot.drag-over {
      background: var(--bg-subtle);

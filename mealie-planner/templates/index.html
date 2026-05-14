@@ -15,7 +15,7 @@
 </head>
 <body>
 
-<div x-data="planner()" x-init="init()" x-cloak @keydown.window="onKeydown($event)">
+<div x-data="planner()" x-init="init(); $watch('modalOpen', v => document.body.style.overflow = v ? 'hidden' : '')" x-cloak @keydown.window="onKeydown($event)">
 
   <!-- navbar -->
   <nav class="navbar" :class="mode === 'haos' && 'navbar--haos'">
