@@ -1,8 +1,8 @@
 name: "Mealie Planner"
-description: "A simple kitchen planner for Mealie. Browse your recipe library, drag meals onto your week grid, and let the sparkle feature suggest random dishes."
+description: "A simple kitchen planner for Mealie. Browse your recipe library and plan meals for the week."
 url: "https://github.com/hawkinslabdev/mealie-planner"
 version: "0.1.0"
-slug: "mealie_quick_planner"
+slug: "mealie_planner"
 arch:
   - aarch64
   - amd64
