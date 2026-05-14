@@ -175,7 +175,7 @@ function planner() {
         // clear existing slots for this window
         const next = { ...this._slots };
         for (const d of this.days) for (const mt of ['breakfast','lunch','dinner','side']) delete next[this.slotKey(d.date, mt)];
-        for (const e of entries) next[this.slotKey(e.date, e.meal_type)] = e;
+        for (const e of entries) next[this.slotKey(e.date, e.meal_type)] = this._prefixImg(e);
         this._slots = next;
       } catch (e) {
         this.planError = e.message || 'Could not load meal plan.';
@@ -186,7 +186,7 @@ function planner() {
 
     async loadRecipes() {
       try {
-        this.allRecipes   = await this._fetch('/api/recipes');
+        this.allRecipes   = (await this._fetch('/api/recipes')).map(r => this._prefixImg(r));
         this.cacheCount   = this.allRecipes.length;
         this.recipesLoaded = true;
       } catch (e) {
@@ -236,7 +236,7 @@ function planner() {
       this.modalOpen = false;
       try {
         const entry = await this._post('/api/mealplan', { date, meal_type: mt, recipe_id: recipe.id });
-        this.setSlot(date, mt, entry);
+        this.setSlot(date, mt, this._prefixImg(entry));
         this.pushRecentRecipe(recipe.id);
       } catch (e) {
         this.setSlot(date, mt, prev);
@@ -260,7 +260,7 @@ function planner() {
       try {
         const recipe = await this._fetch(`/api/sparkle?date=${date}&meal_type=${mt}`);
         const entry  = await this._post('/api/mealplan', { date, meal_type: mt, recipe_id: recipe.id });
-        this.setSlot(date, mt, entry);
+        this.setSlot(date, mt, this._prefixImg(entry));
       } catch (e) {
         this.toast('Sparkle failed — ' + (e.message || 'no recipes cached?'));
       } finally {
@@ -385,8 +385,8 @@ function planner() {
         if (tgtEntry) creations.push(this._post('/api/mealplan', { date: srcDate, meal_type: srcMt, recipe_id: tgtEntry.recipe_id }));
         const results = await Promise.all(creations);
 
-        this.setSlot(targetDate, targetMt, results[0]);
-        if (results[1]) this.setSlot(srcDate, srcMt, results[1]);
+        this.setSlot(targetDate, targetMt, this._prefixImg(results[0]));
+        if (results[1]) this.setSlot(srcDate, srcMt, this._prefixImg(results[1]));
       } catch (e) {
         // rollback
         this.setSlot(srcDate, srcMt, srcEntry);
@@ -452,6 +452,13 @@ function planner() {
     },
     getMealieLink(slug) {
       return slug ? api('/api/recipe-link/' + slug) : '#';
+    },
+
+    /* prefix bare /api/ image paths with INGRESS_PATH */
+    _prefixImg(obj) {
+      if (!obj || !obj.image_url) return obj;
+      if (obj.image_url.startsWith('/api/')) return { ...obj, image_url: api(obj.image_url) };
+      return obj;
     },
 
     /* http */

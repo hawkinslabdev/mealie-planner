@@ -18,8 +18,8 @@
 <div x-data="planner()" x-init="init()" x-cloak @keydown.window="onKeydown($event)">
 
   <!-- navbar -->
-  <nav class="navbar">
-    <span class="navbar-brand">Mealie Planner</span>
+  <nav class="navbar" :class="mode === 'haos' && 'navbar--haos'">
+    <span class="navbar-brand" x-show="mode !== 'haos'">Mealie Planner</span>
     <div class="navbar-end">
       <div x-show="configured">
         <div x-show="mealieReachable" class="status-dot status-dot--ok">

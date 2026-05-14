@@ -113,6 +113,7 @@
     }
     .navbar-brand { font-size: var(--text-lg); font-weight: 600; letter-spacing: -0.01em; flex-shrink: 0; }
     .navbar-end   { display: flex; align-items: center; gap: var(--space-3); }
+    .navbar--haos { height: 40px; justify-content: flex-end; }
 
     .status-dot { display: flex; align-items: center; gap: 6px; font-size: var(--text-xs); color: var(--text-subtle); }
     .status-dot__pip { width: 7px; height: 7px; border-radius: 50%; background: var(--text-subtle); flex-shrink: 0; }
