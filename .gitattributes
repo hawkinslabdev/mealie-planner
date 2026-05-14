@@ -1,0 +1,9 @@
+*.css linguist-vendored=true
+*.md linguist-vendored=true
+*.js linguist-vendored=true
+*.json linguist-vendored=true
+*.sql linguist-vendored=true
+*.yml linguist-vendored=true
+*.yaml linguist-vendored=true
+*.html linguist-vendored=true
+Dockerfile linguist-vendored=true

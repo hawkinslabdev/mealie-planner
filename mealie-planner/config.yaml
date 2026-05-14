@@ -1,0 +1,18 @@
+name: "Mealie Quick Planner"
+description: "A streamlined week-view planner for Mealie"
+version: "1.0.0"
+slug: "mealie_quick_planner"
+arch:
+  - aarch64
+  - amd64
+  - armv7
+init: false
+ingress: true
+ingress_port: 3000
+panel_icon: "mdi:silverware-variant"
+options:
+  mealie_url: ""
+  api_token: ""
+schema:
+  mealie_url: "str?"
+  api_token: "str?"

@@ -1,0 +1,13 @@
+services:
+  mealie-planner:
+    image: ghcr.io/hawkinslabdev/mealie-planner:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+      - ./uploads:/app/uploads
+    environment:
+      - MEALIE_API_URL=http://localhost:3000
+      - MEALIE_API_KEY=i-am-a-secret-api-key-change-me
+      - PIN_CODE=123456
+    restart: unless-stopped

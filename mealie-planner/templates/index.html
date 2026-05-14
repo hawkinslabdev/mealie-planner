@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mealie Planner</title>
+  <!-- Alpine: vendor assets/alpine.min.js for offline/HA installs (see CONTRIBUTING.md) -->
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script>
+    const INGRESS_PATH = "{{ ingress_path }}";
+    function api(path) { return INGRESS_PATH + path; }
+  </script>
+  <link rel="icon" href="{{ ingress_path }}/favicon.ico" sizes="any">
+  <link rel="stylesheet" href="{{ ingress_path }}/assets/style.css">
+</head>
+<body>
+
+<div x-data="planner()" x-init="init()" x-cloak @keydown.window="onKeydown($event)">
+
+  <!-- navbar -->
+  <nav class="navbar">
+    <span class="navbar-brand">Mealie Planner</span>
+    <div class="navbar-end">
+      <div x-show="configured">
+        <div x-show="mealieReachable" class="status-dot status-dot--ok">
+          <span class="status-dot__pip"></span>
+          <span x-text="mealieVersion || 'Connected'"></span>
+        </div>
+        <div x-show="!mealieReachable" class="status-dot status-dot--warn">
+          <span class="status-dot__pip"></span>
+          Unreachable
+        </div>
+      </div>
+      <div style="position:relative">
+        <button @click="themeMenuOpen = !themeMenuOpen" class="icon-btn" :class="themeMenuOpen && 'active'" :title="'Theme: ' + colorTheme">
+          <svg x-show="colorTheme === 'light'" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
+          <svg x-show="colorTheme === 'dark'" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+          <svg x-show="colorTheme === 'system'" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+          </svg>
+        </button>
+        <div x-show="themeMenuOpen" @click.outside="themeMenuOpen = false" class="theme-menu"
+             x-transition:enter="transition ease-out duration-100"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-75"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95">
+          <button @click="setTheme('system')" class="theme-opt" :class="colorTheme === 'system' && 'theme-opt--on'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            System
+          </button>
+          <button @click="setTheme('light')" class="theme-opt" :class="colorTheme === 'light' && 'theme-opt--on'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+            Light
+          </button>
+          <button @click="setTheme('dark')" class="theme-opt" :class="colorTheme === 'dark' && 'theme-opt--on'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            Dark
+          </button>
+        </div>
+      </div>
+      <button @click="settingsOpen = !settingsOpen" class="icon-btn" :class="settingsOpen && 'active'" title="Settings">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+      <button id="logout-btn" class="icon-btn" title="Log out">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- settings -->
+  <div x-show="settingsOpen" x-transition>
+    <div class="settings-panel">
+      <div class="settings-inner">
+
+        <div>
+          <p class="section-label">Mealie connection</p>
+          <template x-if="mode === 'docker'">
+            <div class="notice">You're all set! These are configured via the environment variables <code>MEALIE_API_URL</code> and <code>MEALIE_API_KEY</code>.</div>
+          </template>
+          <template x-if="mode === 'haos'">
+            <div class="form-stack">
+              <div class="form-field">
+                <label class="form-label" for="mealie-url">Instance URL</label>
+                <input id="mealie-url" type="url" x-model="settingsForm.mealie_url" placeholder="https://mealie.yourdomain.com" class="form-input">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="mealie-token">API token</label>
+                <input id="mealie-token" type="password" x-model="settingsForm.api_token" placeholder="Your Mealie API token" class="form-input">
+              </div>
+              <p x-show="settingsError" class="error-msg" x-text="settingsError"></p>
+              <button @click="saveSettings()" :disabled="settingsSaving" class="btn btn-primary btn-full">
+                <span x-show="!settingsSaving">Save & validate</span>
+                <span x-show="settingsSaving">Validating…</span>
+              </button>
+            </div>
+          </template>
+        </div>
+
+        <div>
+          <p class="section-label">Day range</p>
+          <div class="form-stack">
+            <div class="form-field">
+              <label class="form-label" for="past-days">Show days before &middot; <span x-text="pastDays"></span> day(s)</label>
+              <input id="past-days" type="range" min="0" max="14" step="1" x-model.number="pastDays" @change="rebuildAndReload()" style="width:100%;accent-color:var(--accent)">
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="future-days">Show days after &middot; <span x-text="futureDays"></span> day(s)</label>
+              <input id="future-days" type="range" min="0" max="14" step="1" x-model.number="futureDays" @change="rebuildAndReload()" style="width:100%;accent-color:var(--accent)">
+            </div>
+            <p style="font-size:var(--text-xs);color:var(--text-subtle)">Tip! Use ← → to scroll one day at a time.</p>
+          </div>
+        </div>
+
+        <div>
+          <p class="section-label">Visible meal slots</p>
+          <div class="pill-row">
+            <template x-for="type in ['breakfast','lunch','dinner','side']" :key="type">
+              <button @click="toggleMealType(type)" class="pill" :class="enabledMealTypes.includes(type) && 'pill--on'" x-text="type"></button>
+            </template>
+          </div>
+        </div>
+
+        <div>
+          <p class="section-label">Recipe cache</p>
+          <div style="display:flex;align-items:center;gap:var(--space-3)">
+            <button @click="refreshCache()" :disabled="cacheRefreshing" class="btn btn-ghost">
+              <span x-show="!cacheRefreshing">Refresh</span>
+              <span x-show="cacheRefreshing">Refreshing…</span>
+            </button>
+            <span x-show="cacheCount !== null" style="font-size:var(--text-sm);color:var(--text-muted)" x-text="cacheCount + ' recipes saved'"></span>
+          </div>
+        </div>
+
+        <div>
+          <p class="section-label">Source</p>
+          <div class="form-field">
+            <a href="https://github.com/hawkinslabdev/mealie-planner" target="_blank" rel="noopener noreferrer" class="form-label" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+             GitHub
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- empty state -->
+  <div x-show="!configured && !settingsOpen" class="empty-state">
+    <span class="empty-state__emoji">🍽</span>
+    <p class="empty-state__title">Connect to Mealie</p>
+    <p class="empty-state__desc">Add your Mealie URL and API token to start planning.</p>
+    <button @click="settingsOpen = true" class="btn btn-primary">Open settings</button>
+  </div>
+
+  <!-- planner -->
+  <div x-show="configured">
+
+    <!-- error -->
+    <div x-show="planError" class="banner banner--error">
+      <span class="banner__msg" x-text="planError"></span>
+      <button class="banner__retry" @click="loadMealPlan()">Retry</button>
+    </div>
+
+    <!-- week bar -->
+    <div class="week-bar">
+      <button class="week-nav-btn" @click="shiftPage(-1)" title="Previous day">
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <button class="week-nav-btn" @click="shiftPage(1)" title="Next day">
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </button>
+      <span class="week-range" x-text="weekRangeLabel"></span>
+      <button x-show="dayOffset !== 0" @click="goToToday()" class="week-nav-btn">Today</button>
+    </div>
+    <div x-show="enabledMealTypes.length === 0" class="no-slots">
+      No meal slots enabled — open settings to add some.
+    </div>
+
+    <!-- grid -->
+    <div class="planner-wrap" x-show="enabledMealTypes.length > 0">
+      <div class="planner-grid" :style="`grid-template-columns: 68px repeat(${days.length}, minmax(100px, 1fr))`">
+        <template x-for="(item, idx) in gridItems" :key="idx">
+          <div :class="cellClass(item)">
+            <template x-if="item.t === 'dh'">
+              <div>
+                <p class="g-day-hdr__wd" x-text="item.wd"></p>
+                <p class="g-day-hdr__num mono" x-text="item.dn"></p>
+              </div>
+            </template>
+            <template x-if="item.t === 'ml'">
+              <span x-text="item.mt"></span>
+            </template>
+            <template x-if="item.t === 'cell'">
+              <div style="position:relative;height:100%"
+                   @dragover.prevent="onDragOver($event)"
+                   @dragleave="onDragLeave($event)"
+                   @drop="onDrop(item.date, item.mt, $event)"
+                   @click="setActiveCell(item.date, item.mt)">
+                <div x-show="planLoading" class="skel skel--full"></div>
+                <div x-show="!planLoading && isSparkle(item.date, item.mt)" class="skel skel--chip"></div>
+                <template x-if="!planLoading && !isSparkle(item.date, item.mt) && getSlot(item.date, item.mt)">
+                  <div>
+                    <div class="chip" :class="'chip--' + item.mt" draggable="true"
+                         @dragstart="onDragStart(item.date, item.mt, $event)"
+                         @dragend="onDragEnd()"
+                         @mouseenter="showTooltip(item.date, item.mt, $event)"
+                         @mouseleave="hideTooltip()"
+                         @dblclick="openModal(item.date, item.mt)"
+                         >
+                      <img class="chip__thumb"
+                        :src="getSlot(item.date, item.mt).image_url"
+                        :alt="getSlot(item.date, item.mt).recipe_name"
+                        @error="$event.target.style.display='none'">
+                      <span class="chip__name" x-text="getSlot(item.date, item.mt).recipe_name"></span>
+                      <button class="chip__rm" @click.stop="removeRecipe(item.date, item.mt, getSlot(item.date, item.mt).id)" title="Remove">
+                        <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                      </button>
+                    </div>
+                    <div class="cell-acts">
+                      <button class="ca ca--accent" @click="sparkle(item.date, item.mt)" title="Random recipe">✦</button>
+                      <span class="ca-sep">·</span>
+                      <button class="ca" @click="openModal(item.date, item.mt)">change</button>
+                      <span class="ca-sep">·</span>
+                      <a class="ca" :href="getMealieLink(getSlot(item.date, item.mt).recipe_slug)" target="_blank" title="Open in Mealie">↗</a>
+                    </div>
+                  </div>
+                </template>
+                <template x-if="!planLoading && !isSparkle(item.date, item.mt) && !getSlot(item.date, item.mt)">
+                  <button class="cell-empty-btn" @click="openModal(item.date, item.mt)" title="Add recipe">
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                  </button>
+                </template>
+
+              </div>
+            </template>
+
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- mobile -->
+    <div class="mobile-view" x-show="enabledMealTypes.length > 0">
+      <template x-for="day in days" :key="day.date">
+        <div class="mobile-week-day" :class="day.isToday && 'mobile-week-day--today'">
+          <div class="mobile-week-day__hdr">
+            <span class="mobile-week-day__label" :class="day.isToday && 'mobile-week-day__label--today'" x-text="day.label"></span>
+            <span class="mobile-week-day__date mono" x-text="formatDate(day.date)"></span>
+          </div>
+          <template x-for="mt in enabledMealTypes" :key="mt">
+            <div class="mobile-slot"
+                 :data-date="day.date" :data-mt="mt"
+                 @dragover.prevent="onDragOver($event)"
+                 @dragleave="onDragLeave($event)"
+                 @drop="onDrop($event.currentTarget.dataset.date, $event.currentTarget.dataset.mt)"
+                 @click="setActiveCell($el.dataset.date, $el.dataset.mt)">
+              <p class="mobile-slot__type" x-text="mt"></p>
+              <div x-show="planLoading" class="skel" style="height:44px;border-radius:8px;margin-bottom:var(--space-3)"></div>
+              <div x-show="!planLoading && isSparkle(day.date, mt)" class="skel" style="height:44px;border-radius:8px;margin-bottom:var(--space-3)"></div>
+              <template x-if="!planLoading && !isSparkle(day.date, mt) && getSlot(day.date, mt)">
+                <div>
+                  <div class="mobile-recipe-row" draggable="true"
+                       @dragstart="onDragStart(day.date, mt, $event)"
+                       @dragend="onDragEnd()"
+                       @mouseenter="showTooltip(day.date, mt, $event)"
+                       @mouseleave="hideTooltip()"
+                       @dblclick="openModal(day.date, mt)">
+                    <img class="mobile-thumb"
+                      :src="getSlot(day.date, mt).image_url"
+                      :alt="getSlot(day.date, mt).recipe_name"
+                      @error="$event.target.style.display='none'">
+                    <div class="mobile-recipe-info">
+                      <p class="mobile-recipe-name" x-text="getSlot(day.date, mt).recipe_name"></p>
+                      <a class="mobile-recipe-link" :href="getMealieLink(getSlot(day.date, mt).recipe_slug)" target="_blank">open in Mealie ↗</a>
+                    </div>
+                    <button class="mobile-rm-btn" aria-label="Remove" @click="removeRecipe(day.date, mt, getSlot(day.date, mt).id)">
+                      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                  </div>
+                  <div class="mobile-acts">
+                    <button class="ca ca--accent" @click="sparkle(day.date, mt)">✦ re-roll</button>
+                    <span class="ca-sep">·</span>
+                    <button class="ca" @click="openModal(day.date, mt)">change</button>
+                  </div>
+                </div>
+              </template>
+              <template x-if="!planLoading && !isSparkle(day.date, mt) && !getSlot(day.date, mt)">
+                <div>
+                  <p class="mobile-slot-empty">Nothing planned.</p>
+                  <div class="mobile-acts">
+                    <button class="ca ca--accent" @click="sparkle(day.date, mt)">✦ sparkle</button>
+                    <span class="ca-sep">·</span>
+                    <button class="ca" @click="openModal(day.date, mt)">select</button>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+  </div>
+  <!-- recipe modal -->
+  <div x-show="modalOpen" class="modal-backdrop" @click.self="modalOpen = false"
+    x-transition:enter="transition ease-out duration-150"
+    x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+    x-transition:leave="transition ease-in duration-100"
+    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+    <div class="modal">
+
+      <div class="modal-header">
+        <div>
+          <p class="modal-title">Select recipe</p>
+          <p class="modal-subtitle" x-text="(modalMt || '') + ' · ' + formatDate(modalDate)"></p>
+        </div>
+        <button @click="modalOpen = false" class="icon-btn">
+          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-search">
+        <svg class="si" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input type="search" x-model="modalSearch" @input="modalLimit = 24" placeholder="Search recipes…" x-ref="searchInput" class="form-input">
+      </div>
+
+      <div class="modal-body" @scroll="onModalScroll($event)">
+        <div x-show="!recipesLoaded" class="center-msg">Loading recipes…</div>
+
+        <!-- recent -->
+        <template x-if="recipesLoaded && !modalSearch && recentRecipeObjects.length">
+          <div>
+            <p style="font-size:var(--text-xs);font-weight:500;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.07em;padding:var(--space-1) var(--space-1) var(--space-2)">Recently used</p>
+            <div class="recipe-grid">
+              <template x-for="r in recentRecipeObjects" :key="'recent-' + r.id">
+                <button @click="selectRecipe(r)" class="recipe-card recipe-card--recent">
+                  <img :src="r.image_url" :alt="r.name" loading="lazy" decoding="async" @error="$event.target.style.display='none'">
+                  <span class="recipe-card__name" x-text="r.name"></span>
+                </button>
+              </template>
+            </div>
+            <hr style="border:none;border-top:1px solid var(--border);margin:var(--space-3) 0">
+          </div>
+        </template>
+
+        <!-- results -->
+        <div x-show="recipesLoaded && filteredRecipes.length === 0" class="center-msg">No recipes match "<span x-text="modalSearch"></span>"</div>
+        <div x-show="recipesLoaded && filteredRecipes.length > 0" class="recipe-grid">
+          <template x-for="r in visibleRecipes" :key="r.id">
+            <button @click="selectRecipe(r)" class="recipe-card">
+              <img :src="r.image_url" :alt="r.name" loading="lazy" decoding="async" @error="$event.target.style.display='none'">
+              <span class="recipe-card__name" x-text="r.name"></span>
+            </button>
+          </template>
+        </div>
+        <div x-show="hasMoreRecipes" style="text-align:center;padding:var(--space-3);font-size:var(--text-sm);color:var(--text-subtle);opacity:.5">loading more…</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- tooltip -->
+  <div x-show="tooltipRecipe" class="tooltip-floating"
+       x-transition:enter.duration.150ms.opacity.scale.95
+       x-transition:leave.duration.100ms.opacity.scale.95
+       :style="`left:${tooltipX}px;top:${tooltipY}px;transform:translateX(-50%) translateY(-100%) translateY(-8px)`"
+       @mouseenter="hideTooltip()">
+    <p class="tooltip__name" x-text="tooltipRecipe?.name"></p>
+    <p x-show="tooltipRecipe?.description" class="tooltip__desc" x-text="tooltipRecipe?.description"></p>
+    <div x-show="tooltipRecipe?.tags?.length" class="tooltip__tags">
+      <template x-for="tag in tooltipRecipe?.tags" :key="tag">
+        <span class="tooltip__tag" x-text="tag"></span>
+      </template>
+    </div>
+  </div>
+
+  <!-- undo -->
+  <div x-show="undoBar" class="undo-bar">
+    <span x-text="undoMessage"></span>
+    <button class="undo-btn" @click="undoLastAction()">Undo</button>
+  </div>
+
+  <!-- toasts -->
+  <div class="toast-stack">
+    <template x-for="t in toasts" :key="t.id">
+      <div class="toast" :class="'toast--' + t.type" x-transition>
+        <span class="toast__msg" x-text="t.msg"></span>
+        <button class="toast__close" @click="removeToast(t.id)" aria-label="Dismiss">×</button>
+      </div>
+    </template>
+  </div>
+
+  <!-- logout modal -->
+  <div id="logout-modal" hidden class="logout-backdrop">
+    <div class="modal" style="max-width:340px;align-items:stretch;gap:0;padding:var(--space-5);text-align:center">
+      <p style="font-size:var(--text-base);font-weight:600;margin-bottom:4px">Log out?</p>
+      <p style="font-size:var(--text-sm);color:var(--text-muted);margin-bottom:var(--space-5)">Your PIN will be required again.</p>
+      <div style="display:flex;gap:var(--space-3)">
+        <button id="logout-cancel" class="btn btn-ghost" style="flex:1;justify-content:center">Cancel</button>
+        <button id="logout-confirm" class="btn btn-primary" style="flex:1;justify-content:center">Log out</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script src="{{ ingress_path }}/assets/app.js"></script>
+<script src="{{ ingress_path }}/assets/logout.js"></script>
+</body>
+</html>

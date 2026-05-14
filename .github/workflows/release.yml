@@ -1,0 +1,70 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v0.0.1) - leave empty for auto-increment'
+        required: false
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version
+        id: get_tag
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+            if [[ ! $VERSION =~ ^v ]]; then
+              VERSION="v${VERSION}"
+            fi
+            echo "Using manually specified version: $VERSION"
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          else
+            # Get all tags matching v* pattern, sorted by version
+            TAGS=$(git tag -l 'v*' --sort=-v:refname 2>/dev/null | head -20)
+            
+            # Find the latest semantic version tag
+            LATEST=""
+            for tag in $TAGS; do
+              if [[ $tag =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+                LATEST=$tag
+                break
+              fi
+            done
+            
+            if [ -z "$LATEST" ]; then
+              echo "No existing v* tags found, starting at v0.0.1"
+              echo "version=v0.0.1" >> $GITHUB_OUTPUT
+            else
+              echo "Found latest tag: $LATEST"
+              # Extract version components
+              VERSION=${LATEST#v}
+              MAJOR=$(echo $VERSION | cut -d. -f1)
+              MINOR=$(echo $VERSION | cut -d. -f2)
+              PATCH=$(echo $VERSION | cut -d. -f3)
+              
+              # Increment patch
+              NEW_PATCH=$((PATCH + 1))
+              NEW_VERSION="v${MAJOR}.${MINOR}.${NEW_PATCH}"
+              
+              echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a ${{ steps.get_tag.outputs.version }} -m "Release ${{ steps.get_tag.outputs.version }}"
+          git push origin ${{ steps.get_tag.outputs.version }}

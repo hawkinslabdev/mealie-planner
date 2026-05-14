@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d1117">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" href="{{ ingress_path }}/favicon.ico" sizes="any">
+  <title>Mealie Planner: Unlock</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0d1117;
+      --surface:     #161b22;
+      --border:      #21262d;
+      --accent:      #6e7ef1;
+      --accent-hover:#7f8ef5;
+      --text:        #e6edf3;
+      --text-subtle: #8b949e;
+      --text-muted:  #484f58;
+      --error:       #f85149;
+      --radius:      12px;
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg:          #faf8f5;
+        --surface:     #fff;
+        --border:      #e6e1d6;
+        --accent:      #6e7ef1;
+        --accent-hover:#5d6de0;
+        --text:        #1f1b16;
+        --text-subtle: #8a857c;
+        --text-muted:  #bab5ab;
+        --error:       #e03e3e;
+      }
+    }
+
+    body {
+      min-height: 100dvh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Inter", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 360px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 36px;
+    }
+
+    .card__icon {
+      width: 56px;
+      height: 56px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+    }
+
+    .card__text {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .sub {
+      font-size: 0.8125rem;
+      color: var(--text-subtle);
+      line-height: 1.5;
+    }
+
+    .boxes {
+      display: flex;
+      gap: 10px;
+    }
+
+    .box {
+      width: 44px;
+      height: 54px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 1.25rem;
+      font-weight: 600;
+      font-family: inherit;
+      text-align: center;
+      color: var(--text);
+      caret-color: var(--accent);
+      outline: none;
+      transition: border-color 0.15s ease;
+      text-transform: uppercase;
+    }
+
+    .box:focus {
+      border-color: var(--accent);
+    }
+
+    .box--filled {
+      border-color: var(--text-muted);
+    }
+
+    .btn {
+      width: 100%;
+      height: 48px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.15s ease, opacity 0.15s ease;
+    }
+
+    .btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .error {
+      font-size: 0.8125rem;
+      color: var(--error);
+      text-align: center;
+      min-height: 1.2em;
+      transition: opacity 0.15s ease;
+    }
+
+    .brand {
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    /* meal-type accent dots for warmth */
+    .accent-dots {
+      display: flex;
+      gap: 6px;
+    }
+    .accent-dots span {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      opacity: .35;
+    }
+    .accent-dots span:nth-child(1) { background: #f59e0b; }
+    .accent-dots span:nth-child(2) { background: #22c55e; }
+    .accent-dots span:nth-child(3) { background: #a78bfa; }
+    .accent-dots span:nth-child(4) { background: #14b8a6; }
+  </style>
+</head>
+<body>
+  <div class="card">
+
+    <div class="card__icon">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+    </div>
+
+    <div class="card__text">
+      <h1>Enter PIN</h1>
+      <p class="sub">Enter your PIN to unlock Mealie Planner.</p>
+    </div>
+
+    <div class="boxes" id="boxes">
+      <input class="box" type="text" maxlength="1" inputmode="text" autocomplete="off" data-index="0">
+      <input class="box" type="text" maxlength="1" inputmode="text" autocomplete="off" data-index="1">
+      <input class="box" type="text" maxlength="1" inputmode="text" autocomplete="off" data-index="2">
+      <input class="box" type="text" maxlength="1" inputmode="text" autocomplete="off" data-index="3">
+      <input class="box" type="text" maxlength="1" inputmode="text" autocomplete="off" data-index="4">
+      <input class="box" type="text" maxlength="1" inputmode="text" autocomplete="off" data-index="5">
+    </div>
+
+    <p class="error" id="error" aria-live="polite"></p>
+
+    <button class="btn" id="btn" type="button">Unlock</button>
+
+    <div class="accent-dots">
+      <span></span><span></span><span></span><span></span>
+    </div>
+
+  </div>
+
+  <script>
+    const boxes = Array.from(document.querySelectorAll('.box'));
+    const btn = document.getElementById('btn');
+    const err = document.getElementById('error');
+    const params = new URLSearchParams(location.search);
+    const raw = params.get('from') || '/';
+    const from = raw.startsWith('/') && !raw.includes('://') ? raw : '/';
+
+    boxes[0].focus();
+
+    function updateFilled() {
+      boxes.forEach(b => b.classList.toggle('box--filled', b.value.length > 0));
+    }
+
+    boxes.forEach((box, i) => {
+      box.addEventListener('input', (e) => {
+        const val = e.target.value.replace(/[^a-zA-Z0-9]/g, '').slice(-1);
+        e.target.value = val;
+        updateFilled();
+        if (val && i < 5) boxes[i + 1].focus();
+        if (i === 5 && val) attempt();
+      });
+      box.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !e.target.value && i > 0) {
+          boxes[i - 1].focus();
+          boxes[i - 1].value = '';
+          updateFilled();
+        }
+      });
+      box.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData('text').replace(/[^a-zA-Z0-9]/g, '').slice(0, 6);
+        text.split('').forEach((ch, j) => { if (boxes[j]) boxes[j].value = ch; });
+        updateFilled();
+        if (text.length === 6) attempt();
+      });
+    });
+
+    btn.addEventListener('click', attempt);
+
+    async function attempt() {
+      const pin = boxes.map(b => b.value).join('');
+      if (pin.length < 6) { err.textContent = 'Enter all 6 characters.'; return; }
+      btn.disabled = true;
+      err.textContent = '';
+      try {
+        const res = await fetch('/api/auth/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          err.textContent = data.detail || 'Incorrect PIN.';
+          boxes.forEach(b => { b.value = ''; b.classList.remove('box--filled'); });
+          boxes[0].focus();
+          btn.disabled = false;
+          return;
+        }
+        window.location.href = from;
+      } catch {
+        err.textContent = 'Network error. Try again.';
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

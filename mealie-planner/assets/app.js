@@ -1,0 +1,474 @@
+function planner() {
+  return {
+    /* state */
+    days: [],
+    dayOffset: 0,
+    pastDays:   Math.min(14, Math.max(0, parseInt(localStorage.getItem('pastDays')   || '3',  10))),
+    futureDays: Math.min(14, Math.max(0, parseInt(localStorage.getItem('futureDays') || '3',  10))),
+    colorTheme: localStorage.getItem('colorTheme') || 'system',
+    themeMenuOpen: false,
+    planLoading: false,
+    planError: null,
+    _slots: {},          // flat map: "date:mt" → entry | null (drives reactivity)
+
+    allRecipes: [],
+    recipesLoaded: false,
+
+    modalOpen: false,
+    modalDate: null,
+    modalMt: null,
+    modalSearch: '',
+    modalLimit: 24,
+
+    configured: false,
+    mode: 'docker',
+    mealieReachable: false,
+    mealieVersion: null,
+
+    settingsOpen: false,
+    settingsForm: { mealie_url: '', api_token: '' },
+    settingsSaving: false,
+    settingsError: null,
+
+    cacheRefreshing: false,
+    cacheCount: null,
+
+    sparkling: {},   // "date:mt" → true
+    draggedSlot: null,
+    toasts: [],
+
+    tooltipRecipe: null,
+    tooltipX: 0,
+    tooltipY: 0,
+
+    undoBar: false,
+    undoMessage: '',
+    pendingActions: [],
+
+    activeCell: null,  // { date, mt } last clicked cell
+
+    enabledMealTypes: JSON.parse(localStorage.getItem('enabledMealTypes') || '["dinner"]'),
+    _recentRecipes: JSON.parse(localStorage.getItem('recentRecipes') || '[]'),
+
+    /* computed */
+    get filteredRecipes() {
+      if (!this.modalSearch) return this.allRecipes;
+      const q = this.modalSearch.toLowerCase();
+      return this.allRecipes.filter(r => r.name.toLowerCase().includes(q));
+    },
+
+    get weekRangeLabel() {
+      if (!this.days.length) return '';
+      const parse = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d); };
+      const a = parse(this.days[0].date), b = parse(this.days[this.days.length - 1].date);
+      if (a.getMonth() === b.getMonth()) {
+        return `${a.getDate()}–${b.getDate()} ${a.toLocaleDateString(undefined, {month:'long'})} ${a.getFullYear()}`;
+      }
+      return `${a.toLocaleDateString(undefined,{day:'numeric',month:'short'})} – ${b.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}`;
+    },
+
+    get gridItems() {
+      const items = [{ t: 'corner' }];
+      for (const d of this.days) items.push({ t:'dh', date:d.date, wd:d.wd, dn:d.dn, today:d.isToday });
+      for (const mt of this.enabledMealTypes) {
+        items.push({ t:'ml', mt });
+        for (const d of this.days) items.push({ t:'cell', date:d.date, mt, today:d.isToday });
+      }
+      return items;
+    },
+
+    get recentRecipeObjects() {
+      return this._recentRecipes.map(id => this.allRecipes.find(r => r.id === id)).filter(Boolean);
+    },
+
+    get visibleRecipes() {
+      return this.filteredRecipes.slice(0, this.modalLimit);
+    },
+
+    get hasMoreRecipes() {
+      return this.modalLimit < this.filteredRecipes.length;
+    },
+
+    /* slots */
+    slotKey(date, mt) { return date + ':' + mt; },
+    getSlot(date, mt) { return date ? this._slots[this.slotKey(date, mt)] || null : null; },
+    setSlot(date, mt, val) {
+      this._slots = { ...this._slots, [this.slotKey(date, mt)]: val };
+    },
+    isSparkle(date, mt) { return !!(date && this.sparkling[this.slotKey(date, mt)]); },
+
+    /* cell class */
+    cellClass(item) {
+      if (item.t === 'corner')  return 'g-corner';
+      if (item.t === 'dh')      return item.today ? 'g-day-hdr g-day-hdr--today' : 'g-day-hdr';
+      if (item.t === 'ml')      return 'g-meal-lbl g-meal-lbl--' + item.mt;
+      if (item.t === 'cell')    return item.today ? 'g-cell g-cell--today' : 'g-cell';
+    },
+
+    /* theme */
+    applyTheme() {
+      const el = document.documentElement;
+      if (this.colorTheme === 'system') el.removeAttribute('data-theme');
+      else el.setAttribute('data-theme', this.colorTheme);
+    },
+    setTheme(mode) {
+      this.colorTheme = mode;
+      this.themeMenuOpen = false;
+      localStorage.setItem('colorTheme', mode);
+      this.applyTheme();
+    },
+
+    /* init */
+    async init() {
+      this.applyTheme();
+      this.buildDays();
+      try {
+        const status = await this._fetch('/api/status');
+        this.configured      = status.configured;
+        this.mode            = status.mode;
+        this.mealieReachable = status.mealie_reachable;
+        this.mealieVersion   = status.version;
+        if (!this.configured) { this.settingsOpen = true; return; }
+        const cfg = await this._fetch('/api/config');
+        this.settingsForm.mealie_url = cfg.mealie_url;
+        await Promise.all([this.loadMealPlan(), this.loadRecipes()]);
+        this.scrollToToday();
+      } catch (e) {
+        this.toast('Failed to reach backend. Is the server running?');
+      }
+    },
+
+    buildDays() {
+      const now = new Date();
+      const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+      const anchor = new Date(now);
+      anchor.setDate(now.getDate() + this.dayOffset);
+      this.days = [];
+      for (let i = -this.pastDays; i <= this.futureDays; i++) {
+        const d = new Date(anchor); d.setDate(anchor.getDate() + i);
+        const date = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        this.days.push({
+          date,
+          isToday: date === todayStr,
+          label: date === todayStr ? 'Today' : d.toLocaleDateString(undefined, {weekday:'long'}),
+          wd: d.toLocaleDateString(undefined, {weekday:'short'}),
+          dn: d.getDate(),
+        });
+      }
+    },
+
+    async rebuildAndReload() {
+      localStorage.setItem('pastDays',   String(this.pastDays));
+      localStorage.setItem('futureDays', String(this.futureDays));
+      this.buildDays();
+      await this.loadMealPlan();
+    },
+
+    /* loading */
+    async loadMealPlan() {
+      if (!this.days.length) return;
+      this.planLoading = true;
+      this.planError   = null;
+      try {
+        const start = this.days[0].date, end = this.days.at(-1).date;
+        const entries = await this._fetch(`/api/mealplan?start_date=${start}&end_date=${end}`);
+        // clear existing slots for this window
+        const next = { ...this._slots };
+        for (const d of this.days) for (const mt of ['breakfast','lunch','dinner','side']) delete next[this.slotKey(d.date, mt)];
+        for (const e of entries) next[this.slotKey(e.date, e.meal_type)] = e;
+        this._slots = next;
+      } catch (e) {
+        this.planError = e.message || 'Could not load meal plan.';
+      } finally {
+        this.planLoading = false;
+      }
+    },
+
+    async loadRecipes() {
+      try {
+        this.allRecipes   = await this._fetch('/api/recipes');
+        this.cacheCount   = this.allRecipes.length;
+        this.recipesLoaded = true;
+      } catch (e) {
+        this.toast('Could not load recipe cache — try refreshing it in settings.');
+        this.recipesLoaded = true;
+      }
+    },
+
+    /* nav */
+    async shiftPage(delta) {
+      this.dayOffset += delta;
+      this.buildDays();
+      await this.loadMealPlan();
+      this.scrollToToday();
+    },
+    async goToToday() {
+      this.dayOffset = 0;
+      this.buildDays();
+      await this.loadMealPlan();
+      this.scrollToToday();
+    },
+    scrollToToday() {
+      if (this.dayOffset !== 0) return;
+      this.$nextTick(() => {
+        document.querySelector('.mobile-week-day--today')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    },
+
+    /* modal */
+    openModal(date, mt) {
+      this.modalDate = date; this.modalMt = mt; this.modalSearch = ''; this.modalLimit = 24; this.modalOpen = true;
+      if (!this.recipesLoaded) this.loadRecipes();
+      this.$nextTick(() => this.$refs.searchInput?.focus());
+    },
+
+    onModalScroll(event) {
+      const el = event.currentTarget;
+      if (el.scrollHeight - el.scrollTop - el.clientHeight < 300) {
+        this.modalLimit += 24;
+      }
+    },
+
+    async selectRecipe(recipe) {
+      const date = this.modalDate, mt = this.modalMt;
+      const prev = this.getSlot(date, mt);
+      this.setSlot(date, mt, { recipe_id: recipe.id, recipe_name: recipe.name, image_url: recipe.image_url, recipe_slug: recipe.slug, id: null, _optimistic: true });
+      this.modalOpen = false;
+      try {
+        const entry = await this._post('/api/mealplan', { date, meal_type: mt, recipe_id: recipe.id });
+        this.setSlot(date, mt, entry);
+        this.pushRecentRecipe(recipe.id);
+      } catch (e) {
+        this.setSlot(date, mt, prev);
+        this.toast('Failed to save — ' + (e.message || 'please try again.'));
+      }
+    },
+
+    async removeRecipe(date, mt, entryId) {
+      const prev = this.getSlot(date, mt);
+      this.setSlot(date, mt, null);
+      this.addPendingAction({
+        message: 'Removed ' + (prev?.recipe_name || 'recipe'),
+        commit: async () => { if (entryId) await this._delete(`/api/mealplan/${entryId}`); },
+        rollback: () => { this.setSlot(date, mt, prev); },
+      });
+    },
+
+    async sparkle(date, mt) {
+      const key = this.slotKey(date, mt);
+      this.sparkling = { ...this.sparkling, [key]: true };
+      try {
+        const recipe = await this._fetch(`/api/sparkle?date=${date}&meal_type=${mt}`);
+        const entry  = await this._post('/api/mealplan', { date, meal_type: mt, recipe_id: recipe.id });
+        this.setSlot(date, mt, entry);
+      } catch (e) {
+        this.toast('Sparkle failed — ' + (e.message || 'no recipes cached?'));
+      } finally {
+        const next = { ...this.sparkling }; delete next[key]; this.sparkling = next;
+      }
+    },
+
+    /* tooltip */
+    showTooltip(date, mt, event) {
+      const slot = this.getSlot(date, mt);
+      if (!slot) return;
+      const recipe = this.allRecipes.find(r => r.id === slot.recipe_id);
+      if (!recipe) return;
+      this.tooltipRecipe = recipe;
+      const chip = event.currentTarget.closest('.chip, .mobile-recipe-row');
+      if (!chip) return;
+      const r = chip.getBoundingClientRect();
+      this.tooltipX = r.left + r.width / 2;
+      this.tooltipY = r.top;
+    },
+    hideTooltip() { this.tooltipRecipe = null; },
+
+    /* keyboard */
+    setActiveCell(date, mt) { if (date && mt) this.activeCell = { date, mt }; },
+    sparkleActive() { if (this.activeCell) this.sparkle(this.activeCell.date, this.activeCell.mt); },
+    onKeydown(event) {
+      if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
+      if (event.key === 'ArrowLeft') { event.preventDefault(); if (!this.modalOpen) this.shiftPage(-1); }
+      else if (event.key === 'ArrowRight') { event.preventDefault(); if (!this.modalOpen) this.shiftPage(1); }
+      else if (event.key === 'r' || event.key === 'R') { if (!this.modalOpen) this.sparkleActive(); }
+      else if (event.key === 'Escape') { this.modalOpen = false; this.themeMenuOpen = false; }
+      else if (event.key === 'Tab' && this.modalOpen) {
+        const modal = document.querySelector('.modal');
+        if (!modal) return;
+        const focusable = [...modal.querySelectorAll('button:not([disabled]), input, a, [tabindex]:not([tabindex="-1"])')];
+        if (focusable.length < 2) return;
+        const first = focusable[0], last = focusable[focusable.length - 1];
+        if (event.shiftKey) { if (document.activeElement === first) { event.preventDefault(); last.focus(); } }
+        else { if (document.activeElement === last) { event.preventDefault(); first.focus(); } }
+      }
+    },
+
+    /* undo */
+    addPendingAction(action) {
+      const id = Date.now() + Math.random();
+      this.pendingActions.push({ id, ...action });
+      this.undoBar = true;
+      this.undoMessage = action.message;
+      setTimeout(() => {
+        const idx = this.pendingActions.findIndex(a => a.id === id);
+        if (idx === -1) return;
+        const [a] = this.pendingActions.splice(idx, 1);
+        a.commit().catch(() => { a.rollback(); this.toast('Action failed.'); });
+        if (!this.pendingActions.length) this.undoBar = false;
+      }, 7000);
+    },
+    undoLastAction() {
+      const action = this.pendingActions.pop();
+      if (!action) return;
+      action.rollback();
+      if (!this.pendingActions.length) this.undoBar = false;
+    },
+
+    /* recent */
+    pushRecentRecipe(recipeId) {
+      this._recentRecipes = [recipeId, ...this._recentRecipes.filter(id => id !== recipeId)].slice(0, 12);
+      localStorage.setItem('recentRecipes', JSON.stringify(this._recentRecipes));
+    },
+
+    /* drag */
+    onDragStart(date, mt, event) {
+      const entry = this.getSlot(date, mt);
+      if (!entry) return;
+      this.draggedSlot = { date, mt, entry };
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', '');
+      event.target.closest('.chip')?.classList.add('dragging');
+    },
+
+    onDragEnd() {
+      this.draggedSlot = null;
+      document.querySelectorAll('.g-cell.drag-over, .mobile-slot.drag-over').forEach(el => el.classList.remove('drag-over'));
+      document.querySelectorAll('.chip.dragging').forEach(el => el.classList.remove('dragging'));
+    },
+
+    onDragOver(event) {
+      document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+      event.currentTarget.closest('.g-cell, .mobile-slot')?.classList.add('drag-over');
+    },
+
+    onDragLeave(event) {
+      const target = event.currentTarget.closest('.g-cell, .mobile-slot');
+      if (target && (!event.relatedTarget || !target.contains(event.relatedTarget))) {
+        target.classList.remove('drag-over');
+      }
+    },
+
+    async onDrop(targetDate, targetMt) {
+      document.querySelectorAll('.g-cell.drag-over, .mobile-slot.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+      if (!this.draggedSlot || !targetDate || !targetMt) return;
+
+      const { date: srcDate, mt: srcMt, entry: srcEntry } = this.draggedSlot;
+      this.draggedSlot = null;
+
+      if (srcDate === targetDate && srcMt === targetMt) return;
+
+      const tgtEntry = this.getSlot(targetDate, targetMt);
+
+      // optimistic swap
+      this.setSlot(targetDate, targetMt, srcEntry);
+      this.setSlot(srcDate, srcMt, tgtEntry);
+
+      try {
+        const deletions = [];
+        if (srcEntry?.id) deletions.push(this._delete(`/api/mealplan/${srcEntry.id}`));
+        if (tgtEntry?.id) deletions.push(this._delete(`/api/mealplan/${tgtEntry.id}`));
+        await Promise.all(deletions);
+
+        const creations = [];
+        creations.push(this._post('/api/mealplan', { date: targetDate, meal_type: targetMt, recipe_id: srcEntry.recipe_id }));
+        if (tgtEntry) creations.push(this._post('/api/mealplan', { date: srcDate, meal_type: srcMt, recipe_id: tgtEntry.recipe_id }));
+        const results = await Promise.all(creations);
+
+        this.setSlot(targetDate, targetMt, results[0]);
+        if (results[1]) this.setSlot(srcDate, srcMt, results[1]);
+      } catch (e) {
+        // rollback
+        this.setSlot(srcDate, srcMt, srcEntry);
+        this.setSlot(targetDate, targetMt, tgtEntry);
+        this.toast('Failed to move recipe — ' + (e.message || 'please try again.'));
+      }
+    },
+
+    /* settings */
+    async saveSettings() {
+      this.settingsSaving = true; this.settingsError = null;
+      try {
+        await this._post('/api/config', this.settingsForm);
+        this.configured = true; this.mealieReachable = true; this.settingsOpen = false;
+        await Promise.all([this.loadMealPlan(), this.loadRecipes()]);
+      } catch (e) {
+        this.settingsError = e.message || 'Save failed.';
+      } finally {
+        this.settingsSaving = false;
+      }
+    },
+
+    toggleMealType(type) {
+      const order = ['breakfast','lunch','dinner','side'];
+      this.enabledMealTypes = this.enabledMealTypes.includes(type)
+        ? this.enabledMealTypes.filter(t => t !== type)
+        : order.filter(t => [...this.enabledMealTypes, type].includes(t));
+      localStorage.setItem('enabledMealTypes', JSON.stringify(this.enabledMealTypes));
+    },
+
+    async refreshCache() {
+      this.cacheRefreshing = true;
+      try {
+        const r = await this._post('/api/cache/refresh', {});
+        this.cacheCount = r.count;
+        await this.loadRecipes();
+        this.toast(`Cache refreshed — ${r.count} recipes.`, 'success');
+      } catch (e) {
+        this.toast('Cache refresh failed.');
+      } finally {
+        this.cacheRefreshing = false;
+      }
+    },
+
+    /* toasts */
+    toast(msg, type = 'error') {
+      const id = Date.now() + Math.random();
+      this.toasts.push({ id, msg, type });
+      setTimeout(() => this.removeToast(id), 5000);
+    },
+    removeToast(id) { this.toasts = this.toasts.filter(t => t.id !== id); },
+
+    /* format */
+    formatDate(dateStr) {
+      if (!dateStr) return '';
+      const [y,m,d] = dateStr.split('-').map(Number);
+      return new Date(y,m-1,d).toLocaleDateString(undefined, {weekday:'short',month:'short',day:'numeric'});
+    },
+    getMealieLink(slug) {
+      return slug ? api('/api/recipe-link/' + slug) : '#';
+    },
+
+    /* http */
+    async _fetch(path) {
+      const r = await fetch(api(path));
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        throw new Error(body.detail || `HTTP ${r.status}`);
+      }
+      return r.json();
+    },
+    async _post(path, body) {
+      const r = await fetch(api(path), { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+      if (!r.ok) {
+        const body2 = await r.json().catch(() => ({}));
+        throw new Error(body2.detail || `HTTP ${r.status}`);
+      }
+      return r.json().catch(() => ({}));
+    },
+    async _delete(path) {
+      const r = await fetch(api(path), { method:'DELETE' });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    },
+  };
+}
