@@ -591,19 +591,32 @@ async def delete_mealplan_entry(entry_id: str, request: Request):
     await mealie_delete(f"/api/households/mealplans/{entry_id}")
     return Response(status_code=204)
 
+@app.get("/api/recipe-actions/raw")
+async def get_recipe_actions_raw():
+    """Debug endpoint — returns the raw Mealie response so the field schema can be inspected."""
+    results = {}
+    for path in ["/api/groups/recipe-actions", "/api/households/recipe-actions"]:
+        try:
+            results[path] = await mealie_get(f"{path}?perPage=10")
+        except HTTPException as e:
+            results[path] = {"error": e.detail}
+    return results
+
+
 @app.get("/api/recipe-actions")
 async def get_recipe_actions():
     for path in ["/api/groups/recipe-actions", "/api/households/recipe-actions"]:
         try:
             data = await mealie_get(f"{path}?perPage=100")
-            items = data.get("items", []) if isinstance(data, dict) else (data or [])
+            items: list = data.get("items", []) if isinstance(data, dict) else (data or [])
             return [
                 {
-                    "id": item["id"],
-                    "name": item["name"],
-                    "action_type": item.get("actionType", "link"),
+                    "id": item.get("id", ""),
+                    "name": item.get("title") or item.get("name") or item.get("label") or "Action",
+                    "action_type": item.get("actionType") or item.get("action_type") or "link",
                 }
                 for item in items
+                if isinstance(item, dict) and item.get("id")
             ]
         except HTTPException:
             continue
@@ -619,20 +632,23 @@ async def trigger_recipe_action(action_id: str, payload: RecipeActionTrigger, re
     if not _rate_limiter.check(request, key="recipe-action", max_hits=20):
         raise HTTPException(status_code=429, detail="Too many requests.")
 
-    action = None
+    action: dict | None = None
     for path in [f"/api/groups/recipe-actions/{action_id}", f"/api/households/recipe-actions/{action_id}"]:
         try:
-            action = await mealie_get(path)
-            break
+            raw = await mealie_get(path)
+            if isinstance(raw, dict):
+                action = raw
+                break
         except HTTPException:
             continue
     if not action:
         raise HTTPException(status_code=404, detail="Recipe action not found.")
 
-    action_type = action.get("actionType", "link")
-    action_url = action.get("url", "")
+    action_type: str = action.get("actionType") or action.get("action_type") or "link"
+    action_url: str = action.get("url") or ""
 
-    recipe = await mealie_get(f"/api/recipes/{payload.recipe_slug}")
+    raw_recipe = await mealie_get(f"/api/recipes/{payload.recipe_slug}")
+    recipe: dict = raw_recipe if isinstance(raw_recipe, dict) else {}
 
     if action_type == "link":
         final_url = (
