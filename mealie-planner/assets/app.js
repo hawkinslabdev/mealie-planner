@@ -3,8 +3,8 @@ function planner() {
     /* state */
     days: [],
     dayOffset: 0,
-    pastDays:   Math.min(14, Math.max(0, parseInt(localStorage.getItem('pastDays')   || '3',  10))),
-    futureDays: Math.min(14, Math.max(0, parseInt(localStorage.getItem('futureDays') || '3',  10))),
+    pastDays:   Math.min(14, Math.max(0, parseInt(localStorage.getItem('pastDays')   ?? '0',  10))),
+    futureDays: Math.min(14, Math.max(0, parseInt(localStorage.getItem('futureDays') ?? '7',  10))),
     colorTheme: localStorage.getItem('colorTheme') || 'system',
     themeMenuOpen: false,
     planLoading: false,
@@ -527,8 +527,8 @@ function planner() {
       this.mobileLoadingMore = false;
       this.mobileHasMore = true;
       const now = new Date();
-      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 3);
-      const batch = this._buildMobileBatch(start, 7);
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - this.pastDays);
+      const batch = this._buildMobileBatch(start, this.pastDays + 1 + Math.min(6, this.futureDays));
       this.mobileDays = batch;
       try {
         const entries = await this._fetch(`/api/mealplan?start_date=${batch[0].date}&end_date=${batch.at(-1).date}`);
