@@ -252,6 +252,10 @@
                     <button class="ca" @click="openModal(day.date, mt)">change</button>
                     <span class="ca-sep">·</span>
                     <a class="ca" :href="getMealieLink(getSlot(day.date, mt).recipe_slug)" target="_blank" title="Open in Mealie">↗</a>
+                    <template x-if="recipeActions.length > 0">
+                      <span class="ca-sep">·</span>
+                      <button class="ca" @click.stop="openActionMenu(getSlot(day.date, mt), $event)" title="Recipe actions">···</button>
+                    </template>
                   </div>
                 </div>
               </template>
@@ -309,6 +313,10 @@
                     <button class="ca ca--accent" @click="sparkle(day.date, mt)">✦ re-roll</button>
                     <span class="ca-sep">·</span>
                     <button class="ca" @click="openModal(day.date, mt)">change</button>
+                    <template x-if="recipeActions.length > 0">
+                      <span class="ca-sep">·</span>
+                      <button class="ca" @click.stop="openActionMenu(getSlot(day.date, mt), $event)">···</button>
+                    </template>
                   </div>
                 </div>
               </template>
@@ -425,6 +433,33 @@
         <span class="tooltip__tag" x-text="tag"></span>
       </template>
     </div>
+  </div>
+
+  <!-- recipe action menu -->
+  <div x-show="actionMenuOpen" class="action-menu"
+       @click.outside="actionMenuOpen = false"
+       :style="`left:${actionMenuX}px;top:${actionMenuY}px`"
+       x-transition:enter="transition ease-out duration-100"
+       x-transition:enter-start="opacity-0 scale-95"
+       x-transition:enter-end="opacity-100 scale-100"
+       x-transition:leave="transition ease-in duration-75"
+       x-transition:leave-start="opacity-100 scale-100"
+       x-transition:leave-end="opacity-0 scale-95">
+    <p class="action-menu__title" x-text="actionMenuRecipe?.name"></p>
+    <template x-for="action in recipeActions" :key="action.id">
+      <button class="action-menu__item"
+              @click="triggerRecipeAction(action.id, actionMenuRecipe.slug)"
+              :disabled="actionLoading === action.id">
+        <span x-text="action.name"></span>
+        <span class="action-menu__badge" x-show="action.action_type === 'link'">
+          <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+        </span>
+        <span class="action-menu__badge" x-show="actionLoading === action.id" style="font-size:.65rem;letter-spacing:.08em">…</span>
+      </button>
+    </template>
   </div>
 
   <!-- undo -->

@@ -53,7 +53,7 @@ class _RateLimiter:
 _rate_limiter = _RateLimiter()
 
 # Paths
-DATA_PATH = "/app/data" if os.path.exists("/app") else "./data"
+DATA_PATH = "/data" if os.path.exists("/data") else "./data"
 OPTIONS_FILE = os.path.join(DATA_PATH, "options.json")
 CREDENTIALS_FILE = os.path.join(DATA_PATH, "credentials.json")
 KEY_FILE = os.path.join(DATA_PATH, ".key")
@@ -590,6 +590,67 @@ async def delete_mealplan_entry(entry_id: str, request: Request):
         raise HTTPException(status_code=429, detail="Too many requests.")
     await mealie_delete(f"/api/households/mealplans/{entry_id}")
     return Response(status_code=204)
+
+@app.get("/api/recipe-actions")
+async def get_recipe_actions():
+    for path in ["/api/groups/recipe-actions", "/api/households/recipe-actions"]:
+        try:
+            data = await mealie_get(f"{path}?perPage=100")
+            items = data.get("items", []) if isinstance(data, dict) else (data or [])
+            return [
+                {
+                    "id": item["id"],
+                    "name": item["name"],
+                    "action_type": item.get("actionType", "link"),
+                }
+                for item in items
+            ]
+        except HTTPException:
+            continue
+    return []
+
+
+class RecipeActionTrigger(BaseModel):
+    recipe_slug: str
+
+
+@app.post("/api/recipe-actions/{action_id}/trigger")
+async def trigger_recipe_action(action_id: str, payload: RecipeActionTrigger, request: Request):
+    if not _rate_limiter.check(request, key="recipe-action", max_hits=20):
+        raise HTTPException(status_code=429, detail="Too many requests.")
+
+    action = None
+    for path in [f"/api/groups/recipe-actions/{action_id}", f"/api/households/recipe-actions/{action_id}"]:
+        try:
+            action = await mealie_get(path)
+            break
+        except HTTPException:
+            continue
+    if not action:
+        raise HTTPException(status_code=404, detail="Recipe action not found.")
+
+    action_type = action.get("actionType", "link")
+    action_url = action.get("url", "")
+
+    recipe = await mealie_get(f"/api/recipes/{payload.recipe_slug}")
+
+    if action_type == "link":
+        final_url = (
+            action_url
+            .replace("{slug}", recipe.get("slug", ""))
+            .replace("{recipeSlug}", recipe.get("slug", ""))
+            .replace("{id}", recipe.get("id", ""))
+            .replace("{recipeId}", recipe.get("id", ""))
+        )
+        return {"type": "link", "url": final_url}
+
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(action_url, json=recipe)
+            return {"type": "post", "ok": resp.is_success, "status": resp.status_code}
+    except httpx.HTTPError as e:
+        raise HTTPException(status_code=502, detail=f"Action request failed: {e}")
+
 
 @app.get("/api/sparkle")
 async def sparkle(date: str, meal_type: str = "dinner"):

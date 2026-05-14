@@ -47,6 +47,13 @@ function planner() {
 
     activeCell: null,  // { date, mt } last clicked cell
 
+    recipeActions: [],
+    actionMenuOpen: false,
+    actionMenuRecipe: null,
+    actionMenuX: 0,
+    actionMenuY: 0,
+    actionLoading: null,
+
     mobileDays: [],
     mobileLoadingMore: false,
     mobileHasMore: true,
@@ -136,7 +143,7 @@ function planner() {
         if (!this.configured) { this.settingsOpen = true; return; }
         const cfg = await this._fetch('/api/config');
         this.settingsForm.mealie_url = cfg.mealie_url;
-        await Promise.all([this.loadMealPlan(), this.loadRecipes()]);
+        await Promise.all([this.loadMealPlan(), this.loadRecipes(), this.loadRecipeActions()]);
         await this.initMobileScroll();
       } catch (e) {
         this.toast('Failed to reach backend. Is the server running?');
@@ -457,6 +464,42 @@ function planner() {
     },
     getMealieLink(slug) {
       return slug ? api('/api/recipe-link/' + slug) : '#';
+    },
+
+    /* recipe actions */
+    async loadRecipeActions() {
+      try {
+        this.recipeActions = await this._fetch('/api/recipe-actions');
+      } catch {}
+    },
+
+    openActionMenu(slot, event) {
+      if (!slot) return;
+      this.actionMenuRecipe = { slug: slot.recipe_slug, name: slot.recipe_name };
+      const rect = event.currentTarget.getBoundingClientRect();
+      let x = rect.left, y = rect.bottom + 6;
+      if (x + 200 > window.innerWidth) x = window.innerWidth - 208;
+      if (y + 160 > window.innerHeight) y = rect.top - 6;
+      this.actionMenuX = x;
+      this.actionMenuY = y;
+      this.actionMenuOpen = true;
+    },
+
+    async triggerRecipeAction(actionId, recipeSlug) {
+      this.actionLoading = actionId;
+      try {
+        const result = await this._post(`/api/recipe-actions/${actionId}/trigger`, { recipe_slug: recipeSlug });
+        if (result.type === 'link' && result.url) {
+          window.open(result.url, '_blank', 'noopener');
+        } else {
+          this.toast('Action sent.', 'success');
+        }
+        this.actionMenuOpen = false;
+      } catch (e) {
+        this.toast('Action failed — ' + (e.message || 'unknown error'));
+      } finally {
+        this.actionLoading = null;
+      }
     },
 
     /* mobile infinite scroll */
