@@ -1,7 +1,7 @@
 name: "Mealie Planner"
 description: "A simple kitchen planner for Mealie. Browse your recipe library and plan meals for the week"
 url: "https://github.com/hawkinslabdev/mealie-planner"
-version: "0.1.5"
+version: "0.1.6"
 slug: "mealie_planner"
 arch:
   - aarch64
