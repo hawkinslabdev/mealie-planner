@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.6
+
+- Fix: using re-roll (sparkle) on a recipe slot no longer leaves orphaned entries in Mealie
+
 ## 0.1.5
 
 - Fix: removing a recipe no longer causes it to reappear after refreshing the page
