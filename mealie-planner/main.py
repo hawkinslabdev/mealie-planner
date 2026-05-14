@@ -139,9 +139,11 @@ def _cred_cache_valid() -> bool:
     if not (_cred_cache["url"] and _cred_cache["token"]):
         return False
     try:
-        for path in (CREDENTIALS_FILE, OPTIONS_FILE):
-            if os.path.exists(path) and os.path.getmtime(path) > _cred_loaded_at:
-                return False
+        # Only watch credentials.json — options.json is touched by HAOS on every
+        # update/restart even when values haven't changed, so using it as a cache
+        # invalidation signal causes false misses after every add-on update.
+        if os.path.exists(CREDENTIALS_FILE) and os.path.getmtime(CREDENTIALS_FILE) > _cred_loaded_at:
+            return False
     except OSError:
         pass
     return True
@@ -166,45 +168,52 @@ def get_credentials() -> tuple[str | None, str | None]:
         _cred_cache["token"] = os.environ.get("MEALIE_API_KEY")
         return _cred_cache["url"], _cred_cache["token"]
 
-    creds_mtime = (
-        os.path.getmtime(CREDENTIALS_FILE) if os.path.exists(CREDENTIALS_FILE) else 0.0
-    )
-    opts_mtime = os.path.getmtime(OPTIONS_FILE) if os.path.exists(OPTIONS_FILE) else 0.0
+    # credentials.json is always the primary store (written by the app after first setup).
+    # options.json is a bootstrap source — used only when credentials.json is absent
+    # or when options.json contains different, non-empty values (user changed HAOS config).
+    # HAOS rewrites options.json on every update/restart even with unchanged values,
+    # so mtime comparison is unreliable for detecting intentional config changes.
 
-    # Re-import from options.json if it was updated after credentials.json (e.g. HAOS config change)
-    if os.path.exists(CREDENTIALS_FILE) and creds_mtime >= opts_mtime:
-        with open(CREDENTIALS_FILE) as f:
-            creds = json.load(f)
-        url = creds.get("mealie_url")
-        token_enc = creds.get("api_token")
-        if url and token_enc:
-            try:
-                token = decrypt_token(token_enc)
-                _cred_cache["url"] = url
-                _cred_cache["token"] = token
-                _cred_loaded_at = max(creds_mtime, opts_mtime)
-                return url, token
-            except (InvalidToken, Exception):
-                pass
+    stored_url: str | None = None
+    stored_plain: str | None = None
 
+    if os.path.exists(CREDENTIALS_FILE):
+        try:
+            with open(CREDENTIALS_FILE) as f:
+                creds = json.load(f)
+            url = creds.get("mealie_url") or ""
+            token_enc = creds.get("api_token") or ""
+            if url and token_enc:
+                stored_url = url
+                stored_plain = decrypt_token(token_enc)
+        except Exception:
+            pass
+
+    # Check options.json — if it carries different non-empty credentials the user
+    # intentionally updated the HAOS add-on config; import them into credentials.json.
     if os.path.exists(OPTIONS_FILE):
-        with open(OPTIONS_FILE) as f:
-            opts = json.load(f)
-        url = opts.get("mealie_url")
-        raw_token = opts.get("api_token")
-        if url and raw_token:
-            encrypted = (
-                encrypt_token(raw_token)
-                if not _looks_encrypted(raw_token)
-                else raw_token
-            )
-            plain = (
-                raw_token
-                if not _looks_encrypted(raw_token)
-                else decrypt_token(raw_token)
-            )
-            _write_credentials(url, encrypted)
-            return url, plain
+        try:
+            with open(OPTIONS_FILE) as f:
+                opts = json.load(f)
+            opts_url = (opts.get("mealie_url") or "").strip()
+            opts_raw = (opts.get("api_token") or "").strip()
+            if opts_url and opts_raw:
+                opts_plain = opts_raw if not _looks_encrypted(opts_raw) else decrypt_token(opts_raw)
+                if opts_url != stored_url or opts_plain != stored_plain:
+                    encrypted = encrypt_token(opts_plain) if not _looks_encrypted(opts_raw) else opts_raw
+                    _write_credentials(opts_url, encrypted)
+                    return opts_url, opts_plain
+        except Exception:
+            pass
+
+    if stored_url and stored_plain:
+        _cred_cache["url"] = stored_url
+        _cred_cache["token"] = stored_plain
+        try:
+            _cred_loaded_at = os.path.getmtime(CREDENTIALS_FILE)
+        except OSError:
+            pass
+        return stored_url, stored_plain
 
     return None, None
 

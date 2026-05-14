@@ -138,13 +138,7 @@
 }
  .navbar--haos {
      height: var(--navbar-h);
-     justify-content: space-between;
-}
- .navbar-brand-haos {
-     font-size: var(--text-sm);
-     font-weight: 600;
-     color: var(--text-muted);
-     letter-spacing: -0.01em;
+     justify-content: flex-end;
 }
  .status-dot {
      display: flex;
