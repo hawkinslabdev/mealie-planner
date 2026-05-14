@@ -8,8 +8,9 @@ function planner() {
     colorTheme: localStorage.getItem('colorTheme') || 'system',
     themeMenuOpen: false,
     planLoading: false,
+    planRefreshing: false,
     planError: null,
-    _slots: {},          // flat map: "date:mt" → entry | null (drives reactivity)
+    _slots: {},
 
     allRecipes: [],
     recipesLoaded: false,
@@ -19,6 +20,8 @@ function planner() {
     modalMt: null,
     modalSearch: '',
     modalLimit: 24,
+    modalMode: 'add',        // 'add' | 'replace'
+    modalReplaceEntry: null, // entry being replaced in replace mode
 
     initialized: false,
     configured: false,
@@ -102,11 +105,12 @@ function planner() {
       return this.modalLimit < this.filteredRecipes.length;
     },
 
-    /* slots */
+    /* slots — values are entry[] */
     slotKey(date, mt) { return date + ':' + mt; },
-    getSlot(date, mt) { return date ? this._slots[this.slotKey(date, mt)] || null : null; },
-    setSlot(date, mt, val) {
-      this._slots = { ...this._slots, [this.slotKey(date, mt)]: val };
+    getSlot(date, mt) { return date ? (this._slots[this.slotKey(date, mt)] || []) : []; },
+    hasSlot(date, mt) { return this.getSlot(date, mt).length > 0; },
+    setSlot(date, mt, arr) {
+      this._slots = { ...this._slots, [this.slotKey(date, mt)]: arr };
     },
     isSparkle(date, mt) { return !!(date && this.sparkling[this.slotKey(date, mt)]); },
 
@@ -182,21 +186,53 @@ function planner() {
     /* loading */
     async loadMealPlan() {
       if (!this.days.length) return;
-      this.planLoading = true;
-      this.planError   = null;
+      const start = this.days[0].date, end = this.days.at(-1).date;
+      this.planError = null;
+
+      const cached = this._loadPlanCache(start, end);
+      if (cached) {
+        this._applyPlanEntries(cached);
+        this.planRefreshing = true;
+      } else {
+        this.planLoading = true;
+      }
+
       try {
-        const start = this.days[0].date, end = this.days.at(-1).date;
         const entries = await this._fetch(`/api/mealplan?start_date=${start}&end_date=${end}`);
-        // clear existing slots for this window
-        const next = { ...this._slots };
-        for (const d of this.days) for (const mt of ['breakfast','lunch','dinner','side']) delete next[this.slotKey(d.date, mt)];
-        for (const e of entries) next[this.slotKey(e.date, e.meal_type)] = this._prefixImg(e);
-        this._slots = next;
+        this._applyPlanEntries(entries);
+        this._savePlanCache(start, end, entries);
       } catch (e) {
         this.planError = e.message || 'Could not load meal plan.';
       } finally {
         this.planLoading = false;
+        this.planRefreshing = false;
       }
+    },
+
+    _applyPlanEntries(entries) {
+      const next = { ...this._slots };
+      for (const d of this.days) for (const mt of ['breakfast','lunch','dinner','side']) next[this.slotKey(d.date, mt)] = [];
+      for (const e of entries) {
+        const key = this.slotKey(e.date, e.meal_type);
+        next[key] = [...(next[key] || []), this._prefixImg(e)];
+      }
+      this._slots = next;
+    },
+
+    _savePlanCache(start, end, entries) {
+      try {
+        localStorage.setItem('mp_plan', JSON.stringify({ start, end, entries, ts: Date.now() }));
+      } catch {}
+    },
+
+    _loadPlanCache(start, end) {
+      try {
+        const raw = localStorage.getItem('mp_plan');
+        if (!raw) return null;
+        const c = JSON.parse(raw);
+        if (c.start !== start || c.end !== end) return null;
+        return c.entries;
+      } catch { return null; }
     },
 
     async loadRecipes() {
@@ -232,7 +268,17 @@ function planner() {
 
     /* modal */
     openModal(date, mt) {
-      this.modalDate = date; this.modalMt = mt; this.modalSearch = ''; this.modalLimit = 24; this.modalOpen = true;
+      this.modalDate = date; this.modalMt = mt; this.modalSearch = ''; this.modalLimit = 24;
+      this.modalMode = 'add'; this.modalReplaceEntry = null;
+      this.modalOpen = true;
+      if (!this.recipesLoaded) this.loadRecipes();
+      this.$nextTick(() => this.$refs.searchInput?.focus());
+    },
+
+    openModalReplace(date, mt, entry) {
+      this.modalDate = date; this.modalMt = mt; this.modalSearch = ''; this.modalLimit = 24;
+      this.modalMode = 'replace'; this.modalReplaceEntry = entry;
+      this.modalOpen = true;
       if (!this.recipesLoaded) this.loadRecipes();
       this.$nextTick(() => this.$refs.searchInput?.focus());
     },
@@ -246,27 +292,51 @@ function planner() {
 
     async selectRecipe(recipe) {
       const date = this.modalDate, mt = this.modalMt;
-      const prev = this.getSlot(date, mt);
-      this.setSlot(date, mt, { recipe_id: recipe.id, recipe_name: recipe.name, image_url: recipe.image_url, recipe_slug: recipe.slug, id: null, _optimistic: true });
       this.modalOpen = false;
+
+      if (this.modalMode === 'replace' && this.modalReplaceEntry) {
+        const oldEntry = this.modalReplaceEntry;
+        const prev = [...this.getSlot(date, mt)];
+        const optimistic = { recipe_id: recipe.id, recipe_name: recipe.name, image_url: recipe.image_url, recipe_slug: recipe.slug, id: null, _optimistic: true };
+        this.setSlot(date, mt, prev.map(e => e.id === oldEntry.id ? optimistic : e));
+        try {
+          if (oldEntry.id) await this._delete(`/api/mealplan/${oldEntry.id}`);
+          const entry = await this._post('/api/mealplan', { date, meal_type: mt, recipe_id: recipe.id });
+          this.setSlot(date, mt, this.getSlot(date, mt).map(e => e._optimistic && e.recipe_id === recipe.id ? this._prefixImg(entry) : e));
+          this.pushRecentRecipe(recipe.id);
+        } catch (e) {
+          this.setSlot(date, mt, prev);
+          this.toast('Failed to save — ' + (e.message || 'please try again.'));
+        }
+        return;
+      }
+
+      // add mode — append to slot
+      const optimistic = { recipe_id: recipe.id, recipe_name: recipe.name, image_url: recipe.image_url, recipe_slug: recipe.slug, id: null, _optimistic: true };
+      this.setSlot(date, mt, [...this.getSlot(date, mt), optimistic]);
       try {
         const entry = await this._post('/api/mealplan', { date, meal_type: mt, recipe_id: recipe.id });
-        this.setSlot(date, mt, this._prefixImg(entry));
+        const arr = this.getSlot(date, mt);
+        const idx = arr.findIndex(e => e._optimistic && e.recipe_id === recipe.id);
+        if (idx !== -1) {
+          const updated = [...arr];
+          updated[idx] = this._prefixImg(entry);
+          this.setSlot(date, mt, updated);
+        }
         this.pushRecentRecipe(recipe.id);
       } catch (e) {
-        this.setSlot(date, mt, prev);
+        this.setSlot(date, mt, this.getSlot(date, mt).filter(e => !(e._optimistic && e.recipe_id === recipe.id)));
         this.toast('Failed to save — ' + (e.message || 'please try again.'));
       }
     },
 
     async removeRecipe(date, mt, entryId) {
       const prev = this.getSlot(date, mt);
-      if (!prev) return;
+      const entry = prev.find(e => e.id === entryId);
+      if (!entry) return;
 
-      // Optimistically clear the slot
-      this.setSlot(date, mt, null);
+      this.setSlot(date, mt, prev.filter(e => e.id !== entryId));
 
-      // Fire DELETE immediately — no more 7-second delay
       try {
         if (entryId) await this._delete(`/api/mealplan/${entryId}`);
       } catch (e) {
@@ -275,11 +345,10 @@ function planner() {
         return;
       }
 
-      // Undo window: re-create the entry via POST
       const id = Date.now() + Math.random();
-      this.pendingActions.push({ id, date, mt, prev, message: 'Removed ' + prev.recipe_name });
+      this.pendingActions.push({ id, date, mt, prev: entry, message: 'Removed ' + entry.recipe_name });
       this.undoBar = true;
-      this.undoMessage = 'Removed ' + prev.recipe_name;
+      this.undoMessage = 'Removed ' + entry.recipe_name;
 
       setTimeout(() => {
         const idx = this.pendingActions.findIndex(a => a.id === id);
@@ -292,15 +361,11 @@ function planner() {
     async sparkle(date, mt) {
       const key = this.slotKey(date, mt);
       this.sparkling = { ...this.sparkling, [key]: true };
-      const prev = this.getSlot(date, mt);
       try {
-        // Remove old entry first so we don't orphan duplicates in Mealie
-        if (prev?.id) await this._delete(`/api/mealplan/${prev.id}`).catch(() => {});
         const recipe = await this._fetch(`/api/sparkle?date=${date}&meal_type=${mt}`);
         const entry  = await this._post('/api/mealplan', { date, meal_type: mt, recipe_id: recipe.id });
-        this.setSlot(date, mt, this._prefixImg(entry));
+        this.setSlot(date, mt, [...this.getSlot(date, mt), this._prefixImg(entry)]);
       } catch (e) {
-        this.setSlot(date, mt, prev);
         this.toast('Sparkle failed — ' + (e.message || 'no recipes cached?'));
       } finally {
         const next = { ...this.sparkling }; delete next[key]; this.sparkling = next;
@@ -308,10 +373,9 @@ function planner() {
     },
 
     /* tooltip */
-    showTooltip(date, mt, event) {
-      const slot = this.getSlot(date, mt);
-      if (!slot) return;
-      const recipe = this.allRecipes.find(r => r.id === slot.recipe_id);
+    showTooltip(entry, event) {
+      if (!entry) return;
+      const recipe = this.allRecipes.find(r => r.id === entry.recipe_id);
       if (!recipe) return;
       this.tooltipRecipe = recipe;
       const chip = event.currentTarget.closest('.chip, .mobile-recipe-row');
@@ -342,18 +406,30 @@ function planner() {
       }
     },
 
-    /* undo */
+    /* undo — re-creates the single removed entry */
     undoLastAction() {
       const action = this.pendingActions.pop();
       if (!action) return;
       if (!this.pendingActions.length) this.undoBar = false;
 
-      const { date, mt, prev } = action;
-      this.setSlot(date, mt, prev);
+      const { date, mt, prev: entry } = action;
+      const optimistic = { ...entry, _optimistic: true };
+      this.setSlot(date, mt, [...this.getSlot(date, mt), optimistic]);
 
-      this._post('/api/mealplan', { date, meal_type: mt, recipe_id: prev.recipe_id })
-        .then(entry => this.setSlot(date, mt, this._prefixImg(entry)))
-        .catch(() => this.toast('Could not undo.'));
+      this._post('/api/mealplan', { date, meal_type: mt, recipe_id: entry.recipe_id })
+        .then(newEntry => {
+          const arr = this.getSlot(date, mt);
+          const idx = arr.findIndex(e => e._optimistic && e.recipe_id === entry.recipe_id);
+          if (idx !== -1) {
+            const updated = [...arr];
+            updated[idx] = this._prefixImg(newEntry);
+            this.setSlot(date, mt, updated);
+          }
+        })
+        .catch(() => {
+          this.setSlot(date, mt, this.getSlot(date, mt).filter(e => !(e._optimistic && e.recipe_id === entry.recipe_id)));
+          this.toast('Could not undo.');
+        });
     },
 
     /* recent */
@@ -362,9 +438,8 @@ function planner() {
       localStorage.setItem('recentRecipes', JSON.stringify(this._recentRecipes));
     },
 
-    /* drag */
-    onDragStart(date, mt, event) {
-      const entry = this.getSlot(date, mt);
+    /* drag — moves a single entry to target slot (no swap) */
+    onDragStart(date, mt, entry, event) {
       if (!entry) return;
       this.draggedSlot = { date, mt, entry };
       event.dataTransfer.effectAllowed = 'move';
@@ -400,29 +475,20 @@ function planner() {
 
       if (srcDate === targetDate && srcMt === targetMt) return;
 
-      const tgtEntry = this.getSlot(targetDate, targetMt);
-
-      // optimistic swap
-      this.setSlot(targetDate, targetMt, srcEntry);
-      this.setSlot(srcDate, srcMt, tgtEntry);
+      // Optimistic: remove from src, append to target
+      this.setSlot(srcDate, srcMt, this.getSlot(srcDate, srcMt).filter(e => e.id !== srcEntry.id));
+      this.setSlot(targetDate, targetMt, [...this.getSlot(targetDate, targetMt), srcEntry]);
 
       try {
-        const deletions = [];
-        if (srcEntry?.id) deletions.push(this._delete(`/api/mealplan/${srcEntry.id}`));
-        if (tgtEntry?.id) deletions.push(this._delete(`/api/mealplan/${tgtEntry.id}`));
-        await Promise.all(deletions);
-
-        const creations = [];
-        creations.push(this._post('/api/mealplan', { date: targetDate, meal_type: targetMt, recipe_id: srcEntry.recipe_id }));
-        if (tgtEntry) creations.push(this._post('/api/mealplan', { date: srcDate, meal_type: srcMt, recipe_id: tgtEntry.recipe_id }));
-        const results = await Promise.all(creations);
-
-        this.setSlot(targetDate, targetMt, this._prefixImg(results[0]));
-        if (results[1]) this.setSlot(srcDate, srcMt, this._prefixImg(results[1]));
+        if (srcEntry?.id) await this._delete(`/api/mealplan/${srcEntry.id}`);
+        const created = await this._post('/api/mealplan', { date: targetDate, meal_type: targetMt, recipe_id: srcEntry.recipe_id });
+        this.setSlot(targetDate, targetMt, this.getSlot(targetDate, targetMt).map(
+          e => e.id === srcEntry.id ? this._prefixImg(created) : e
+        ));
       } catch (e) {
         // rollback
-        this.setSlot(srcDate, srcMt, srcEntry);
-        this.setSlot(targetDate, targetMt, tgtEntry);
+        this.setSlot(srcDate, srcMt, [...this.getSlot(srcDate, srcMt), srcEntry]);
+        this.setSlot(targetDate, targetMt, this.getSlot(targetDate, targetMt).filter(e => e.id !== srcEntry.id));
         this.toast('Failed to move recipe — ' + (e.message || 'please try again.'));
       }
     },
@@ -493,9 +559,9 @@ function planner() {
       } catch {}
     },
 
-    openActionMenu(slot, event) {
-      if (!slot) return;
-      this.actionMenuRecipe = { slug: slot.recipe_slug, name: slot.recipe_name };
+    openActionMenu(entry, event) {
+      if (!entry) return;
+      this.actionMenuRecipe = { slug: entry.recipe_slug, name: entry.recipe_name };
       const rect = event.currentTarget.getBoundingClientRect();
       let x = rect.left, y = rect.bottom + 6;
       if (x + 200 > window.innerWidth) x = window.innerWidth - 208;
@@ -549,13 +615,8 @@ function planner() {
       const now = new Date();
       const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - this.pastDays);
       const batch = this._buildMobileBatch(start, this.pastDays + 1 + Math.min(6, this.futureDays));
+      // loadMealPlan already fetched this date range — just set mobileDays, no separate fetch needed
       this.mobileDays = batch;
-      try {
-        const entries = await this._fetch(`/api/mealplan?start_date=${batch[0].date}&end_date=${batch.at(-1).date}`);
-        const next = { ...this._slots };
-        for (const e of entries) next[this.slotKey(e.date, e.meal_type)] = this._prefixImg(e);
-        this._slots = next;
-      } catch {}
       await this.$nextTick();
       document.querySelector('.mobile-week-day--today')?.scrollIntoView({ behavior: 'instant', block: 'start' });
       const sentinel = document.getElementById('mobile-scroll-sentinel');
@@ -576,7 +637,11 @@ function planner() {
       try {
         const entries = await this._fetch(`/api/mealplan?start_date=${batch[0].date}&end_date=${batch.at(-1).date}`);
         const next = { ...this._slots };
-        for (const e of entries) next[this.slotKey(e.date, e.meal_type)] = this._prefixImg(e);
+        for (const d of batch) for (const mt of ['breakfast','lunch','dinner','side']) next[this.slotKey(d.date, mt)] = [];
+        for (const e of entries) {
+          const key = this.slotKey(e.date, e.meal_type);
+          next[key] = [...(next[key] || []), this._prefixImg(e)];
+        }
         this._slots = next;
         this.mobileDays = [...this.mobileDays, ...batch];
         if (this.mobileDays.length >= MAX) this.mobileHasMore = false;

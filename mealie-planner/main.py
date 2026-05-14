@@ -119,20 +119,42 @@ _SESSION_COOKIE = "mp_session"
 _SESSION_TTL = 86400 * 30
 
 _cred_cache: dict[str, str | None] = {"url": None, "token": None}
+_cred_loaded_at: float = 0.0  # mtime watermark — cache invalidates when files are newer
+
+def _cred_cache_valid() -> bool:
+    if not (_cred_cache["url"] and _cred_cache["token"]):
+        return False
+    try:
+        for path in (CREDENTIALS_FILE, OPTIONS_FILE):
+            if os.path.exists(path) and os.path.getmtime(path) > _cred_loaded_at:
+                return False
+    except OSError:
+        pass
+    return True
 
 def get_mode() -> str:
     return "docker" if _DOCKER_MODE else "haos"
 
 def get_credentials() -> tuple[str | None, str | None]:
-    if _cred_cache["url"] and _cred_cache["token"]:
+    global _cred_loaded_at
+
+    if _cred_cache_valid():
         return _cred_cache["url"], _cred_cache["token"]
+
+    # Clear stale values before re-reading
+    _cred_cache["url"] = None
+    _cred_cache["token"] = None
 
     if _DOCKER_MODE:
         _cred_cache["url"] = os.environ.get("MEALIE_API_URL")
         _cred_cache["token"] = os.environ.get("MEALIE_API_KEY")
         return _cred_cache["url"], _cred_cache["token"]
 
-    if os.path.exists(CREDENTIALS_FILE):
+    creds_mtime = os.path.getmtime(CREDENTIALS_FILE) if os.path.exists(CREDENTIALS_FILE) else 0.0
+    opts_mtime  = os.path.getmtime(OPTIONS_FILE)      if os.path.exists(OPTIONS_FILE)      else 0.0
+
+    # Re-import from options.json if it was updated after credentials.json (e.g. HAOS config change)
+    if os.path.exists(CREDENTIALS_FILE) and creds_mtime >= opts_mtime:
         with open(CREDENTIALS_FILE) as f:
             creds = json.load(f)
         url = creds.get("mealie_url")
@@ -142,6 +164,7 @@ def get_credentials() -> tuple[str | None, str | None]:
                 token = decrypt_token(token_enc)
                 _cred_cache["url"] = url
                 _cred_cache["token"] = token
+                _cred_loaded_at = max(creds_mtime, opts_mtime)
                 return url, token
             except (InvalidToken, Exception):
                 pass
@@ -155,19 +178,22 @@ def get_credentials() -> tuple[str | None, str | None]:
             encrypted = encrypt_token(raw_token) if not _looks_encrypted(raw_token) else raw_token
             plain = raw_token if not _looks_encrypted(raw_token) else decrypt_token(raw_token)
             _write_credentials(url, encrypted)
-            _cred_cache["url"] = url
-            _cred_cache["token"] = plain
             return url, plain
 
     return None, None
 
 
 def _write_credentials(url: str, encrypted_token: str) -> None:
+    global _cred_loaded_at
     os.makedirs(DATA_PATH, exist_ok=True)
     with open(CREDENTIALS_FILE, "w") as f:
         json.dump({"mealie_url": url, "api_token": encrypted_token}, f)
     _cred_cache["url"] = url
     _cred_cache["token"] = decrypt_token(encrypted_token)
+    try:
+        _cred_loaded_at = os.path.getmtime(CREDENTIALS_FILE)
+    except OSError:
+        pass
 
 # SQLite
 _db: aiosqlite.Connection | None = None

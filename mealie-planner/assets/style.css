@@ -320,6 +320,18 @@
      flex: 1;
      color: var(--text-muted);
 }
+ .plan-refreshing {
+     display: flex;
+     align-items: center;
+     color: var(--text-subtle);
+     opacity: 0.55;
+}
+ @keyframes plan-spin {
+     to { transform: rotate(360deg); }
+}
+ .plan-refreshing__spin {
+     animation: plan-spin 1s linear infinite;
+}
  .week-nav-btn {
      font-family: inherit;
      font-size: var(--text-sm);
@@ -528,7 +540,6 @@
          flex-direction: column;
     }
      .g-cell__body .chip {
-         flex: 1;
          align-items: flex-start;
     }
 }
@@ -549,6 +560,24 @@
 }
  .chip__rm:hover {
      color: var(--text);
+}
+/* Multi-recipe chip wrapper */
+ .chip-wrap {
+     display: flex;
+     flex-direction: column;
+     gap: 3px;
+     margin-bottom: var(--space-1);
+}
+/* Per-chip action row */
+ .chip-acts {
+     display: flex;
+     align-items: center;
+     gap: 6px;
+     opacity: 0;
+     transition: opacity .15s;
+}
+ .g-cell:hover .chip-acts {
+     opacity: 1;
 }
 /* Cell actions row */
  .cell-acts {
