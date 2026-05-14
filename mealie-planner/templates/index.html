@@ -241,12 +241,9 @@
                       </button>
                     </div>
                     <div class="cell-acts">
-                      <button class="ca ca--accent" @click="sparkle(item.date, item.mt)" title="Random recipe">✦</button>
-                      <span class="ca-sep">·</span>
+                      <button class="ca ca--accent" @click="sparkle(item.date, item.mt)" title="Random recipe">✦ random</button>
                       <button class="ca" @click="openModal(item.date, item.mt)">change</button>
-                      <span class="ca-sep">·</span>
-                      <a class="ca" :href="getMealieLink(getSlot(item.date, item.mt).recipe_slug)" target="_blank" title="Open in Mealie">↗</a>
-                      <span class="ca-sep" x-show="recipeActions.length > 0">·</span>
+                      <a class="ca" :href="getMealieLink(getSlot(item.date, item.mt).recipe_slug)" target="_blank" title="Open in Mealie">↗ open</a>
                       <button class="ca" x-show="recipeActions.length > 0" @click.stop="openActionMenu(getSlot(item.date, item.mt), $event)" title="Recipe actions">···</button>
                     </div>
                   </div>

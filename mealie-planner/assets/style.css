@@ -554,10 +554,10 @@
  .cell-acts {
      display: flex;
      align-items: center;
-     gap: 5px;
-     margin-top: 5px;
+     gap: 6px;
+     margin-top: 8px;
      opacity: 0;
-     transition: opacity .12s;
+     transition: opacity .15s;
 }
  .g-cell:hover .cell-acts {
      opacity: 1;
@@ -568,43 +568,32 @@
      font-weight: 500;
      color: var(--text-subtle);
      background: transparent;
-     border: none;
+     border: 1px solid transparent;
      cursor: pointer;
-     padding: 0;
+     padding: 5px 10px;
+     border-radius: 7px;
      text-decoration: none;
-     display: inline;
-     transition: color .12s;
+     display: inline-flex;
+     align-items: center;
+     gap: 4px;
+     line-height: 1;
+     white-space: nowrap;
+     transition: color .15s, background .15s, border-color .15s;
 }
  .ca:hover {
      color: var(--text);
+     background: var(--bg-muted);
+     border-color: var(--border);
 }
  .ca--accent {
      color: var(--accent);
-     opacity: .75;
-     display: inline-block;
 }
  .ca--accent:hover {
-     opacity: 1;
-     animation: sparkle-pop .35s cubic-bezier(0.25, 1, 0.5, 1);
-}
- @keyframes sparkle-pop {
-     0% {
-         transform: scale(1) rotate(0deg);
-    }
-     40% {
-         transform: scale(1.5) rotate(20deg);
-    }
-     70% {
-         transform: scale(.9) rotate(-8deg);
-    }
-     100% {
-         transform: scale(1) rotate(0deg);
-    }
+     background: var(--accent-muted);
+     border-color: color-mix(in oklch, var(--accent) 20%, transparent);
 }
  .ca-sep {
-     font-size: var(--text-xs);
-     color: var(--text-subtle);
-     line-height: 1;
+     display: none;
 }
 /* Empty cell: click anywhere to add */
  .cell-empty-btn {
