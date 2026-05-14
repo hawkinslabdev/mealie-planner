@@ -23,7 +23,7 @@ We want to make it incredibly simple to plan your meals for the week ahead. Mana
 1. Go to **Settings → Add-ons → Add-on Store**
 2. Click **⋮ → Repositories**
 3. Paste `https://github.com/hawkinslabdev/mealie-planner` and click **Add**
-4. Search for **Mealie Quick Planner** and click **Install**
+4. Search for **Mealie Planner** and click **Install**
 
 ### Docker Compose
 
