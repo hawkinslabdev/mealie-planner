@@ -292,11 +292,15 @@ function planner() {
     async sparkle(date, mt) {
       const key = this.slotKey(date, mt);
       this.sparkling = { ...this.sparkling, [key]: true };
+      const prev = this.getSlot(date, mt);
       try {
+        // Remove old entry first so we don't orphan duplicates in Mealie
+        if (prev?.id) await this._delete(`/api/mealplan/${prev.id}`).catch(() => {});
         const recipe = await this._fetch(`/api/sparkle?date=${date}&meal_type=${mt}`);
         const entry  = await this._post('/api/mealplan', { date, meal_type: mt, recipe_id: recipe.id });
         this.setSlot(date, mt, this._prefixImg(entry));
       } catch (e) {
+        this.setSlot(date, mt, prev);
         this.toast('Sparkle failed — ' + (e.message || 'no recipes cached?'));
       } finally {
         const next = { ...this.sparkling }; delete next[key]; this.sparkling = next;
