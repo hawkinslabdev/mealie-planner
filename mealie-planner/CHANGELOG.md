@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.5
+
+- Fix: removing a recipe no longer causes it to reappear after refreshing the page
+- Fix: scrolling on mobile no longer accidentally moves the page behind a dialog
+- Fix: the "Connect to Mealie" screen no longer flashes briefly on page load
+- Change: recipe action buttons (random, change, open) are now larger and easier to tap
+
 ## 0.1.3
 
 - Fix: add-on failed to load after update; pages showed a blank error screen
