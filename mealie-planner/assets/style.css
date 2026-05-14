@@ -241,8 +241,8 @@
 
     .g-meal-lbl {
       background: var(--bg-muted);
-      padding: var(--space-3) var(--space-1) var(--space-3) var(--space-2);
-      display: flex; align-items: flex-start;
+      padding: var(--space-3) var(--space-3) var(--space-3) var(--space-2);
+      display: flex; align-items: center;
       font-size: 0.6875rem; font-weight: 500; color: var(--text-subtle);
       text-transform: uppercase; letter-spacing: .07em;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -287,6 +287,9 @@
     }
     @media (min-width: 720px) {
       .chip__name { white-space: normal; overflow: visible; text-overflow: unset; }
+      .g-cell > div       { display: flex; flex-direction: column; }
+      .g-cell__body       { flex: 1; display: flex; flex-direction: column; }
+      .g-cell__body .chip { flex: 1; align-items: flex-start; }
     }
     .chip__rm {
       opacity: 0; flex-shrink: 0; background: none; border: none; cursor: pointer;

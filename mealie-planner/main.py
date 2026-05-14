@@ -633,7 +633,7 @@ async def trigger_recipe_action(action_id: str, payload: RecipeActionTrigger, re
         raise HTTPException(status_code=429, detail="Too many requests.")
 
     action: dict | None = None
-    for path in [f"/api/groups/recipe-actions/{action_id}", f"/api/households/recipe-actions/{action_id}"]:
+    for path in [f"/api/households/recipe-actions/{action_id}", f"/api/groups/recipe-actions/{action_id}"]:
         try:
             raw = await mealie_get(path)
             if isinstance(raw, dict):
@@ -644,13 +644,12 @@ async def trigger_recipe_action(action_id: str, payload: RecipeActionTrigger, re
     if not action:
         raise HTTPException(status_code=404, detail="Recipe action not found.")
 
-    action_type: str = action.get("actionType") or action.get("action_type") or "link"
-    action_url: str = action.get("url") or ""
-
-    raw_recipe = await mealie_get(f"/api/recipes/{payload.recipe_slug}")
-    recipe: dict = raw_recipe if isinstance(raw_recipe, dict) else {}
+    action_type: str = action.get("actionType") or action.get("action_type") or "post"
 
     if action_type == "link":
+        action_url: str = action.get("url") or ""
+        raw_recipe = await mealie_get(f"/api/recipes/{payload.recipe_slug}")
+        recipe: dict = raw_recipe if isinstance(raw_recipe, dict) else {}
         final_url = (
             action_url
             .replace("{slug}", recipe.get("slug", ""))
@@ -660,12 +659,19 @@ async def trigger_recipe_action(action_id: str, payload: RecipeActionTrigger, re
         )
         return {"type": "link", "url": final_url}
 
-    try:
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            resp = await client.post(action_url, json=recipe)
-            return {"type": "post", "ok": resp.is_success, "status": resp.status_code}
-    except httpx.HTTPError as e:
-        raise HTTPException(status_code=502, detail=f"Action request failed: {e}")
+    # post-type: proxy to Mealie's trigger endpoint
+    for path in [
+        f"/api/households/recipe-actions/{action_id}/trigger/{payload.recipe_slug}",
+        f"/api/groups/recipe-actions/{action_id}/trigger/{payload.recipe_slug}",
+    ]:
+        try:
+            await mealie_post(path, {})
+            return {"type": "post", "ok": True}
+        except HTTPException as e:
+            if e.status_code == 404:
+                continue
+            raise
+    raise HTTPException(status_code=502, detail="Mealie trigger endpoint not found.")
 
 
 @app.get("/api/sparkle")

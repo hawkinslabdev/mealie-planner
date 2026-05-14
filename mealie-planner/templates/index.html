@@ -204,70 +204,62 @@
     <!-- grid -->
     <div class="planner-wrap" x-show="enabledMealTypes.length > 0">
       <div class="planner-grid" :style="`grid-template-columns: 68px repeat(${days.length}, minmax(100px, 1fr))`">
-
-        <!-- corner -->
-        <div class="g-corner"></div>
-
-        <!-- day headers -->
-        <template x-for="day in days" :key="'h-' + day.date">
-          <div :class="day.isToday ? 'g-day-hdr g-day-hdr--today' : 'g-day-hdr'">
-            <p class="g-day-hdr__wd" x-text="day.wd"></p>
-            <p class="g-day-hdr__num mono" x-text="day.dn"></p>
-          </div>
-        </template>
-
-        <!-- meal rows: label + one cell per day -->
-        <template x-for="mt in enabledMealTypes" :key="mt">
-          <div :class="'g-meal-lbl g-meal-lbl--' + mt">
-            <span x-text="mt"></span>
-          </div>
-          <template x-for="day in days" :key="mt + '-' + day.date">
-            <div :class="day.isToday ? 'g-cell g-cell--today' : 'g-cell'"
-                 @dragover.prevent="onDragOver($event)"
-                 @dragleave="onDragLeave($event)"
-                 @drop="onDrop(day.date, mt, $event)"
-                 @click="setActiveCell(day.date, mt)">
-              <div x-show="planLoading" class="skel skel--full"></div>
-              <div x-show="!planLoading && isSparkle(day.date, mt)" class="skel skel--chip"></div>
-              <template x-if="!planLoading && !isSparkle(day.date, mt) && getSlot(day.date, mt)">
-                <div>
-                  <div class="chip" :class="'chip--' + mt" draggable="true"
-                       @dragstart="onDragStart(day.date, mt, $event)"
-                       @dragend="onDragEnd()"
-                       @mouseenter="showTooltip(day.date, mt, $event)"
-                       @mouseleave="hideTooltip()"
-                       @dblclick="openModal(day.date, mt)">
-                    <img class="chip__thumb"
-                      :src="getSlot(day.date, mt).image_url"
-                      :alt="getSlot(day.date, mt).recipe_name"
-                      @error="$event.target.style.display='none'">
-                    <span class="chip__name" x-text="getSlot(day.date, mt).recipe_name"></span>
-                    <button class="chip__rm" @click.stop="removeRecipe(day.date, mt, getSlot(day.date, mt).id)" title="Remove">
-                      <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                    </button>
-                  </div>
-                  <div class="cell-acts">
-                    <button class="ca ca--accent" @click="sparkle(day.date, mt)" title="Random recipe">✦</button>
-                    <span class="ca-sep">·</span>
-                    <button class="ca" @click="openModal(day.date, mt)">change</button>
-                    <span class="ca-sep">·</span>
-                    <a class="ca" :href="getMealieLink(getSlot(day.date, mt).recipe_slug)" target="_blank" title="Open in Mealie">↗</a>
-                    <template x-if="recipeActions.length > 0">
+        <template x-for="(item, idx) in gridItems" :key="idx">
+          <div :class="cellClass(item)">
+            <template x-if="item.t === 'dh'">
+              <div>
+                <p class="g-day-hdr__wd" x-text="item.wd"></p>
+                <p class="g-day-hdr__num mono" x-text="item.dn"></p>
+              </div>
+            </template>
+            <template x-if="item.t === 'ml'">
+              <span x-text="item.mt"></span>
+            </template>
+            <template x-if="item.t === 'cell'">
+              <div style="position:relative;height:100%"
+                   @dragover.prevent="onDragOver($event)"
+                   @dragleave="onDragLeave($event)"
+                   @drop="onDrop(item.date, item.mt, $event)"
+                   @click="setActiveCell(item.date, item.mt)">
+                <div x-show="planLoading" class="skel skel--full"></div>
+                <div x-show="!planLoading && isSparkle(item.date, item.mt)" class="skel skel--chip"></div>
+                <template x-if="!planLoading && !isSparkle(item.date, item.mt) && getSlot(item.date, item.mt)">
+                  <div class="g-cell__body">
+                    <div class="chip" :class="'chip--' + item.mt" draggable="true"
+                         @dragstart="onDragStart(item.date, item.mt, $event)"
+                         @dragend="onDragEnd()"
+                         @mouseenter="showTooltip(item.date, item.mt, $event)"
+                         @mouseleave="hideTooltip()"
+                         @dblclick="openModal(item.date, item.mt)">
+                      <img class="chip__thumb"
+                        :src="getSlot(item.date, item.mt).image_url"
+                        :alt="getSlot(item.date, item.mt).recipe_name"
+                        @error="$event.target.style.display='none'">
+                      <span class="chip__name" x-text="getSlot(item.date, item.mt).recipe_name"></span>
+                      <button class="chip__rm" @click.stop="removeRecipe(item.date, item.mt, getSlot(item.date, item.mt).id)" title="Remove">
+                        <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                      </button>
+                    </div>
+                    <div class="cell-acts">
+                      <button class="ca ca--accent" @click="sparkle(item.date, item.mt)" title="Random recipe">✦</button>
                       <span class="ca-sep">·</span>
-                      <button class="ca" @click.stop="openActionMenu(getSlot(day.date, mt), $event)" title="Recipe actions">···</button>
-                    </template>
+                      <button class="ca" @click="openModal(item.date, item.mt)">change</button>
+                      <span class="ca-sep">·</span>
+                      <a class="ca" :href="getMealieLink(getSlot(item.date, item.mt).recipe_slug)" target="_blank" title="Open in Mealie">↗</a>
+                      <span class="ca-sep" x-show="recipeActions.length > 0">·</span>
+                      <button class="ca" x-show="recipeActions.length > 0" @click.stop="openActionMenu(getSlot(item.date, item.mt), $event)" title="Recipe actions">···</button>
+                    </div>
                   </div>
-                </div>
-              </template>
-              <template x-if="!planLoading && !isSparkle(day.date, mt) && !getSlot(day.date, mt)">
-                <button class="cell-empty-btn" @click="openModal(day.date, mt)" title="Add recipe">
-                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                </button>
-              </template>
-            </div>
-          </template>
+                </template>
+                <template x-if="!planLoading && !isSparkle(item.date, item.mt) && !getSlot(item.date, item.mt)">
+                  <button class="cell-empty-btn" @click="openModal(item.date, item.mt)" title="Add recipe">
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                  </button>
+                </template>
+              </div>
+            </template>
+          </div>
         </template>
-
       </div>
     </div>
 
@@ -313,10 +305,8 @@
                     <button class="ca ca--accent" @click="sparkle(day.date, mt)">✦ re-roll</button>
                     <span class="ca-sep">·</span>
                     <button class="ca" @click="openModal(day.date, mt)">change</button>
-                    <template x-if="recipeActions.length > 0">
-                      <span class="ca-sep">·</span>
-                      <button class="ca" @click.stop="openActionMenu(getSlot(day.date, mt), $event)">···</button>
-                    </template>
+                    <span class="ca-sep" x-show="recipeActions.length > 0">·</span>
+                    <button class="ca" x-show="recipeActions.length > 0" @click.stop="openActionMenu(getSlot(day.date, mt), $event)">···</button>
                   </div>
                 </div>
               </template>
@@ -445,7 +435,7 @@
        x-transition:leave="transition ease-in duration-75"
        x-transition:leave-start="opacity-100 scale-100"
        x-transition:leave-end="opacity-0 scale-95">
-    <p class="action-menu__title" x-text="actionMenuRecipe?.name"></p>
+    <p class="action-menu__title">Actions</p>
     <template x-for="action in recipeActions" :key="action.id">
       <button class="action-menu__item"
               @click="triggerRecipeAction(action.id, actionMenuRecipe.slug)"
