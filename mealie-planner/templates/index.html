@@ -84,6 +84,7 @@
 
   <!-- settings -->
   <div x-show="settingsOpen" class="settings-wrap"
+       :class="!configured && 'settings-wrap--first-run'"
        x-transition:enter="transition ease-out duration-150"
        x-transition:enter-start="opacity-0"
        x-transition:enter-end="opacity-100"
@@ -92,6 +93,16 @@
        x-transition:leave-end="opacity-0"
        @click.self="settingsOpen = false">
     <div class="settings-panel">
+      <div class="onboard-welcome" x-show="!configured">
+        <svg class="onboard-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="8" y1="2" x2="8" y2="22"/>
+          <path d="M5 2v6a3 3 0 0 0 6 0V2"/>
+          <line x1="16" y1="2" x2="16" y2="22"/>
+          <path d="M19 7V2l-3 5"/>
+        </svg>
+        <h2 class="onboard-title">What's for dinner this week?</h2>
+        <p class="onboard-desc">Connect your Mealie instance to browse your recipe library and plan meals for the week, right here in Home Assistant.</p>
+      </div>
       <div class="settings-sheet-hdr">
         <p class="settings-sheet-title">Settings</p>
         <button @click="settingsOpen = false" class="icon-btn">

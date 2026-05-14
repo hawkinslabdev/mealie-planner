@@ -182,6 +182,95 @@
  .settings-wrap {
      display: block; /* desktop: transparent block wrapper, no visual presence */
 }
+/* Welcome block — compact banner on mobile, full card header on desktop */
+ .onboard-welcome {
+     display: none;
+}
+ @media (max-width: 719px) {
+     .onboard-welcome {
+         display: flex;
+         align-items: center;
+         gap: var(--space-3);
+         padding: var(--space-3) var(--space-5);
+         border-bottom: 1px solid var(--border);
+         background: var(--accent-muted);
+         flex-shrink: 0;
+    }
+     .onboard-icon {
+         width: 20px;
+         height: 20px;
+         flex-shrink: 0;
+         color: var(--accent);
+         display: block;
+    }
+     .onboard-title {
+         display: none;
+    }
+     .onboard-desc {
+         font-size: var(--text-xs);
+         color: var(--text-muted);
+         line-height: 1.5;
+         max-width: none;
+         margin: 0;
+    }
+}
+ @media (min-width: 720px) {
+     .settings-wrap--first-run {
+         position: fixed;
+         left: 0;
+         right: 0;
+         top: var(--navbar-h);
+         bottom: 0;
+         z-index: 25;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         padding: var(--space-6);
+         background: var(--bg);
+    }
+     .settings-wrap--first-run .settings-panel {
+         max-width: 520px;
+         width: 100%;
+         border: 1px solid var(--border);
+         border-radius: var(--radius);
+         overflow: hidden;
+         box-shadow: 0 16px 48px oklch(0% 0 0 / 0.35);
+    }
+     .settings-wrap--first-run .settings-inner {
+         max-width: none;
+         margin: 0;
+         overflow-y: auto;
+         -webkit-overflow-scrolling: touch;
+         max-height: calc(88vh - var(--navbar-h) - 9rem);
+    }
+     .onboard-welcome {
+         display: block;
+         text-align: center;
+         padding: var(--space-6) var(--space-5) var(--space-5);
+         border-bottom: 1px solid var(--border);
+         background: var(--bg-muted);
+    }
+     .onboard-icon {
+         display: block;
+         margin: 0 auto var(--space-4);
+         color: var(--accent);
+         opacity: 0.85;
+    }
+     .onboard-title {
+         font-size: 1.375rem;
+         font-weight: 700;
+         letter-spacing: -0.02em;
+         color: var(--text);
+         margin-bottom: var(--space-2);
+    }
+     .onboard-desc {
+         font-size: var(--text-sm);
+         color: var(--text-muted);
+         line-height: 1.65;
+         max-width: 360px;
+         margin: 0 auto;
+    }
+}
  .settings-sheet-hdr {
      display: none; /* hidden on desktop */
 }
