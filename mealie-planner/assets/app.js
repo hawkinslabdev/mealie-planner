@@ -258,12 +258,32 @@ function planner() {
 
     async removeRecipe(date, mt, entryId) {
       const prev = this.getSlot(date, mt);
+      if (!prev) return;
+
+      // Optimistically clear the slot
       this.setSlot(date, mt, null);
-      this.addPendingAction({
-        message: 'Removed ' + (prev?.recipe_name || 'recipe'),
-        commit: async () => { if (entryId) await this._delete(`/api/mealplan/${entryId}`); },
-        rollback: () => { this.setSlot(date, mt, prev); },
-      });
+
+      // Fire DELETE immediately — no more 7-second delay
+      try {
+        if (entryId) await this._delete(`/api/mealplan/${entryId}`);
+      } catch (e) {
+        this.setSlot(date, mt, prev);
+        this.toast('Failed to remove — ' + (e.message || 'please try again.'));
+        return;
+      }
+
+      // Undo window: re-create the entry via POST
+      const id = Date.now() + Math.random();
+      this.pendingActions.push({ id, date, mt, prev, message: 'Removed ' + prev.recipe_name });
+      this.undoBar = true;
+      this.undoMessage = 'Removed ' + prev.recipe_name;
+
+      setTimeout(() => {
+        const idx = this.pendingActions.findIndex(a => a.id === id);
+        if (idx === -1) return;
+        this.pendingActions.splice(idx, 1);
+        if (!this.pendingActions.length) this.undoBar = false;
+      }, 7000);
     },
 
     async sparkle(date, mt) {
@@ -316,24 +336,17 @@ function planner() {
     },
 
     /* undo */
-    addPendingAction(action) {
-      const id = Date.now() + Math.random();
-      this.pendingActions.push({ id, ...action });
-      this.undoBar = true;
-      this.undoMessage = action.message;
-      setTimeout(() => {
-        const idx = this.pendingActions.findIndex(a => a.id === id);
-        if (idx === -1) return;
-        const [a] = this.pendingActions.splice(idx, 1);
-        a.commit().catch(() => { a.rollback(); this.toast('Action failed.'); });
-        if (!this.pendingActions.length) this.undoBar = false;
-      }, 7000);
-    },
     undoLastAction() {
       const action = this.pendingActions.pop();
       if (!action) return;
-      action.rollback();
       if (!this.pendingActions.length) this.undoBar = false;
+
+      const { date, mt, prev } = action;
+      this.setSlot(date, mt, prev);
+
+      this._post('/api/mealplan', { date, meal_type: mt, recipe_id: prev.recipe_id })
+        .then(entry => this.setSlot(date, mt, this._prefixImg(entry)))
+        .catch(() => this.toast('Could not undo.'));
     },
 
     /* recent */
