@@ -2,5 +2,5 @@ fastapi==0.136.1
 uvicorn[standard]==0.46.0
 httpx==0.28.1
 cryptography==48.0.0
-jinja2==3.1.6
+jinja2==3.1.5
 aiosqlite==0.22.1
