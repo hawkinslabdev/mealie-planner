@@ -19,10 +19,13 @@
 
   <!-- navbar -->
   <nav class="navbar" :class="mode === 'haos' && 'navbar--haos'">
-    <span class="navbar-brand" x-show="mode !== 'haos'">Mealie Planner</span>
+    <span class="navbar-brand">
+      <span x-show="mode !== 'haos'">Mealie Planner</span>
+      <span x-show="mode === 'haos'">&nbsp;</span>
+    </span>
     <div class="navbar-end">
       <div x-show="configured">
-        <div x-show="mealieReachable" class="status-dot status-dot--ok">
+        <div x-show="mealieReachable" class="status-dot status-dot--ok mr-4">
           <span class="status-dot__pip"></span>
           <span x-text="mealieVersion || 'Connected'"></span>
         </div>
