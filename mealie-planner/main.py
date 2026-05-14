@@ -461,8 +461,9 @@ async def favicon():
 @app.get("/")
 async def index(request: Request):
     return templates.TemplateResponse(
+        request,
         "index.html",
-        {"request": request, "ingress_path": request.state.ingress_path},
+        {"ingress_path": request.state.ingress_path},
     )
 
 def _safe_redirect_path(path: str) -> str:
