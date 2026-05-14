@@ -1,53 +1,27 @@
-# Mealie Quick Planner
+# Mealie Planner
 
-A week-view meal planner for [Mealie](https://mealie.io). Browse your recipe library, drag meals onto the week grid, and let the Sparkle feature suggest random dishes based on your history.
+This is a simple week-view for your Mealie recipes. Drag meal just into the calendar grid or use the Sparkle feature to get suggestions based on your history.
 
-> **Note:** This add-on is not intended to be exposed directly to the internet.
+## How to get started
 
-## Prerequisites
+To set it up, you will need to link your Mealie account. 
 
-- A running [Mealie](https://mealie.io) instance reachable from your Home Assistant host
-- A Mealie API token (see below)
+In Mealie: 
 
-## Getting your API token
+- [ ] Go to your Profile in Mealie and look for API Tokens. 
+- [ ] Generate a new one and copy it. 
 
-1. Open your Mealie instance
-2. Go to **Profile → API Tokens**
-3. Click **Generate**, give it a name, and copy the token
+In Planner:
 
-## Configuration
+- [ ]Click the gear icon in the planner to open settings. 
+- [ ] Enter your Mealie URL and paste the token there. 
 
-Open the add-on settings panel (gear icon in the top bar) and fill in:
+Once you save, it will sync your recipes and you are ready to go.
 
-| Field | Description |
-|---|---|
-| **Instance URL** | Full URL of your Mealie instance, e.g. `https://mealie.yourdomain.com` |
-| **API token** | The token you generated above |
+## Planning your week
 
-Click **Save & validate** — the add-on will verify the connection and cache your recipe library before opening the planner.
+You can click any empty spot on the grid to choose a recipe from your library. If you want a random suggestion, hit the Sparkle button. It usually picks things you ate on the same day last week to help keep things relevant. You can drag and drop recipes to swap days, and use your arrow keys to move between weeks. If you need to see the full details of a dish, the arrow icon will take you directly to the recipe in Mealie. If you change your mind about a meal, click the X to remove it. There is an undo button if you make a mistake.
 
-## Using the planner
+## Managing the details
 
-- **Select** — click an empty cell to pick a recipe from your library
-- **Sparkle** (✦) — assigns a random recipe, weighted towards what you had the same weekday last week
-- **Drag & drop** — move a recipe between days or meal slots
-- **Remove** — click the × on a recipe chip to clear the slot (with undo)
-- **Arrow keys** — scroll the week view left and right
-- **Open in Mealie** (↗) — jump directly to the recipe in your Mealie instance
-
-## Recipe cache
-
-Recipes are cached locally in SQLite and refreshed automatically every hour. To force an immediate refresh go to **Settings → Recipe cache → Refresh**.
-
-## Meal slots
-
-By default only **Dinner** is shown. Enable Breakfast, Lunch, and Side from **Settings → Visible meal slots**.
-
-## Troubleshooting
-
-| Symptom | Likely cause |
-|---|---|
-| "Unreachable" status dot | Mealie URL is wrong or Mealie is down |
-| No recipes shown | Cache empty — go to Settings and click Refresh |
-| 401 error on save | API token is invalid or expired |
-| Images not loading | Mealie URL mismatch between add-on config and actual host |
+By default, the planner only shows dinner. You can enable breakfast, lunch, or sides in the settings if you want to plan those too. The app refreshes your recipe list every hour, but if you have just added something new and want it to appear immediately, you can force a refresh in the recipe cache section of the settings.

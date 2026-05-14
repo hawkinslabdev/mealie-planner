@@ -25,7 +25,7 @@
     </span>
     <div class="navbar-end">
       <div x-show="configured">
-        <div x-show="mealieReachable" class="status-dot status-dot--ok mr-4">
+        <div x-show="mealieReachable" class="status-dot status-dot--ok">
           <span class="status-dot__pip"></span>
           <span x-text="mealieVersion || 'Connected'"></span>
         </div>
@@ -93,13 +93,13 @@
        x-transition:leave-end="opacity-0"
        @click.self="settingsOpen = false">
     <div class="settings-panel">
+      <div class="settings-sheet-hdr">
+        <p class="settings-sheet-title">Settings</p>
+        <button @click="settingsOpen = false" class="icon-btn">
+          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
       <div class="settings-inner">
-        <div class="settings-sheet-hdr">
-          <p class="settings-sheet-title">Settings</p>
-          <button @click="settingsOpen = false" class="icon-btn">
-            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-          </button>
-        </div>
 
         <div>
           <p class="section-label">Mealie connection</p>
@@ -144,7 +144,7 @@
               <label class="form-label" for="future-days">Show days after &middot; <span x-text="futureDays"></span> day(s)</label>
               <input id="future-days" type="range" min="0" max="14" step="1" x-model.number="futureDays" @change="rebuildAndReload()" style="width:100%;accent-color:var(--accent)">
             </div>
-            <p style="font-size:var(--text-xs);color:var(--text-subtle)">Tip! Use ← → to scroll one day at a time.</p>
+            <p class="tip-keyboard-only" style="font-size:var(--text-xs);color:var(--text-subtle)">Tip! Use ← → to scroll one day at a time.</p>
           </div>
         </div>
 
@@ -173,7 +173,7 @@
           <div class="form-field">
             <a href="https://github.com/hawkinslabdev/mealie-planner" target="_blank" rel="noopener noreferrer" class="form-label" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-             GitHub
+             Visit on GitHub
             </a>
           </div>
         </div>

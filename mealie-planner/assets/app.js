@@ -424,7 +424,7 @@ function planner() {
       if (event.key === 'ArrowLeft') { event.preventDefault(); if (!this.modalOpen) this.shiftPage(-1); }
       else if (event.key === 'ArrowRight') { event.preventDefault(); if (!this.modalOpen) this.shiftPage(1); }
       else if (event.key === 'r' || event.key === 'R') { if (!this.modalOpen) this.sparkleActive(); }
-      else if (event.key === 'Escape') { this.modalOpen = false; this.themeMenuOpen = false; }
+      else if (event.key === 'Escape') { this.modalOpen = false; this.themeMenuOpen = false; this.settingsOpen = false; this.actionMenuOpen = false; }
       else if (event.key === 'Tab' && this.modalOpen) {
         const modal = document.querySelector('.modal');
         if (!modal) return;

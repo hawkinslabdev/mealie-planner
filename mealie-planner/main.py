@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 import aiosqlite
@@ -22,6 +23,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from urllib.parse import urlparse
 
 logger = logging.getLogger("mealie_planner")
+
 
 # Task manager
 class _TaskManager:
@@ -50,7 +52,9 @@ class _TaskManager:
             for task in pending:
                 logger.warning("Task %s did not stop in time", task)
 
+
 _task_manager = _TaskManager()
+
 
 # Rate limiter
 class _RateLimiter:
@@ -65,7 +69,9 @@ class _RateLimiter:
             return forwarded.split(",")[0].strip()
         return request.client.host if request.client else "unknown"
 
-    def check(self, request: Request, *, key: str | None = None, max_hits: int | None = None) -> bool:
+    def check(
+        self, request: Request, *, key: str | None = None, max_hits: int | None = None
+    ) -> bool:
         now = time.time()
         k = f"{self._client_ip(request)}:{key}" if key else self._client_ip(request)
         limit = max_hits if max_hits is not None else self.max
@@ -79,6 +85,7 @@ class _RateLimiter:
         bucket.append(now)
         return True
 
+
 _rate_limiter = _RateLimiter()
 
 # Paths
@@ -88,6 +95,7 @@ CREDENTIALS_FILE = os.path.join(DATA_PATH, "credentials.json")
 KEY_FILE = os.path.join(DATA_PATH, ".key")
 CACHE_DB = os.path.join(DATA_PATH, "cache.db")
 CACHE_TTL = 3600
+
 
 # Encryption
 def _get_or_create_key() -> bytes:
@@ -99,17 +107,22 @@ def _get_or_create_key() -> bytes:
         f.write(key)
     return key
 
+
 def _cipher() -> Fernet:
     return Fernet(_get_or_create_key())
+
 
 def encrypt_token(raw: str) -> str:
     return _cipher().encrypt(raw.encode()).decode()
 
+
 def decrypt_token(enc: str) -> str:
     return _cipher().decrypt(enc.encode()).decode()
 
+
 def _looks_encrypted(value: str) -> bool:
     return value.startswith("gAAAAA")
+
 
 # Config bridge
 _DOCKER_MODE = bool(os.environ.get("MEALIE_API_URL"))
@@ -120,6 +133,7 @@ _SESSION_TTL = 86400 * 30
 
 _cred_cache: dict[str, str | None] = {"url": None, "token": None}
 _cred_loaded_at: float = 0.0  # mtime watermark — cache invalidates when files are newer
+
 
 def _cred_cache_valid() -> bool:
     if not (_cred_cache["url"] and _cred_cache["token"]):
@@ -132,8 +146,10 @@ def _cred_cache_valid() -> bool:
         pass
     return True
 
+
 def get_mode() -> str:
     return "docker" if _DOCKER_MODE else "haos"
+
 
 def get_credentials() -> tuple[str | None, str | None]:
     global _cred_loaded_at
@@ -150,8 +166,10 @@ def get_credentials() -> tuple[str | None, str | None]:
         _cred_cache["token"] = os.environ.get("MEALIE_API_KEY")
         return _cred_cache["url"], _cred_cache["token"]
 
-    creds_mtime = os.path.getmtime(CREDENTIALS_FILE) if os.path.exists(CREDENTIALS_FILE) else 0.0
-    opts_mtime  = os.path.getmtime(OPTIONS_FILE)      if os.path.exists(OPTIONS_FILE)      else 0.0
+    creds_mtime = (
+        os.path.getmtime(CREDENTIALS_FILE) if os.path.exists(CREDENTIALS_FILE) else 0.0
+    )
+    opts_mtime = os.path.getmtime(OPTIONS_FILE) if os.path.exists(OPTIONS_FILE) else 0.0
 
     # Re-import from options.json if it was updated after credentials.json (e.g. HAOS config change)
     if os.path.exists(CREDENTIALS_FILE) and creds_mtime >= opts_mtime:
@@ -175,8 +193,16 @@ def get_credentials() -> tuple[str | None, str | None]:
         url = opts.get("mealie_url")
         raw_token = opts.get("api_token")
         if url and raw_token:
-            encrypted = encrypt_token(raw_token) if not _looks_encrypted(raw_token) else raw_token
-            plain = raw_token if not _looks_encrypted(raw_token) else decrypt_token(raw_token)
+            encrypted = (
+                encrypt_token(raw_token)
+                if not _looks_encrypted(raw_token)
+                else raw_token
+            )
+            plain = (
+                raw_token
+                if not _looks_encrypted(raw_token)
+                else decrypt_token(raw_token)
+            )
             _write_credentials(url, encrypted)
             return url, plain
 
@@ -195,8 +221,10 @@ def _write_credentials(url: str, encrypted_token: str) -> None:
     except OSError:
         pass
 
+
 # SQLite
 _db: aiosqlite.Connection | None = None
+
 
 async def get_db() -> aiosqlite.Connection:
     global _db
@@ -269,16 +297,21 @@ async def _get_cached_recipes(query: str | None = None) -> list[dict]:
             rows = await cur.fetchall()
     return [
         {
-            "id": r[0], "slug": r[1], "name": r[2],
-            "image_url": f"/api/media/{r[0]}", "description": r[3] or "",
+            "id": r[0],
+            "slug": r[1],
+            "name": r[2],
+            "image_url": f"/api/media/{r[0]}",
+            "description": r[3] or "",
             "tags": json.loads(r[4]) if r[4] else [],
         }
         for r in rows
     ]
 
+
 # Cache refresh
 _refresh_lock = asyncio.Lock()
 _refresh_in_progress = False
+
 
 async def refresh_recipe_cache() -> int:
     global _refresh_in_progress
@@ -318,7 +351,13 @@ async def refresh_recipe_cache() -> int:
                 now = int(time.time())
                 for r in items:
                     description = r.get("description") or ""
-                    tags = json.dumps([t.get("name") for t in (r.get("tags") or []) if isinstance(t, dict)])
+                    tags = json.dumps(
+                        [
+                            t.get("name")
+                            for t in (r.get("tags") or [])
+                            if isinstance(t, dict)
+                        ]
+                    )
                     await db.execute(
                         """INSERT INTO recipes (id, slug, name, description, tags, image_url, cached_at)
                            VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -357,8 +396,10 @@ async def ensure_cache_fresh() -> None:
         if not _refresh_in_progress:
             _task_manager.spawn(refresh_recipe_cache())
 
+
 # HTTP client
 _http_client: httpx.AsyncClient | None = None
+
 
 async def get_http_client() -> httpx.AsyncClient:
     global _http_client
@@ -422,6 +463,7 @@ async def mealie_post(path: str, body: dict) -> dict | list:
 async def mealie_delete(path: str) -> None:
     await _mealie_request("DELETE", path)
 
+
 # App
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -443,13 +485,16 @@ async def lifespan(app: FastAPI):
     except Exception:
         logger.exception("Error closing database")
 
-app = FastAPI(title="Mealie Quick Planner", lifespan=lifespan)
+
+app = FastAPI(title="Mealie Planner", lifespan=lifespan)
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")
 templates = Jinja2Templates(directory="templates")
+
 
 # Session
 def _create_session_token() -> str:
     return encrypt_token(json.dumps({"t": int(time.time()) + _SESSION_TTL}))
+
 
 def _verify_session_token(token: str) -> bool:
     try:
@@ -458,11 +503,15 @@ def _verify_session_token(token: str) -> bool:
     except Exception:
         return False
 
+
 _EXEMPT_PATHS = {"/auth", "/api/auth/verify", "/favicon.ico"}
+
 
 class IngressAndAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        request.state.ingress_path = request.headers.get("X-Ingress-Path", "").rstrip("/")
+        request.state.ingress_path = request.headers.get("X-Ingress-Path", "").rstrip(
+            "/"
+        )
 
         if _REQUIRE_AUTH:
             path = request.url.path.rstrip("/")
@@ -477,12 +526,15 @@ class IngressAndAuthMiddleware(BaseHTTPMiddleware):
 
         return await call_next(request)
 
+
 app.add_middleware(IngressAndAuthMiddleware)
+
 
 # Routes
 @app.get("/favicon.ico")
 async def favicon():
     return FileResponse("favicon.ico")
+
 
 @app.get("/")
 async def index(request: Request):
@@ -492,21 +544,29 @@ async def index(request: Request):
         {"ingress_path": request.state.ingress_path},
     )
 
+
 def _safe_redirect_path(path: str) -> str:
     parsed = urlparse(path)
     if parsed.scheme or parsed.netloc or not path.startswith("/"):
         return "/"
     return path
 
+
 @app.get("/auth")
 async def auth_page(request: Request, from_: str = Query("/", alias="from")):
     return templates.TemplateResponse(
         "auth.html",
-        {"request": request, "ingress_path": request.state.ingress_path, "from": _safe_redirect_path(from_)},
+        {
+            "request": request,
+            "ingress_path": request.state.ingress_path,
+            "from": _safe_redirect_path(from_),
+        },
     )
+
 
 class PinPayload(BaseModel):
     pin: str
+
 
 @app.post("/api/auth/verify")
 async def verify_pin(payload: PinPayload, request: Request, response: Response):
@@ -514,7 +574,9 @@ async def verify_pin(payload: PinPayload, request: Request, response: Response):
         raise HTTPException(status_code=400, detail="PIN authentication not configured")
 
     if not _rate_limiter.check(request, key="verify", max_hits=5):
-        raise HTTPException(status_code=429, detail="Too many attempts. Try again later.")
+        raise HTTPException(
+            status_code=429, detail="Too many attempts. Try again later."
+        )
 
     if payload.pin != _PIN_CODE:
         raise HTTPException(status_code=401, detail="Incorrect PIN")
@@ -528,10 +590,12 @@ async def verify_pin(payload: PinPayload, request: Request, response: Response):
     )
     return {"ok": True}
 
+
 @app.post("/api/auth/logout")
 async def logout(response: Response):
     response.delete_cookie(key=_SESSION_COOKIE, path="/")
     return {"ok": True}
+
 
 @app.get("/api/status")
 async def get_status():
@@ -555,14 +619,17 @@ async def get_status():
         "version": version,
     }
 
+
 @app.get("/api/config")
 async def get_config():
     url, _ = get_credentials()
     return {"mealie_url": url or "", "mode": get_mode()}
 
+
 class ConfigPayload(BaseModel):
     mealie_url: str
     api_token: str = ""
+
 
 @app.post("/api/config")
 async def save_config(payload: ConfigPayload, request: Request):
@@ -579,7 +646,9 @@ async def save_config(payload: ConfigPayload, request: Request):
     if not token_to_use:
         _, existing = get_credentials()
         if not existing:
-            raise HTTPException(status_code=422, detail="API token is required for initial setup.")
+            raise HTTPException(
+                status_code=422, detail="API token is required for initial setup."
+            )
         token_to_use = existing
 
     client = await get_http_client()
@@ -590,19 +659,27 @@ async def save_config(payload: ConfigPayload, request: Request):
         )
         resp.raise_for_status()
     except httpx.HTTPStatusError as e:
-        detail = "Invalid API token." if e.response.status_code == 401 else f"Mealie error: {e.response.status_code}"
+        detail = (
+            "Invalid API token."
+            if e.response.status_code == 401
+            else f"Mealie error: {e.response.status_code}"
+        )
         raise HTTPException(status_code=422, detail=detail)
     except httpx.HTTPError:
-        raise HTTPException(status_code=422, detail="Could not reach Mealie at the provided URL.")
+        raise HTTPException(
+            status_code=422, detail="Could not reach Mealie at the provided URL."
+        )
 
     _write_credentials(payload.mealie_url, encrypt_token(token_to_use))
     _task_manager.spawn(refresh_recipe_cache())
     return {"ok": True}
 
+
 @app.get("/api/recipes")
 async def get_recipes(q: str | None = None):
     await ensure_cache_fresh()
     return await _get_cached_recipes(q)
+
 
 @app.post("/api/cache/refresh")
 async def force_cache_refresh(request: Request):
@@ -611,13 +688,16 @@ async def force_cache_refresh(request: Request):
     count = await refresh_recipe_cache()
     return {"count": count, "refreshed_at": datetime.utcnow().isoformat()}
 
+
 @app.get("/api/media/{recipe_id}")
 async def proxy_recipe_image(recipe_id: str):
     url, token = get_credentials()
     if not url or not token:
         raise HTTPException(status_code=400, detail="Mealie not configured")
 
-    full_url = f"{url.rstrip('/')}/api/media/recipes/{recipe_id}/images/min-original.webp"
+    full_url = (
+        f"{url.rstrip('/')}/api/media/recipes/{recipe_id}/images/min-original.webp"
+    )
     headers = {"Authorization": f"Bearer {token}"}
 
     client = await get_http_client()
@@ -636,12 +716,14 @@ async def proxy_recipe_image(recipe_id: str):
     except httpx.HTTPError:
         raise HTTPException(status_code=502, detail="Failed to fetch image")
 
+
 @app.get("/api/recipe-link/{slug}")
 async def recipe_link(slug: str):
     url, _ = get_credentials()
     if not url:
         raise HTTPException(status_code=400, detail="Mealie not configured")
     return RedirectResponse(url=f"{url.rstrip('/')}/g/home/r/{slug}")
+
 
 @app.get("/api/recipes/{slug}")
 async def get_recipe(slug: str):
@@ -653,6 +735,7 @@ async def get_recipe(slug: str):
         "description": data.get("description"),
         "image_url": f"/api/media/{data['id']}" if data.get("id") else None,
     }
+
 
 def _normalize_entry(entry: dict) -> dict:
     recipe = entry.get("recipe") or {}
@@ -669,6 +752,7 @@ def _normalize_entry(entry: dict) -> dict:
         "image_url": f"/api/media/{recipe_id}" if recipe_id else None,
     }
 
+
 @app.get("/api/mealplan")
 async def get_mealplan(start_date: str, end_date: str):
     data = await mealie_get(
@@ -677,10 +761,12 @@ async def get_mealplan(start_date: str, end_date: str):
     items = data.get("items", []) if isinstance(data, dict) else data
     return [_normalize_entry(e) for e in items]
 
+
 class MealPlanEntry(BaseModel):
     date: str
     meal_type: str = "dinner"
     recipe_id: str
+
 
 @app.post("/api/mealplan")
 async def create_mealplan_entry(entry: MealPlanEntry, request: Request):
@@ -696,12 +782,14 @@ async def create_mealplan_entry(entry: MealPlanEntry, request: Request):
     )
     return _normalize_entry(result)
 
+
 @app.delete("/api/mealplan/{entry_id}")
 async def delete_mealplan_entry(entry_id: str, request: Request):
     if not _rate_limiter.check(request, key="mealplan", max_hits=30):
         raise HTTPException(status_code=429, detail="Too many requests.")
     await mealie_delete(f"/api/households/mealplans/{entry_id}")
     return Response(status_code=204)
+
 
 @app.get("/api/recipe-actions/raw")
 async def get_recipe_actions_raw():
@@ -713,17 +801,25 @@ async def get_recipe_actions_raw():
             results[path] = {"error": e.detail}
     return results
 
+
 @app.get("/api/recipe-actions")
 async def get_recipe_actions():
     for path in ["/api/groups/recipe-actions", "/api/households/recipe-actions"]:
         try:
             data = await mealie_get(f"{path}?perPage=100")
-            items: list = data.get("items", []) if isinstance(data, dict) else (data or [])
+            items: list = (
+                data.get("items", []) if isinstance(data, dict) else (data or [])
+            )
             return [
                 {
                     "id": item.get("id", ""),
-                    "name": item.get("title") or item.get("name") or item.get("label") or "Action",
-                    "action_type": item.get("actionType") or item.get("action_type") or "link",
+                    "name": item.get("title")
+                    or item.get("name")
+                    or item.get("label")
+                    or "Action",
+                    "action_type": item.get("actionType")
+                    or item.get("action_type")
+                    or "link",
                 }
                 for item in items
                 if isinstance(item, dict) and item.get("id")
@@ -732,16 +828,23 @@ async def get_recipe_actions():
             continue
     return []
 
+
 class RecipeActionTrigger(BaseModel):
     recipe_slug: str
 
+
 @app.post("/api/recipe-actions/{action_id}/trigger")
-async def trigger_recipe_action(action_id: str, payload: RecipeActionTrigger, request: Request):
+async def trigger_recipe_action(
+    action_id: str, payload: RecipeActionTrigger, request: Request
+):
     if not _rate_limiter.check(request, key="recipe-action", max_hits=20):
         raise HTTPException(status_code=429, detail="Too many requests.")
 
     action: dict | None = None
-    for path in [f"/api/households/recipe-actions/{action_id}", f"/api/groups/recipe-actions/{action_id}"]:
+    for path in [
+        f"/api/households/recipe-actions/{action_id}",
+        f"/api/groups/recipe-actions/{action_id}",
+    ]:
         try:
             raw = await mealie_get(path)
             if isinstance(raw, dict):
@@ -759,8 +862,7 @@ async def trigger_recipe_action(action_id: str, payload: RecipeActionTrigger, re
         raw_recipe = await mealie_get(f"/api/recipes/{payload.recipe_slug}")
         recipe: dict = raw_recipe if isinstance(raw_recipe, dict) else {}
         final_url = (
-            action_url
-            .replace("{slug}", recipe.get("slug", ""))
+            action_url.replace("{slug}", recipe.get("slug", ""))
             .replace("{recipeSlug}", recipe.get("slug", ""))
             .replace("{id}", recipe.get("id", ""))
             .replace("{recipeId}", recipe.get("id", ""))
@@ -780,12 +882,15 @@ async def trigger_recipe_action(action_id: str, payload: RecipeActionTrigger, re
             raise
     raise HTTPException(status_code=502, detail="Mealie trigger endpoint not found.")
 
+
 @app.get("/api/sparkle")
 async def sparkle(date: str, meal_type: str = "dinner"):
     try:
         anchor = datetime.strptime(date, "%Y-%m-%d")
     except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
+        raise HTTPException(
+            status_code=400, detail="Invalid date format. Use YYYY-MM-DD."
+        )
 
     last_week = anchor - timedelta(days=7)
     last_week_str = last_week.strftime("%Y-%m-%d")
@@ -805,7 +910,10 @@ async def sparkle(date: str, meal_type: str = "dinner"):
 
     all_recipes = await _get_cached_recipes()
     if not all_recipes:
-        raise HTTPException(status_code=404, detail="No recipes in cache. Trigger /api/cache/refresh first.")
+        raise HTTPException(
+            status_code=404,
+            detail="No recipes in cache. Trigger /api/cache/refresh first.",
+        )
 
     pool = list(all_recipes)
 

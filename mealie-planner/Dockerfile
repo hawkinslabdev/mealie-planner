@@ -8,7 +8,7 @@ RUN pip install --prefix=/install --no-cache-dir -r requirements.txt
 
 FROM python:3.11-slim AS runtime
 ARG BUILD_VERSION=dev
-LABEL org.opencontainers.image.title="Mealie Quick Planner" \
+LABEL org.opencontainers.image.title="Mealie Planner" \
       org.opencontainers.image.description="A streamlined week-view planner for Mealie" \
       org.opencontainers.image.version="${BUILD_VERSION}"
 
