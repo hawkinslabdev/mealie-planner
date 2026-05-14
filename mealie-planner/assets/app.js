@@ -47,6 +47,11 @@ function planner() {
 
     activeCell: null,  // { date, mt } last clicked cell
 
+    mobileDays: [],
+    mobileLoadingMore: false,
+    mobileHasMore: true,
+    _mobileObserver: null,
+
     enabledMealTypes: JSON.parse(localStorage.getItem('enabledMealTypes') || '["dinner"]'),
     _recentRecipes: JSON.parse(localStorage.getItem('recentRecipes') || '[]'),
 
@@ -132,7 +137,7 @@ function planner() {
         const cfg = await this._fetch('/api/config');
         this.settingsForm.mealie_url = cfg.mealie_url;
         await Promise.all([this.loadMealPlan(), this.loadRecipes()]);
-        this.scrollToToday();
+        await this.initMobileScroll();
       } catch (e) {
         this.toast('Failed to reach backend. Is the server running?');
       }
@@ -452,6 +457,68 @@ function planner() {
     },
     getMealieLink(slug) {
       return slug ? api('/api/recipe-link/' + slug) : '#';
+    },
+
+    /* mobile infinite scroll */
+    _dateStr(d) {
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    },
+
+    _buildMobileBatch(startDate, count) {
+      const today = this._dateStr(new Date());
+      return Array.from({ length: count }, (_, i) => {
+        const d = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + i);
+        const date = this._dateStr(d);
+        return {
+          date,
+          isToday: date === today,
+          label: date === today ? 'Today' : d.toLocaleDateString(undefined, { weekday: 'long' }),
+          wd: d.toLocaleDateString(undefined, { weekday: 'short' }),
+          dn: d.getDate(),
+        };
+      });
+    },
+
+    async initMobileScroll() {
+      if (this._mobileObserver) { this._mobileObserver.disconnect(); this._mobileObserver = null; }
+      this.mobileLoadingMore = false;
+      this.mobileHasMore = true;
+      const now = new Date();
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 3);
+      const batch = this._buildMobileBatch(start, 7);
+      this.mobileDays = batch;
+      try {
+        const entries = await this._fetch(`/api/mealplan?start_date=${batch[0].date}&end_date=${batch.at(-1).date}`);
+        const next = { ...this._slots };
+        for (const e of entries) next[this.slotKey(e.date, e.meal_type)] = this._prefixImg(e);
+        this._slots = next;
+      } catch {}
+      await this.$nextTick();
+      document.querySelector('.mobile-week-day--today')?.scrollIntoView({ behavior: 'instant', block: 'start' });
+      const sentinel = document.getElementById('mobile-scroll-sentinel');
+      if (!sentinel || !('IntersectionObserver' in window)) return;
+      this._mobileObserver = new IntersectionObserver(async ([entry]) => {
+        if (entry.isIntersecting) await this.loadMoreMobileDays();
+      }, { rootMargin: '400px' });
+      this._mobileObserver.observe(sentinel);
+    },
+
+    async loadMoreMobileDays() {
+      const MAX = 60;
+      if (this.mobileLoadingMore || !this.mobileHasMore) return;
+      if (this.mobileDays.length >= MAX) { this.mobileHasMore = false; return; }
+      this.mobileLoadingMore = true;
+      const [y, m, d] = this.mobileDays.at(-1).date.split('-').map(Number);
+      const batch = this._buildMobileBatch(new Date(y, m-1, d+1), Math.min(7, MAX - this.mobileDays.length));
+      try {
+        const entries = await this._fetch(`/api/mealplan?start_date=${batch[0].date}&end_date=${batch.at(-1).date}`);
+        const next = { ...this._slots };
+        for (const e of entries) next[this.slotKey(e.date, e.meal_type)] = this._prefixImg(e);
+        this._slots = next;
+        this.mobileDays = [...this.mobileDays, ...batch];
+        if (this.mobileDays.length >= MAX) this.mobileHasMore = false;
+      } catch { this.toast('Could not load more days.'); }
+      finally { this.mobileLoadingMore = false; }
     },
 
     /* prefix bare /api/ image paths with INGRESS_PATH */

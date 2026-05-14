@@ -204,69 +204,72 @@
     <!-- grid -->
     <div class="planner-wrap" x-show="enabledMealTypes.length > 0">
       <div class="planner-grid" :style="`grid-template-columns: 68px repeat(${days.length}, minmax(100px, 1fr))`">
-        <template x-for="(item, idx) in gridItems" :key="idx">
-          <div :class="cellClass(item)">
-            <template x-if="item.t === 'dh'">
-              <div>
-                <p class="g-day-hdr__wd" x-text="item.wd"></p>
-                <p class="g-day-hdr__num mono" x-text="item.dn"></p>
-              </div>
-            </template>
-            <template x-if="item.t === 'ml'">
-              <span x-text="item.mt"></span>
-            </template>
-            <template x-if="item.t === 'cell'">
-              <div style="position:relative;height:100%"
-                   @dragover.prevent="onDragOver($event)"
-                   @dragleave="onDragLeave($event)"
-                   @drop="onDrop(item.date, item.mt, $event)"
-                   @click="setActiveCell(item.date, item.mt)">
-                <div x-show="planLoading" class="skel skel--full"></div>
-                <div x-show="!planLoading && isSparkle(item.date, item.mt)" class="skel skel--chip"></div>
-                <template x-if="!planLoading && !isSparkle(item.date, item.mt) && getSlot(item.date, item.mt)">
-                  <div>
-                    <div class="chip" :class="'chip--' + item.mt" draggable="true"
-                         @dragstart="onDragStart(item.date, item.mt, $event)"
-                         @dragend="onDragEnd()"
-                         @mouseenter="showTooltip(item.date, item.mt, $event)"
-                         @mouseleave="hideTooltip()"
-                         @dblclick="openModal(item.date, item.mt)"
-                         >
-                      <img class="chip__thumb"
-                        :src="getSlot(item.date, item.mt).image_url"
-                        :alt="getSlot(item.date, item.mt).recipe_name"
-                        @error="$event.target.style.display='none'">
-                      <span class="chip__name" x-text="getSlot(item.date, item.mt).recipe_name"></span>
-                      <button class="chip__rm" @click.stop="removeRecipe(item.date, item.mt, getSlot(item.date, item.mt).id)" title="Remove">
-                        <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                      </button>
-                    </div>
-                    <div class="cell-acts">
-                      <button class="ca ca--accent" @click="sparkle(item.date, item.mt)" title="Random recipe">✦</button>
-                      <span class="ca-sep">·</span>
-                      <button class="ca" @click="openModal(item.date, item.mt)">change</button>
-                      <span class="ca-sep">·</span>
-                      <a class="ca" :href="getMealieLink(getSlot(item.date, item.mt).recipe_slug)" target="_blank" title="Open in Mealie">↗</a>
-                    </div>
-                  </div>
-                </template>
-                <template x-if="!planLoading && !isSparkle(item.date, item.mt) && !getSlot(item.date, item.mt)">
-                  <button class="cell-empty-btn" @click="openModal(item.date, item.mt)" title="Add recipe">
-                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                  </button>
-                </template>
 
-              </div>
-            </template>
+        <!-- corner -->
+        <div class="g-corner"></div>
 
+        <!-- day headers -->
+        <template x-for="day in days" :key="'h-' + day.date">
+          <div :class="day.isToday ? 'g-day-hdr g-day-hdr--today' : 'g-day-hdr'">
+            <p class="g-day-hdr__wd" x-text="day.wd"></p>
+            <p class="g-day-hdr__num mono" x-text="day.dn"></p>
           </div>
         </template>
+
+        <!-- meal rows: label + one cell per day -->
+        <template x-for="mt in enabledMealTypes" :key="mt">
+          <div :class="'g-meal-lbl g-meal-lbl--' + mt">
+            <span x-text="mt"></span>
+          </div>
+          <template x-for="day in days" :key="mt + '-' + day.date">
+            <div :class="day.isToday ? 'g-cell g-cell--today' : 'g-cell'"
+                 @dragover.prevent="onDragOver($event)"
+                 @dragleave="onDragLeave($event)"
+                 @drop="onDrop(day.date, mt, $event)"
+                 @click="setActiveCell(day.date, mt)">
+              <div x-show="planLoading" class="skel skel--full"></div>
+              <div x-show="!planLoading && isSparkle(day.date, mt)" class="skel skel--chip"></div>
+              <template x-if="!planLoading && !isSparkle(day.date, mt) && getSlot(day.date, mt)">
+                <div>
+                  <div class="chip" :class="'chip--' + mt" draggable="true"
+                       @dragstart="onDragStart(day.date, mt, $event)"
+                       @dragend="onDragEnd()"
+                       @mouseenter="showTooltip(day.date, mt, $event)"
+                       @mouseleave="hideTooltip()"
+                       @dblclick="openModal(day.date, mt)">
+                    <img class="chip__thumb"
+                      :src="getSlot(day.date, mt).image_url"
+                      :alt="getSlot(day.date, mt).recipe_name"
+                      @error="$event.target.style.display='none'">
+                    <span class="chip__name" x-text="getSlot(day.date, mt).recipe_name"></span>
+                    <button class="chip__rm" @click.stop="removeRecipe(day.date, mt, getSlot(day.date, mt).id)" title="Remove">
+                      <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                  </div>
+                  <div class="cell-acts">
+                    <button class="ca ca--accent" @click="sparkle(day.date, mt)" title="Random recipe">✦</button>
+                    <span class="ca-sep">·</span>
+                    <button class="ca" @click="openModal(day.date, mt)">change</button>
+                    <span class="ca-sep">·</span>
+                    <a class="ca" :href="getMealieLink(getSlot(day.date, mt).recipe_slug)" target="_blank" title="Open in Mealie">↗</a>
+                  </div>
+                </div>
+              </template>
+              <template x-if="!planLoading && !isSparkle(day.date, mt) && !getSlot(day.date, mt)">
+                <button class="cell-empty-btn" @click="openModal(day.date, mt)" title="Add recipe">
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                </button>
+              </template>
+            </div>
+          </template>
+        </template>
+
       </div>
     </div>
 
     <!-- mobile -->
     <div class="mobile-view" x-show="enabledMealTypes.length > 0">
-      <template x-for="day in days" :key="day.date">
+      <template x-for="day in mobileDays" :key="day.date">
         <div class="mobile-week-day" :class="day.isToday && 'mobile-week-day--today'">
           <div class="mobile-week-day__hdr">
             <span class="mobile-week-day__label" :class="day.isToday && 'mobile-week-day__label--today'" x-text="day.label"></span>
@@ -323,6 +326,32 @@
           </template>
         </div>
       </template>
+
+      <!-- infinite scroll skeleton -->
+      <div x-show="mobileLoadingMore" class="mobile-load-more" aria-hidden="true">
+        <template x-for="i in [1,2,3]" :key="i">
+          <div class="mobile-skel-day">
+            <div class="mobile-skel-hdr">
+              <div class="skel mobile-skel-bar" style="width:72px;height:14px"></div>
+              <div class="skel mobile-skel-bar" style="width:48px;height:11px"></div>
+            </div>
+            <div class="mobile-skel-body">
+              <div class="skel" style="height:50px;border-radius:10px"></div>
+              <div class="skel" style="height:50px;border-radius:10px"></div>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- sentinel -->
+      <div id="mobile-scroll-sentinel"></div>
+
+      <!-- end of range -->
+      <div x-show="!mobileHasMore" class="mobile-range-end">
+        <span class="mobile-range-end__line"></span>
+        <span class="mobile-range-end__label">60 days ahead</span>
+        <span class="mobile-range-end__line"></span>
+      </div>
     </div>
   </div>
   <!-- recipe modal -->
