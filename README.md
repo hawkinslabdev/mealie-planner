@@ -7,15 +7,28 @@
 Mealie Planner is a self-hosted week-view meal planner for [Mealie](https://mealie.io). Browse your recipe library, drag meals onto your week grid, and let the sparkle feature suggest random dishes. 
 
 > [!WARNING]
-> Mealie Planner is not built to expose to the internet. Also, you may encounter bugs. Feel free to help improve the project by reporting any issues you find.
+> Mealie Planner is not built to expose directly to the internet. Also, you may encounter bugs. Feel free to help improve the project by reporting any issues you find.
 
 <img width="100%" alt="Mealie Planner screenshot" src="https://github.com/hawkinslabdev/mealie-planner/blob/main/.github/images/example.webp" />
 
 We want to make it incredibly simple to plan your meals for the week ahead. Manage your weekly meal plans with Mealie Planner. Share access and use the week-at-a-glance view.
 
-## Getting Started
+## Installation
 
-You can run Mealie Planner locally using Docker Compose:
+### Home Assistant
+
+Use this link to directly add the repository to your Home Assistant instance:
+
+[![Add repository to Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fhawkinslabdev%2Fmealie-planner)
+
+_or_
+
+1. Go to **Settings → Add-ons → Add-on Store**
+2. Click **⋮ → Repositories**
+3. Paste `https://github.com/hawkinslabdev/mealie-planner` and click **Add**
+4. Search for **Mealie Quick Planner** and click **Install**
+
+### Docker Compose
 
 ```yaml
 services:
@@ -32,13 +45,11 @@ services:
     restart: unless-stopped
 ```
 
-After downloading the image and starting the container, the application will be available at `http://localhost:3000`.
-
-> **Note for Home Assistant users:** This add-on is available in the Home Assistant add-on store and reads its configuration from the Supervisor's `/data/options.json` instead of environment variables.
+After starting the container, the application will be available at `http://localhost:3000`.
 
 ## License
 
-This project is licensed under the **AGPL 3.0** license. See [LICENSE](LICENSE) for details.
+This project is licensed under the **AGPL 3.0** license. See [LICENSE](LICENSE) for details. This project is not affiliated with [Mealie](https://mealie.io).
 
 ## Contributing
 

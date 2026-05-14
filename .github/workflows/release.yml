@@ -62,9 +62,18 @@ jobs:
             fi
           fi
 
+      - name: Bump version in config.yaml
+        run: |
+          VERSION="${{ steps.get_tag.outputs.version }}"
+          # Strip leading 'v' — HA config.yaml expects bare semver
+          BARE="${VERSION#v}"
+          sed -i "s/^version: .*/version: \"${BARE}\"/" mealie-planner/config.yaml
+
       - name: Create and push tag
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add mealie-planner/config.yaml
+          git diff --staged --quiet || git commit -m "chore: bump version to ${{ steps.get_tag.outputs.version }}"
           git tag -a ${{ steps.get_tag.outputs.version }} -m "Release ${{ steps.get_tag.outputs.version }}"
-          git push origin ${{ steps.get_tag.outputs.version }}
+          git push origin HEAD:main ${{ steps.get_tag.outputs.version }}
