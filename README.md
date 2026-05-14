@@ -2,6 +2,7 @@
 
 [![License](https://img.shields.io/badge/license-AGPL%203.0-blue)](LICENSE)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/hawkinslabdev/mealie-planner/.github%2Fworkflows%2Fbuild-container.yml)](#)
+[![GitHub Tag](https://img.shields.io/github/v/tag/hawkinslabdev/mealie-planner?label=version)](#)
 [![Support](https://img.shields.io/badge/Support-Buy%20me%20a%20coffee-fdd734?logo=buy-me-a-coffee)](https://coff.ee/hawkinslabdev)
 
 Mealie Planner is a self-hosted week-view meal planner for [Mealie](https://mealie.io). Browse your recipe library, drag meals onto your week grid, and let the sparkle feature suggest random dishes. 
