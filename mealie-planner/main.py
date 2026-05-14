@@ -46,7 +46,9 @@ class _TaskManager:
         for task in list(self._tasks):
             task.cancel()
         if self._tasks:
-            await asyncio.wait(self._tasks, timeout=5.0)
+            done, pending = await asyncio.wait(self._tasks, timeout=5.0)
+            for task in pending:
+                logger.warning("Task %s did not stop in time", task)
 
 _task_manager = _TaskManager()
 
@@ -402,9 +404,18 @@ async def lifespan(app: FastAPI):
     await init_db()
     _task_manager.spawn(warm_cache_if_needed())
     yield
-    await _task_manager.cancel_all()
-    await close_http_client()
-    await close_db()
+    try:
+        await _task_manager.cancel_all()
+    except Exception:
+        logger.exception("Error cancelling background tasks")
+    try:
+        await close_http_client()
+    except Exception:
+        logger.exception("Error closing HTTP client")
+    try:
+        await close_db()
+    except Exception:
+        logger.exception("Error closing database")
 
 app = FastAPI(title="Mealie Quick Planner", lifespan=lifespan)
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")

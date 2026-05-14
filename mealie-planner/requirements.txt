@@ -1,6 +1,6 @@
-fastapi==0.115.0
-uvicorn[standard]==0.30.0
-httpx==0.27.0
-cryptography==42.0.8
-jinja2==3.1.4
-aiosqlite==0.20.0
+fastapi==0.136.1
+uvicorn[standard]==0.46.0
+httpx==0.28.1
+cryptography==48.0.0
+jinja2==3.1.6
+aiosqlite==0.22.1
