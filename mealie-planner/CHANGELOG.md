@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.0
+
+- The app is now available in English, Dutch, German, Spanish, French, and Polish
+- The add-on panel is now visible to non-admin users in Home Assistant
+
 ## 0.2.5
 
 - The recipe picker now checks Mealie for new recipes the moment you open it
