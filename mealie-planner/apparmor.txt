@@ -19,15 +19,15 @@ profile mealie_planner flags=(attach_disconnected,mediate_deleted) {
   /data/** rw,
 
   # Python runtime + installed packages
-  /usr/local/lib/   r,
-  /usr/local/lib/** r,
-  /usr/local/bin/   r,
-  /usr/local/bin/** rix,
+  /usr/local/lib/    r,
+  /usr/local/lib/**  rm,
+  /usr/local/bin/    r,
+  /usr/local/bin/**  rixm,
 
   # System libraries
-  /lib/**   r,
-  /lib64/** r,
-  /usr/lib/** r,
+  /lib/**    rm,
+  /lib64/**  rm,
+  /usr/lib/** rm,
 
   # Temp files (uvicorn/httpx scratch space)
   /tmp/   r,
