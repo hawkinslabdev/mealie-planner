@@ -76,7 +76,7 @@
     "titleAdd": "Rezept hinzufügen",
     "searchPlaceholder": "Rezepte suchen…",
     "refreshingRecipes": "Rezepte werden aktualisiert",
-    "noMatch": "Keine Rezepte für „{q}" gefunden",
+    "noMatch": "Keine Rezepte für \"{q}\" gefunden",
     "loadingRecipes": "Rezepte werden geladen…",
     "feelingLucky": "Glück auf?",
     "feelingLuckySub": "Wähle ein zufälliges Rezept für mich",

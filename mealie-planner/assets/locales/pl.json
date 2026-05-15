@@ -76,7 +76,7 @@
     "titleAdd": "Dodaj przepis",
     "searchPlaceholder": "Szukaj przepisów…",
     "refreshingRecipes": "Odświeżanie przepisów",
-    "noMatch": "Brak przepisów pasujących do „{q}"",
+    "noMatch": "Brak przepisów pasujących do \"{q}\"",
     "loadingRecipes": "Ładowanie przepisów…",
     "feelingLucky": "Masz ochotę na niespodziankę?",
     "feelingLuckySub": "Wybierz dla mnie losowy przepis",
