@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.3
+## 0.2.4
 
 - Security: the add-on now runs under a strict AppArmor profile, limiting what it can access on the system
 - Recipes in the picker now stay up to date automatically, you'll find no need for manually refreshing recipes after adding or changing recipes in Mealie
