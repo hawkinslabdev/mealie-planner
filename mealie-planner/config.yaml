@@ -10,10 +10,11 @@ startup: application
 init: false
 ingress: true
 ingress_port: 3000
+
+panel_title: "Mealie Planner"
 panel_icon: "mdi:silverware-variant"
 panel_admin: false
 
-# Security
 apparmor: true
 hassio_role: default
 host_network: false
