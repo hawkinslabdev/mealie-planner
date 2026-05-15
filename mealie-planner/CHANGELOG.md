@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.5
+
+- The recipe picker now checks Mealie for new recipes the moment you open it
+- Refreshed look for the login screen
+- Fix: the login screen no longer crashes after a dependency update
+- Fix: the app name no longer briefly disappears after the page loads
+
 ## 0.2.4
 
 - Security: the add-on now runs under a strict AppArmor profile, limiting what it can access on the system
