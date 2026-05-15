@@ -4,11 +4,11 @@ A week-view meal planner for [Mealie](https://mealie.io). Browse your recipe lib
 
 ## Requirements
 
-A running Mealie instance accessible from your Home Assistant network, and a Mealie API token.
+A running Mealie instance accessible from your network, and a Mealie API token.
 
 ## Configuration
 
-After starting the add-on, open the web UI. Enter your Mealie instance URL and API token in the settings panel. The add-on connects to Mealie over your local network and caches your recipe library for fast browsing.
+After starting the add-on, open the web UI. Enter your Mealie instance URL and API token in the settings panel. The add-on connects to Mealie over your local network and caches your recipe library for fast browsing. You can also configure the following variables from the Add-on settings instead:
 
 | Option | Description |
 |---|---|
@@ -17,6 +17,5 @@ After starting the add-on, open the web UI. Enter your Mealie instance URL and A
 
 ## Notes
 
-- Not intended to be exposed directly to the internet.
 - Recipe data is cached locally. Use the refresh button in settings if your Mealie library has changed.
 - Multiple household members can use the add-on simultaneously — credentials are stored server-side.
