@@ -7,9 +7,6 @@
 
 Mealie Planner is a self-hosted week-view meal planner for [Mealie](https://mealie.io). Browse your recipe library, drag meals onto your week grid, and let the sparkle feature suggest random dishes. 
 
-> [!WARNING]
-> Mealie Planner is not built to expose directly to the internet. Also, you may encounter bugs. Feel free to help improve the project by reporting any issues you find.
-
 <img width="100%" alt="Screenshot of the Planner" src=".github/images/example.webp" />
 
 We want to make it incredibly simple to plan your meals for the week ahead. Manage your weekly meal plans with Mealie Planner. Share access and use the week-at-a-glance view.
