@@ -1,0 +1,126 @@
+{
+  "nav": {
+    "settings": "Ustawienia",
+    "logout": "Wyloguj",
+    "unreachable": "Niedostępny"
+  },
+  "theme": {
+    "system": "Systemowy",
+    "light": "Jasny",
+    "dark": "Ciemny"
+  },
+  "onboard": {
+    "title": "Co jemy w tym tygodniu?",
+    "desc": "Połącz swoją instancję Mealie, aby przeglądać bibliotekę przepisów i planować posiłki na cały tydzień — bezpośrednio w Home Assistant."
+  },
+  "settings": {
+    "title": "Ustawienia",
+    "connectionLabel": "Połączenie z Mealie",
+    "dockerNotice": "Wszystko gotowe! Konfiguracja odbywa się przez zmienne środowiskowe <code>MEALIE_API_URL</code> i <code>MEALIE_API_KEY</code>.",
+    "connected": "Połączono z Mealie",
+    "unreachable": "Skonfigurowano, ale Mealie jest niedostępny",
+    "urlLabel": "URL instancji",
+    "tokenLabel": "Token API",
+    "tokenPlaceholderUpdate": "Zostaw puste, aby zachować bieżący token",
+    "tokenPlaceholderNew": "Twój token API Mealie",
+    "btnUpdate": "Zaktualizuj",
+    "btnSave": "Zapisz i sprawdź",
+    "btnValidating": "Sprawdzanie…",
+    "dayRangeLabel": "Zakres dni",
+    "pastDays": "Poprzednie dni · {n} dzień/dni",
+    "futureDays": "Następne dni · {n} dzień/dni",
+    "tipKeyboard": "Wskazówka! Użyj ← → aby przewijać po jednym dniu.",
+    "mealSlotsLabel": "Widoczne sloty posiłków",
+    "cacheLabel": "Pamięć podręczna przepisów",
+    "cacheRefresh": "Odśwież",
+    "cacheRefreshing": "Odświeżanie…",
+    "recipesCount": "{n} przepisów zapisanych",
+    "sourceLabel": "Źródło",
+    "github": "Zobacz na GitHub",
+    "languageLabel": "Język"
+  },
+  "meal": {
+    "breakfast": "Śniadanie",
+    "lunch": "Lunch",
+    "dinner": "Kolacja",
+    "side": "Dodatek"
+  },
+  "empty": {
+    "title": "Połącz z Mealie",
+    "desc": "Dodaj adres URL Mealie i token API, aby rozpocząć planowanie.",
+    "btn": "Otwórz ustawienia"
+  },
+  "planner": {
+    "retry": "Spróbuj ponownie",
+    "prevDay": "Poprzedni dzień",
+    "nextDay": "Następny dzień",
+    "updatingPlan": "Aktualizowanie planu posiłków",
+    "today": "Dzisiaj",
+    "remove": "Usuń",
+    "openInMealie": "Otwórz w Mealie",
+    "open": "otwórz",
+    "openInMealieMobile": "otwórz w Mealie ↗",
+    "sparkleTitle": "Dodaj losowy przepis",
+    "sparkle": "losowy",
+    "addRecipe": "Dodaj przepis",
+    "changeRecipe": "zmień",
+    "addShort": "+ dodaj",
+    "goToToday": "Dzisiaj",
+    "noSlotsEnabled": "Brak aktywnych slotów posiłków. Otwórz ustawienia, aby je dodać!",
+    "nothingPlanned": "Nic nie zaplanowano.",
+    "endOfRange": "60 dni do przodu",
+    "undo": "Cofnij"
+  },
+  "modal": {
+    "titleReplace": "Zmień przepis",
+    "titleAdd": "Dodaj przepis",
+    "searchPlaceholder": "Szukaj przepisów…",
+    "refreshingRecipes": "Odświeżanie przepisów",
+    "noMatch": "Brak przepisów pasujących do \"{q}\"",
+    "loadingRecipes": "Ładowanie przepisów…",
+    "feelingLucky": "Masz ochotę na niespodziankę?",
+    "feelingLuckySub": "Wybierz dla mnie losowy przepis",
+    "recentlyUsed": "Ostatnio używane",
+    "loadingMore": "ładowanie…"
+  },
+  "actions": {
+    "title": "Akcje"
+  },
+  "logout": {
+    "title": "Wylogować się?",
+    "desc": "PIN będzie ponownie wymagany.",
+    "cancel": "Anuluj",
+    "confirm": "Wyloguj"
+  },
+  "toast": {
+    "removed": "Usunięto {name}",
+    "cacheRefreshed": "Pamięć odświeżona — {n} przepisów.",
+    "actionSent": "Akcja wysłana.",
+    "dismiss": "Zamknij"
+  },
+  "error": {
+    "backend": "Nie można połączyć z serwerem. Czy serwer działa?",
+    "recipeCache": "Nie można załadować pamięci przepisów — odśwież ją w ustawieniach.",
+    "saveFailed": "Błąd zapisu — {detail}",
+    "removeFailed": "Błąd usuwania — {detail}",
+    "sparkleFailed": "Błąd losowego przepisu — {detail}",
+    "undoFailed": "Nie można cofnąć.",
+    "cacheRefreshFailed": "Błąd odświeżania pamięci.",
+    "actionFailed": "Błąd akcji — {detail}",
+    "loadMoreDays": "Nie można załadować więcej dni.",
+    "loadPlan": "Nie można załadować planu posiłków.",
+    "moveFailed": "Błąd przenoszenia przepisu — {detail}",
+    "saveFallback": "spróbuj ponownie.",
+    "sparkleFallback": "brak przepisów w pamięci?",
+    "actionFallback": "nieznany błąd"
+  },
+  "auth": {
+    "pageTitle": "Mealie Planner · Odblokuj",
+    "title": "Wprowadź PIN",
+    "subtitle": "Wprowadź PIN, aby odblokować Mealie Planner.",
+    "btn": "Odblokuj",
+    "errorShort": "Wprowadź wszystkie 6 znaków.",
+    "errorIncorrect": "Nieprawidłowy PIN.",
+    "errorNetwork": "Błąd sieci. Spróbuj ponownie."
+  }
+}

@@ -1,14 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ locale }}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mealie Planner</title>
-  <script defer src="{{ ingress_path }}/assets/alpine.min.js"></script>
   <script>
+    window._MP_I18N = {{ translations | tojson }};
+    window._MP_LOCALE = "{{ locale }}";
     const INGRESS_PATH = "{{ ingress_path }}";
     function api(path) { return INGRESS_PATH + path; }
   </script>
+  <script defer src="{{ ingress_path }}/assets/alpine.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&display=swap" rel="stylesheet">
@@ -32,7 +34,7 @@
         </div>
         <div x-show="!mealieReachable" class="status-dot status-dot--warn">
           <span class="status-dot__pip"></span>
-          Unreachable
+          <span x-text="t('nav.unreachable')"></span>
         </div>
       </div>
       <div style="position:relative">
@@ -56,25 +58,25 @@
              x-transition:leave-end="opacity-0 scale-95">
           <button @click="setTheme('system')" class="theme-opt" :class="colorTheme === 'system' && 'theme-opt--on'">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-            System
+            <span x-text="t('theme.system')"></span>
           </button>
           <button @click="setTheme('light')" class="theme-opt" :class="colorTheme === 'light' && 'theme-opt--on'">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-            Light
+            <span x-text="t('theme.light')"></span>
           </button>
           <button @click="setTheme('dark')" class="theme-opt" :class="colorTheme === 'dark' && 'theme-opt--on'">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-            Dark
+            <span x-text="t('theme.dark')"></span>
           </button>
         </div>
       </div>
-      <button @click="settingsOpen = !settingsOpen" class="icon-btn" :class="settingsOpen && 'active'" title="Settings">
+      <button @click="settingsOpen = !settingsOpen" class="icon-btn" :class="settingsOpen && 'active'" :title="t('nav.settings')">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="3"/>
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
       </button>
-      <button id="logout-btn" class="icon-btn" title="Log out" x-show="mode !== 'haos'">
+      <button id="logout-btn" class="icon-btn" :title="t('nav.logout')" x-show="mode !== 'haos'">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
           <polyline points="16 17 21 12 16 7"/>
@@ -102,11 +104,11 @@
           <line x1="16" y1="2" x2="16" y2="22"/>
           <path d="M19 7V2l-3 5"/>
         </svg>
-        <h2 class="onboard-title">What's for dinner this week?</h2>
-        <p class="onboard-desc">Connect your Mealie instance to browse your recipe library and plan meals for the week, right here in Home Assistant.</p>
+        <h2 class="onboard-title" x-text="t('onboard.title')"></h2>
+        <p class="onboard-desc" x-text="t('onboard.desc')"></p>
       </div>
       <div class="settings-sheet-hdr">
-        <p class="settings-sheet-title">Settings</p>
+        <p class="settings-sheet-title" x-text="t('settings.title')"></p>
         <button @click="settingsOpen = false" class="icon-btn">
           <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
@@ -114,78 +116,92 @@
       <div class="settings-inner">
 
         <div>
-          <p class="section-label">Mealie connection</p>
+          <p class="section-label" x-text="t('settings.connectionLabel')"></p>
           <template x-if="mode === 'docker'">
-            <div class="notice">You're all set! These are configured via the environment variables <code>MEALIE_API_URL</code> and <code>MEALIE_API_KEY</code>.</div>
+            <div class="notice" x-html="t('settings.dockerNotice')"></div>
           </template>
           <template x-if="mode === 'haos'">
             <div class="form-stack">
               <template x-if="configured">
                 <div class="notice">
-                  <span x-show="mealieReachable">Connected to Mealie<span x-show="mealieVersion"> &middot; <span x-text="mealieVersion"></span></span></span>
-                  <span x-show="!mealieReachable">Configured but Mealie is currently unreachable</span>
+                  <span x-show="mealieReachable" x-text="t('settings.connected') + (mealieVersion ? ' · ' + mealieVersion : '')"></span>
+                  <span x-show="!mealieReachable" x-text="t('settings.unreachable')"></span>
                 </div>
               </template>
               <div class="form-field">
-                <label class="form-label" for="mealie-url">Instance URL</label>
+                <label class="form-label" for="mealie-url" x-text="t('settings.urlLabel')"></label>
                 <input id="mealie-url" type="url" x-model="settingsForm.mealie_url" placeholder="https://mealie.yourdomain.com" class="form-input">
               </div>
               <div class="form-field">
-                <label class="form-label" for="mealie-token">API token</label>
+                <label class="form-label" for="mealie-token" x-text="t('settings.tokenLabel')"></label>
                 <input id="mealie-token" type="password" x-model="settingsForm.api_token"
-                       :placeholder="configured ? 'Leave blank to keep current token' : 'Your Mealie API token'"
+                       :placeholder="configured ? t('settings.tokenPlaceholderUpdate') : t('settings.tokenPlaceholderNew')"
                        class="form-input">
               </div>
               <p x-show="settingsError" class="error-msg" x-text="settingsError"></p>
               <button @click="saveSettings()" :disabled="settingsSaving" class="btn btn-primary btn-full">
-                <span x-show="!settingsSaving" x-text="configured ? 'Update' : 'Save & validate'"></span>
-                <span x-show="settingsSaving">Validating…</span>
+                <span x-show="!settingsSaving" x-text="configured ? t('settings.btnUpdate') : t('settings.btnSave')"></span>
+                <span x-show="settingsSaving" x-text="t('settings.btnValidating')"></span>
               </button>
             </div>
           </template>
         </div>
 
         <div>
-          <p class="section-label">Day range</p>
+          <p class="section-label" x-text="t('settings.dayRangeLabel')"></p>
           <div class="form-stack">
             <div class="form-field">
-              <label class="form-label" for="past-days">Show days before &middot; <span x-text="pastDays"></span> day(s)</label>
+              <label class="form-label" for="past-days" x-text="t('settings.pastDays', {n: pastDays})"></label>
               <input id="past-days" type="range" min="0" max="14" step="1" x-model.number="pastDays" @change="rebuildAndReload()" style="width:100%;accent-color:var(--accent)">
             </div>
             <div class="form-field">
-              <label class="form-label" for="future-days">Show days after &middot; <span x-text="futureDays"></span> day(s)</label>
+              <label class="form-label" for="future-days" x-text="t('settings.futureDays', {n: futureDays})"></label>
               <input id="future-days" type="range" min="0" max="14" step="1" x-model.number="futureDays" @change="rebuildAndReload()" style="width:100%;accent-color:var(--accent)">
             </div>
-            <p class="tip-keyboard-only" style="font-size:var(--text-xs);color:var(--text-subtle)">Tip! Use ← → to scroll one day at a time.</p>
+            <p class="tip-keyboard-only" style="font-size:var(--text-xs);color:var(--text-subtle)" x-text="t('settings.tipKeyboard')"></p>
           </div>
         </div>
 
         <div>
-          <p class="section-label">Visible meal slots</p>
+          <p class="section-label" x-text="t('settings.mealSlotsLabel')"></p>
           <div class="pill-row">
             <template x-for="type in ['breakfast','lunch','dinner','side']" :key="type">
-              <button @click="toggleMealType(type)" class="pill" :class="enabledMealTypes.includes(type) && 'pill--on'" x-text="type"></button>
+              <button @click="toggleMealType(type)" class="pill" :class="enabledMealTypes.includes(type) && 'pill--on'" x-text="t('meal.'+type)"></button>
             </template>
           </div>
         </div>
 
         <div>
-          <p class="section-label">Recipe cache</p>
+          <p class="section-label" x-text="t('settings.cacheLabel')"></p>
           <div style="display:flex;align-items:center;gap:var(--space-3)">
             <button @click="refreshCache()" :disabled="cacheRefreshing" class="btn btn-ghost">
-              <span x-show="!cacheRefreshing">Refresh</span>
-              <span x-show="cacheRefreshing">Refreshing…</span>
+              <span x-show="!cacheRefreshing" x-text="t('settings.cacheRefresh')"></span>
+              <span x-show="cacheRefreshing" x-text="t('settings.cacheRefreshing')"></span>
             </button>
-            <span x-show="cacheCount !== null" style="font-size:var(--text-sm);color:var(--text-muted)" x-text="cacheCount + ' recipes saved'"></span>
+            <span x-show="cacheCount !== null" style="font-size:var(--text-sm);color:var(--text-muted)" x-text="t('settings.recipesCount', {n: cacheCount})"></span>
           </div>
         </div>
 
         <div>
-          <p class="section-label">Source</p>
+          <p class="section-label" x-text="t('settings.languageLabel')"></p>
+          <div class="form-field">
+            <select :value="locale" @change="setLocale($event.target.value)" class="form-input">
+              <option value="en">English</option>
+              <option value="de">Deutsch</option>
+              <option value="nl">Nederlands</option>
+              <option value="es">Español</option>
+              <option value="fr">Français</option>
+              <option value="pl">Polski</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <p class="section-label" x-text="t('settings.sourceLabel')"></p>
           <div class="form-field">
             <a href="https://github.com/hawkinslabdev/mealie-planner" target="_blank" rel="noopener noreferrer" class="form-label" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-             Visit on GitHub
+              <span x-text="t('settings.github')"></span>
             </a>
           </div>
         </div>
@@ -197,9 +213,9 @@
   <!-- empty state -->
   <div x-show="initialized && !configured && !settingsOpen" class="empty-state">
     <span class="empty-state__emoji">🍽</span>
-    <p class="empty-state__title">Connect to Mealie</p>
-    <p class="empty-state__desc">Add your Mealie URL and API token to start planning.</p>
-    <button @click="settingsOpen = true" class="btn btn-primary">Open settings</button>
+    <p class="empty-state__title" x-text="t('empty.title')"></p>
+    <p class="empty-state__desc" x-text="t('empty.desc')"></p>
+    <button @click="settingsOpen = true" class="btn btn-primary" x-text="t('empty.btn')"></button>
   </div>
 
   <!-- planner -->
@@ -208,26 +224,24 @@
     <!-- error -->
     <div x-show="planError" class="banner banner--error">
       <span class="banner__msg" x-text="planError"></span>
-      <button class="banner__retry" @click="loadMealPlan()">Retry</button>
+      <button class="banner__retry" @click="loadMealPlan()" x-text="t('planner.retry')"></button>
     </div>
 
     <!-- week bar -->
     <div class="week-bar">
-      <button class="week-nav-btn" @click="shiftPage(-1)" title="Previous day">
+      <button class="week-nav-btn" @click="shiftPage(-1)" :title="t('planner.prevDay')">
         <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
       </button>
-      <button class="week-nav-btn" @click="shiftPage(1)" title="Next day">
+      <button class="week-nav-btn" @click="shiftPage(1)" :title="t('planner.nextDay')">
         <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
       </button>
       <span class="week-range" x-text="weekRangeLabel"></span>
-      <span x-show="planRefreshing" class="plan-refreshing" aria-label="Updating meal plan">
+      <span x-show="planRefreshing" class="plan-refreshing" :aria-label="t('planner.updatingPlan')">
         <svg class="plan-refreshing__spin" width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
       </span>
-      <button x-show="dayOffset !== 0" @click="goToToday()" class="week-nav-btn">Today</button>
+      <button x-show="dayOffset !== 0" @click="goToToday()" class="week-nav-btn" x-text="t('planner.goToToday')"></button>
     </div>
-    <div x-show="enabledMealTypes.length === 0" class="no-slots">
-      No meal slots enabled. Open settings to add some!
-    </div>
+    <div x-show="enabledMealTypes.length === 0" class="no-slots" x-text="t('planner.noSlotsEnabled')"></div>
 
     <!-- grid -->
     <div class="planner-wrap" x-show="enabledMealTypes.length > 0">
@@ -241,7 +255,7 @@
               </div>
             </template>
             <template x-if="item.t === 'ml'">
-              <span x-text="item.mt"></span>
+              <span x-text="t('meal.'+item.mt)"></span>
             </template>
             <template x-if="item.t === 'cell'">
               <div style="position:relative;height:100%"
@@ -262,24 +276,24 @@
                              @dblclick="openModalReplace(item.date, item.mt, entry)">
                           <img class="chip__thumb" :src="entry.image_url" :alt="entry.recipe_name" @error="$event.target.style.display='none'">
                           <span class="chip__name" x-text="entry.recipe_name"></span>
-                          <button class="chip__rm" @click.stop="removeRecipe(item.date, item.mt, entry.id)" title="Remove">
+                          <button class="chip__rm" @click.stop="removeRecipe(item.date, item.mt, entry.id)" :title="t('planner.remove')">
                             <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                           </button>
                         </div>
                         <div class="chip-acts">
-                          <a class="ca" :href="getMealieLink(entry.recipe_slug)" target="_blank" title="Open in Mealie">↗ open</a>
-                          <button class="ca" @click.stop="openModalReplace(item.date, item.mt, entry)">change</button>
+                          <a class="ca" :href="getMealieLink(entry.recipe_slug)" target="_blank" :title="t('planner.openInMealie')">↗ <span x-text="t('planner.open')"></span></a>
+                          <button class="ca" @click.stop="openModalReplace(item.date, item.mt, entry)" x-text="t('planner.changeRecipe')"></button>
                           <button class="ca" x-show="recipeActions.length > 0" @click.stop="openActionMenu(entry, $event)">···</button>
                         </div>
                       </div>
                     </template>
                     <div x-show="isSparkle(item.date, item.mt)" class="skel skel--chip" style="margin-top:var(--space-1)"></div>
                     <div class="cell-acts" x-show="hasSlot(item.date, item.mt) || isSparkle(item.date, item.mt)">
-                      <button class="ca ca--accent" @click="sparkle(item.date, item.mt)" title="Add random recipe"><span class="sparkle-glyph">✦</span> sparkle</button>
-                      <button class="ca" @click="openModal(item.date, item.mt)">+ add</button>
+                      <button class="ca ca--accent" @click="sparkle(item.date, item.mt)" :title="t('planner.sparkleTitle')"><span class="sparkle-glyph">✦</span> <span x-text="t('planner.sparkle')"></span></button>
+                      <button class="ca" @click="openModal(item.date, item.mt)" x-text="t('planner.addShort')"></button>
                     </div>
                     <template x-if="!hasSlot(item.date, item.mt) && !isSparkle(item.date, item.mt)">
-                      <button class="cell-empty-btn" @click="openModal(item.date, item.mt)" title="Add recipe">
+                      <button class="cell-empty-btn" @click="openModal(item.date, item.mt)" :title="t('planner.addRecipe')">
                         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                       </button>
                     </template>
@@ -323,7 +337,7 @@
                  @dragleave="onDragLeave($event)"
                  @drop="onDrop($event.currentTarget.dataset.date, $event.currentTarget.dataset.mt)"
                  @click="setActiveCell($el.dataset.date, $el.dataset.mt)">
-              <p class="mobile-slot__type" :class="'mobile-slot__type--' + mt" x-text="mt"></p>
+              <p class="mobile-slot__type" :class="'mobile-slot__type--' + mt" x-text="t('meal.'+mt)"></p>
               <div x-show="planLoading" class="skel" style="height:52px;border-radius:8px;margin-bottom:var(--space-3)"></div>
               <template x-if="!planLoading">
                 <div>
@@ -341,22 +355,22 @@
                       <div class="mobile-recipe-info">
                         <p class="mobile-recipe-name" x-text="entry.recipe_name"></p>
                         <div style="display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap">
-                          <a class="mobile-recipe-link" :href="getMealieLink(entry.recipe_slug)" target="_blank">open in Mealie ↗</a>
-                          <button class="ca" style="font-size:0.7rem;padding:1px 6px" @click.stop="openModalReplace(day.date, mt, entry)">change</button>
+                          <a class="mobile-recipe-link" :href="getMealieLink(entry.recipe_slug)" target="_blank" x-text="t('planner.openInMealieMobile')"></a>
+                          <button class="ca" style="font-size:0.7rem;padding:1px 6px" @click.stop="openModalReplace(day.date, mt, entry)" x-text="t('planner.changeRecipe')"></button>
                           <button class="ca" x-show="recipeActions.length > 0" style="font-size:0.7rem;padding:1px 6px" @click.stop="openActionMenu(entry, $event)">···</button>
                         </div>
                       </div>
-                      <button class="mobile-rm-btn" aria-label="Remove" @click="removeRecipe(day.date, mt, entry.id)">
+                      <button class="mobile-rm-btn" :aria-label="t('planner.remove')" @click="removeRecipe(day.date, mt, entry.id)">
                         <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                       </button>
                     </div>
                   </template>
                   <div x-show="isSparkle(day.date, mt)" class="skel" style="height:44px;border-radius:8px;margin-bottom:var(--space-2)"></div>
-                  <p x-show="!hasSlot(day.date, mt) && !isSparkle(day.date, mt)" class="mobile-slot-empty">Nothing planned.</p>
+                  <p x-show="!hasSlot(day.date, mt) && !isSparkle(day.date, mt)" class="mobile-slot-empty" x-text="t('planner.nothingPlanned')"></p>
                   <div class="mobile-acts">
-                    <button class="ca ca--accent" @click="sparkle(day.date, mt)"><span class="sparkle-glyph">✦</span> sparkle</button>
+                    <button class="ca ca--accent" @click="sparkle(day.date, mt)"><span class="sparkle-glyph">✦</span> <span x-text="t('planner.sparkle')"></span></button>
                     <span class="ca-sep">·</span>
-                    <button class="ca" @click="openModal(day.date, mt)">+ add</button>
+                    <button class="ca" @click="openModal(day.date, mt)" x-text="t('planner.addShort')"></button>
                   </div>
                 </div>
               </template>
@@ -387,7 +401,7 @@
       <!-- end of range -->
       <div x-show="!mobileHasMore" class="mobile-range-end">
         <span class="mobile-range-end__line"></span>
-        <span class="mobile-range-end__label">60 days ahead</span>
+        <span class="mobile-range-end__label" x-text="t('planner.endOfRange')"></span>
         <span class="mobile-range-end__line"></span>
       </div>
     </div>
@@ -402,7 +416,7 @@
 
       <div class="modal-header">
         <div>
-          <p class="modal-title" x-text="modalMode === 'replace' ? 'Change recipe' : 'Add recipe'"></p>
+          <p class="modal-title" x-text="modalMode === 'replace' ? t('modal.titleReplace') : t('modal.titleAdd')"></p>
           <p class="modal-subtitle" x-text="(modalMt || '') + ' · ' + formatDate(modalDate)"></p>
         </div>
         <button @click="modalOpen = false" class="icon-btn">
@@ -412,22 +426,22 @@
 
       <div class="modal-search">
         <svg class="si" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        <input type="search" x-model="modalSearch" @input="modalLimit = 24" placeholder="Search recipes…" x-ref="searchInput" class="form-input">
-        <span x-show="recipesRefreshing && recipesLoadedAt !== null" class="plan-refreshing" aria-label="Refreshing recipes" style="margin-left:4px;flex-shrink:0">
+        <input type="search" x-model="modalSearch" @input="modalLimit = 24" :placeholder="t('modal.searchPlaceholder')" x-ref="searchInput" class="form-input">
+        <span x-show="recipesRefreshing && recipesLoadedAt !== null" class="plan-refreshing" :aria-label="t('modal.refreshingRecipes')" style="margin-left:4px;flex-shrink:0">
           <svg class="plan-refreshing__spin" width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
         </span>
       </div>
 
       <div class="modal-body" @scroll="onModalScroll($event)">
-        <div x-show="recipesLoadedAt === null" class="center-msg">Loading recipes…</div>
+        <div x-show="recipesLoadedAt === null" class="center-msg" x-text="t('modal.loadingRecipes')"></div>
 
         <!-- sparkle prompt — empty slot, add mode, no search active -->
         <template x-if="recipesLoadedAt !== null && modalMode === 'add' && !hasSlot(modalDate, modalMt) && !modalSearch">
           <button class="modal-sparkle" @click="modalSparkle()">
             <span class="modal-sparkle__icon">✦</span>
             <div class="modal-sparkle__body">
-              <p class="modal-sparkle__title">Feeling lucky?</p>
-              <p class="modal-sparkle__sub">Pick a random recipe for me</p>
+              <p class="modal-sparkle__title" x-text="t('modal.feelingLucky')"></p>
+              <p class="modal-sparkle__sub" x-text="t('modal.feelingLuckySub')"></p>
             </div>
           </button>
         </template>
@@ -435,7 +449,7 @@
         <!-- recent -->
         <template x-if="recipesLoadedAt !== null && !modalSearch && recentRecipeObjects.length">
           <div>
-            <p style="font-size:var(--text-xs);font-weight:500;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.07em;padding:var(--space-1) var(--space-1) var(--space-2)">Recently used</p>
+            <p style="font-size:var(--text-xs);font-weight:500;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.07em;padding:var(--space-1) var(--space-1) var(--space-2)" x-text="t('modal.recentlyUsed')"></p>
             <div class="recipe-grid">
               <template x-for="r in recentRecipeObjects" :key="'recent-' + r.id">
                 <button @click="selectRecipe(r)" class="recipe-card recipe-card--recent">
@@ -449,7 +463,7 @@
         </template>
 
         <!-- results -->
-        <div x-show="recipesLoadedAt !== null && filteredRecipes.length === 0" class="center-msg">No recipes match "<span x-text="modalSearch"></span>"</div>
+        <div x-show="recipesLoadedAt !== null && filteredRecipes.length === 0" class="center-msg" x-text="t('modal.noMatch', {q: modalSearch})"></div>
         <div x-show="recipesLoadedAt !== null && filteredRecipes.length > 0" class="recipe-grid">
           <template x-for="r in visibleRecipes" :key="r.id">
             <button @click="selectRecipe(r)" class="recipe-card">
@@ -458,7 +472,7 @@
             </button>
           </template>
         </div>
-        <div x-show="hasMoreRecipes" style="text-align:center;padding:var(--space-3);font-size:var(--text-sm);color:var(--text-subtle);opacity:.5">loading more…</div>
+        <div x-show="hasMoreRecipes" style="text-align:center;padding:var(--space-3);font-size:var(--text-sm);color:var(--text-subtle);opacity:.5" x-text="t('modal.loadingMore')"></div>
       </div>
 
     </div>
@@ -489,7 +503,7 @@
        x-transition:leave="transition ease-in duration-75"
        x-transition:leave-start="opacity-100 scale-100"
        x-transition:leave-end="opacity-0 scale-95">
-    <p class="action-menu__title">Actions</p>
+    <p class="action-menu__title" x-text="t('actions.title')"></p>
     <template x-for="action in recipeActions" :key="action.id">
       <button class="action-menu__item"
               @click="triggerRecipeAction(action.id, actionMenuRecipe.slug)"
@@ -509,7 +523,7 @@
   <!-- undo -->
   <div x-show="undoBar" class="undo-bar">
     <span x-text="undoMessage"></span>
-    <button class="undo-btn" @click="undoLastAction()">Undo</button>
+    <button class="undo-btn" @click="undoLastAction()" x-text="t('planner.undo')"></button>
   </div>
 
   <!-- toasts -->
@@ -517,7 +531,7 @@
     <template x-for="t in toasts" :key="t.id">
       <div class="toast" :class="'toast--' + t.type" x-transition>
         <span class="toast__msg" x-text="t.msg"></span>
-        <button class="toast__close" @click="removeToast(t.id)" aria-label="Dismiss">×</button>
+        <button class="toast__close" @click="removeToast(t.id)" :aria-label="t('toast.dismiss')">×</button>
       </div>
     </template>
   </div>
@@ -525,11 +539,11 @@
   <!-- logout modal -->
   <div id="logout-modal" hidden class="logout-backdrop">
     <div class="modal" style="max-width:340px;align-items:stretch;gap:0;padding:var(--space-5);text-align:center">
-      <p style="font-size:var(--text-base);font-weight:600;margin-bottom:4px">Log out?</p>
-      <p style="font-size:var(--text-sm);color:var(--text-muted);margin-bottom:var(--space-5)">Your PIN will be required again.</p>
+      <p style="font-size:var(--text-base);font-weight:600;margin-bottom:4px" x-text="t('logout.title')"></p>
+      <p style="font-size:var(--text-sm);color:var(--text-muted);margin-bottom:var(--space-5)" x-text="t('logout.desc')"></p>
       <div style="display:flex;gap:var(--space-3)">
-        <button id="logout-cancel" class="btn btn-ghost" style="flex:1;justify-content:center">Cancel</button>
-        <button id="logout-confirm" class="btn btn-primary" style="flex:1;justify-content:center">Log out</button>
+        <button id="logout-cancel" class="btn btn-ghost" style="flex:1;justify-content:center" x-text="t('logout.cancel')"></button>
+        <button id="logout-confirm" class="btn btn-primary" style="flex:1;justify-content:center" x-text="t('logout.confirm')"></button>
       </div>
     </div>
   </div>

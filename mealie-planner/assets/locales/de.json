@@ -1,0 +1,126 @@
+{
+  "nav": {
+    "settings": "Einstellungen",
+    "logout": "Abmelden",
+    "unreachable": "Nicht erreichbar"
+  },
+  "theme": {
+    "system": "System",
+    "light": "Hell",
+    "dark": "Dunkel"
+  },
+  "onboard": {
+    "title": "Was gibt es diese Woche zu essen?",
+    "desc": "Verbinde deine Mealie-Instanz, um deine Rezeptbibliothek zu durchsuchen und Mahlzeiten für die Woche zu planen – direkt in Home Assistant."
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "connectionLabel": "Mealie-Verbindung",
+    "dockerNotice": "Alles bereit! Diese werden über die Umgebungsvariablen <code>MEALIE_API_URL</code> und <code>MEALIE_API_KEY</code> konfiguriert.",
+    "connected": "Mit Mealie verbunden",
+    "unreachable": "Konfiguriert, aber Mealie ist derzeit nicht erreichbar",
+    "urlLabel": "Instanz-URL",
+    "tokenLabel": "API-Token",
+    "tokenPlaceholderUpdate": "Leer lassen, um den aktuellen Token zu behalten",
+    "tokenPlaceholderNew": "Dein Mealie-API-Token",
+    "btnUpdate": "Aktualisieren",
+    "btnSave": "Speichern & prüfen",
+    "btnValidating": "Wird geprüft…",
+    "dayRangeLabel": "Tageszeitraum",
+    "pastDays": "Vergangene Tage · {n} Tag(e)",
+    "futureDays": "Zukünftige Tage · {n} Tag(e)",
+    "tipKeyboard": "Tipp! Mit ← → einen Tag weiter scrollen.",
+    "mealSlotsLabel": "Sichtbare Mahlzeiten",
+    "cacheLabel": "Rezept-Cache",
+    "cacheRefresh": "Aktualisieren",
+    "cacheRefreshing": "Wird aktualisiert…",
+    "recipesCount": "{n} Rezepte gespeichert",
+    "sourceLabel": "Quelle",
+    "github": "Auf GitHub ansehen",
+    "languageLabel": "Sprache"
+  },
+  "meal": {
+    "breakfast": "Frühstück",
+    "lunch": "Mittagessen",
+    "dinner": "Abendessen",
+    "side": "Beilage"
+  },
+  "empty": {
+    "title": "Mit Mealie verbinden",
+    "desc": "Gib deine Mealie-URL und deinen API-Token ein, um mit der Planung zu beginnen.",
+    "btn": "Einstellungen öffnen"
+  },
+  "planner": {
+    "retry": "Erneut versuchen",
+    "prevDay": "Vorheriger Tag",
+    "nextDay": "Nächster Tag",
+    "updatingPlan": "Mahlzeitenplan wird aktualisiert",
+    "today": "Heute",
+    "remove": "Entfernen",
+    "openInMealie": "In Mealie öffnen",
+    "open": "öffnen",
+    "openInMealieMobile": "In Mealie öffnen ↗",
+    "sparkleTitle": "Zufälliges Rezept hinzufügen",
+    "sparkle": "Zufall",
+    "addRecipe": "Rezept hinzufügen",
+    "changeRecipe": "ändern",
+    "addShort": "+ hinzu",
+    "goToToday": "Heute",
+    "noSlotsEnabled": "Keine Mahlzeiten aktiviert. Öffne die Einstellungen, um welche hinzuzufügen!",
+    "nothingPlanned": "Nichts geplant.",
+    "endOfRange": "60 Tage voraus",
+    "undo": "Rückgängig"
+  },
+  "modal": {
+    "titleReplace": "Rezept ändern",
+    "titleAdd": "Rezept hinzufügen",
+    "searchPlaceholder": "Rezepte suchen…",
+    "refreshingRecipes": "Rezepte werden aktualisiert",
+    "noMatch": "Keine Rezepte für \"{q}\" gefunden",
+    "loadingRecipes": "Rezepte werden geladen…",
+    "feelingLucky": "Glück auf?",
+    "feelingLuckySub": "Wähle ein zufälliges Rezept für mich",
+    "recentlyUsed": "Zuletzt verwendet",
+    "loadingMore": "Mehr laden…"
+  },
+  "actions": {
+    "title": "Aktionen"
+  },
+  "logout": {
+    "title": "Abmelden?",
+    "desc": "Der PIN wird erneut benötigt.",
+    "cancel": "Abbrechen",
+    "confirm": "Abmelden"
+  },
+  "toast": {
+    "removed": "{name} entfernt",
+    "cacheRefreshed": "Cache aktualisiert — {n} Rezepte.",
+    "actionSent": "Aktion ausgeführt.",
+    "dismiss": "Schließen"
+  },
+  "error": {
+    "backend": "Backend nicht erreichbar. Läuft der Server?",
+    "recipeCache": "Rezept-Cache konnte nicht geladen werden — bitte in den Einstellungen aktualisieren.",
+    "saveFailed": "Speichern fehlgeschlagen — {detail}",
+    "removeFailed": "Entfernen fehlgeschlagen — {detail}",
+    "sparkleFailed": "Zufallsrezept fehlgeschlagen — {detail}",
+    "undoFailed": "Rückgängig machen fehlgeschlagen.",
+    "cacheRefreshFailed": "Cache-Aktualisierung fehlgeschlagen.",
+    "actionFailed": "Aktion fehlgeschlagen — {detail}",
+    "loadMoreDays": "Weitere Tage konnten nicht geladen werden.",
+    "loadPlan": "Mahlzeitenplan konnte nicht geladen werden.",
+    "moveFailed": "Rezept verschieben fehlgeschlagen — {detail}",
+    "saveFallback": "Bitte erneut versuchen.",
+    "sparkleFallback": "Keine Rezepte im Cache?",
+    "actionFallback": "Unbekannter Fehler"
+  },
+  "auth": {
+    "pageTitle": "Mealie Planner · Entsperren",
+    "title": "PIN eingeben",
+    "subtitle": "Gib deinen PIN ein, um Mealie Planner zu entsperren.",
+    "btn": "Entsperren",
+    "errorShort": "Alle 6 Zeichen eingeben.",
+    "errorIncorrect": "Falscher PIN.",
+    "errorNetwork": "Netzwerkfehler. Bitte erneut versuchen."
+  }
+}
