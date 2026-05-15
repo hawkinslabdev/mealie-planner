@@ -579,7 +579,9 @@ function planner() {
       return new Date(y,m-1,d).toLocaleDateString(undefined, {weekday:'short',month:'short',day:'numeric'});
     },
     getMealieLink(slug) {
-      return slug ? api('/api/recipe-link/' + slug) : '#';
+      if (!slug) return '#';
+      const base = this.settingsForm.mealie_url;
+      return base ? `${base.replace(/\/+$/, '')}/g/home/r/${slug}` : '#';
     },
 
     /* recipe actions */
