@@ -1,3 +1,5 @@
+const RECIPES_STALE_MS = 5 * 60 * 1000;
+
 function planner() {
   return {
     /* state */
@@ -13,7 +15,8 @@ function planner() {
     _slots: {},
 
     allRecipes: [],
-    recipesLoaded: false,
+    recipesLoadedAt: null,
+    recipesRefreshing: false,
 
     modalOpen: false,
     modalDate: null,
@@ -237,13 +240,17 @@ function planner() {
     },
 
     async loadRecipes() {
+      if (this.recipesRefreshing) return;
+      this.recipesRefreshing = true;
       try {
-        this.allRecipes   = (await this._fetch('/api/recipes')).map(r => this._prefixImg(r));
-        this.cacheCount   = this.allRecipes.length;
-        this.recipesLoaded = true;
+        this.allRecipes    = (await this._fetch('/api/recipes')).map(r => this._prefixImg(r));
+        this.cacheCount    = this.allRecipes.length;
+        this.recipesLoadedAt = Date.now();
       } catch (e) {
         this.toast('Could not load recipe cache — try refreshing it in settings.');
-        this.recipesLoaded = true;
+        this.recipesLoadedAt = Date.now();
+      } finally {
+        this.recipesRefreshing = false;
       }
     },
 
@@ -294,7 +301,7 @@ function planner() {
       this.modalDate = date; this.modalMt = mt; this.modalSearch = ''; this.modalLimit = 24;
       this.modalMode = 'add'; this.modalReplaceEntry = null;
       this.modalOpen = true;
-      if (!this.recipesLoaded) this.loadRecipes();
+      if (!this.recipesLoadedAt || Date.now() - this.recipesLoadedAt > RECIPES_STALE_MS) this.loadRecipes();
       this.$nextTick(() => this.$refs.searchInput?.focus());
     },
 
@@ -302,7 +309,7 @@ function planner() {
       this.modalDate = date; this.modalMt = mt; this.modalSearch = ''; this.modalLimit = 24;
       this.modalMode = 'replace'; this.modalReplaceEntry = entry;
       this.modalOpen = true;
-      if (!this.recipesLoaded) this.loadRecipes();
+      if (!this.recipesLoadedAt || Date.now() - this.recipesLoadedAt > RECIPES_STALE_MS) this.loadRecipes();
       this.$nextTick(() => this.$refs.searchInput?.focus());
     },
 
