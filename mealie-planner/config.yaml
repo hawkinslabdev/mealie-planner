@@ -11,6 +11,7 @@ init: false
 ingress: true
 ingress_port: 3000
 panel_icon: "mdi:silverware-variant"
+panel_admin: false
 
 # Security
 apparmor: true
