@@ -640,9 +640,9 @@ def _safe_redirect_path(path: str) -> str:
 @app.get("/auth")
 async def auth_page(request: Request, from_: str = Query("/", alias="from")):
     return templates.TemplateResponse(
+        request,
         "auth.html",
         {
-            "request": request,
             "ingress_path": request.state.ingress_path,
             "from": _safe_redirect_path(from_),
         },
