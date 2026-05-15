@@ -15,7 +15,9 @@ After starting the add-on, open the web UI. Enter your Mealie instance URL and A
 | `mealie_url` | Base URL of your Mealie instance, e.g. `http://192.168.1.x:9000` |
 | `api_token` | Your Mealie API token (generated in Mealie under user settings) |
 
-## Notes
+After configuring your instance, your entire household can use the add-on. 
 
-- Recipe data is cached locally. Use the refresh button in settings if your Mealie library has changed.
-- Multiple household members can use the add-on simultaneously — credentials are stored server-side.
+## License
+
+This project is licensed under the **AGPL 3.0** license. This project is not affiliated with [Mealie](https://mealie.io).
+Also, if you're running into issues, please let us know on our [GitHub repository](https://github.com/hawkinslabdev/mealie-planner).
