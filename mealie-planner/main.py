@@ -23,6 +23,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, field_validator
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response as StarletteResponse
 from urllib.parse import urlparse
 
 logger = logging.getLogger("mealie_planner")
@@ -124,14 +125,22 @@ def _require_date(val: str) -> None:
 
 
 # Security headers
+_IMPECCABLE_LIVE_DEV = " http://localhost:8400" if os.environ.get("DEV_MODE") else ""
 _CSP = (
     "default-src 'self'; "
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+    f"script-src 'self' 'unsafe-inline' 'unsafe-eval'{_IMPECCABLE_LIVE_DEV}; "
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
     "font-src https://fonts.gstatic.com; "
     "img-src 'self' data: blob:; "
-    "connect-src 'self'; "
+    f"connect-src 'self'{_IMPECCABLE_LIVE_DEV}; "
     "frame-ancestors 'self';"
+)
+
+
+_IMPECCABLE_LIVE_SNIPPET = (
+    b"\n<!-- impeccable-live-start -->"
+    b'\n<script src="http://localhost:8400/live.js"></script>'
+    b"\n<!-- impeccable-live-end -->\n"
 )
 
 
@@ -141,6 +150,16 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Content-Security-Policy"] = _CSP
+        if _IMPECCABLE_LIVE_DEV and response.headers.get("content-type", "").startswith("text/html"):
+            body = b"".join([chunk async for chunk in response.body_iterator])
+            body = body.replace(b"</body>", _IMPECCABLE_LIVE_SNIPPET + b"</body>", 1)
+            response.headers["content-length"] = str(len(body))
+            return StarletteResponse(
+                content=body,
+                status_code=response.status_code,
+                headers=dict(response.headers),
+                media_type=response.media_type,
+            )
         return response
 
 
