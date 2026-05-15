@@ -603,12 +603,16 @@ class IngressAndAuthMiddleware(BaseHTTPMiddleware):
             path = request.url.path.rstrip("/")
             if not path.startswith("/assets/"):
                 if path not in _EXEMPT_PATHS:
-                    token = request.cookies.get(_SESSION_COOKIE)
-                    if not token or not _verify_session_token(token):
-                        return RedirectResponse(
-                            url=f"/auth?from={_safe_redirect_path(request.url.path)}",
-                            status_code=302,
-                        )
+                    # Supervisor already authenticated the user; trust the injected header.
+                    if not _DOCKER_MODE and request.headers.get("X-Remote-User-Id"):
+                        pass
+                    else:
+                        token = request.cookies.get(_SESSION_COOKIE)
+                        if not token or not _verify_session_token(token):
+                            return RedirectResponse(
+                                url=f"/auth?from={_safe_redirect_path(request.url.path)}",
+                                status_code=302,
+                            )
 
         return await call_next(request)
 
