@@ -205,18 +205,22 @@ _PIN_CODE = os.environ.get("PIN_CODE", "")
 _REQUIRE_AUTH = bool(_PIN_CODE)
 _SESSION_COOKIE = "mp_session"
 _SESSION_TTL = 86400 * 30
+_SUPPORTED_LOCALES = {"en", "de", "nl", "es", "fr", "pl"}
+_LOCALE_OVERRIDE = os.environ.get("LOCALE", "").strip().lower()
+if _LOCALE_OVERRIDE not in _SUPPORTED_LOCALES:
+    _LOCALE_OVERRIDE = ""
+_LOCALE_DIR = os.path.join(os.path.dirname(__file__), "assets", "locales")
+_locale_cache: dict[str, dict] = {}
 
 _cred_cache: dict[str, str | None] = {"url": None, "token": None}
-_cred_loaded_at: float = 0.0  # mtime watermark — cache invalidates when files are newer
+_cred_loaded_at: float = 0.0  # mtime watermark, cache invalidates when files are newer
 
 
 def _cred_cache_valid() -> bool:
     if not (_cred_cache["url"] and _cred_cache["token"]):
         return False
     try:
-        # Only watch credentials.json — options.json is touched by HAOS on every
-        # update/restart even when values haven't changed, so using it as a cache
-        # invalidation signal causes false misses after every add-on update.
+        # Only watch credentials.json. options.json is touched by HAOS on every update/restart even when values haven't changed, so using it as a cache invalidation signal causes false misses after every add-on update.
         if os.path.exists(CREDENTIALS_FILE) and os.path.getmtime(CREDENTIALS_FILE) > _cred_loaded_at:
             return False
     except OSError:
@@ -243,12 +247,7 @@ def get_credentials() -> tuple[str | None, str | None]:
         _cred_cache["token"] = os.environ.get("MEALIE_API_KEY")
         return _cred_cache["url"], _cred_cache["token"]
 
-    # credentials.json is always the primary store (written by the app after first setup).
-    # options.json is a bootstrap source — used only when credentials.json is absent
-    # or when options.json contains different, non-empty values (user changed HAOS config).
-    # HAOS rewrites options.json on every update/restart even with unchanged values,
-    # so mtime comparison is unreliable for detecting intentional config changes.
-
+    # credentials.json is the primary store, while options.json is a bootstrap fallback (used only if missing or modified), but HAOS rewrites it on every update, making mtime checks unreliable.
     stored_url: str | None = None
     stored_plain: str | None = None
 
@@ -264,8 +263,7 @@ def get_credentials() -> tuple[str | None, str | None]:
         except Exception:
             pass
 
-    # Check options.json — if it carries different non-empty credentials the user
-    # intentionally updated the HAOS add-on config; import them into credentials.json.
+    # If options.json contains different non-empty credentials, the user intentionally updated the HAOS add-on config—import them into credentials.json.
     if os.path.exists(OPTIONS_FILE):
         try:
             with open(OPTIONS_FILE) as f:
@@ -625,10 +623,15 @@ async def favicon():
 
 @app.get("/")
 async def index(request: Request):
+    locale = _get_locale(request)
     return templates.TemplateResponse(
         request,
         "index.html",
-        {"ingress_path": request.state.ingress_path},
+        {
+            "ingress_path": request.state.ingress_path,
+            "locale": locale,
+            "translations": _load_locale_json(locale),
+        },
     )
 
 
@@ -641,12 +644,15 @@ def _safe_redirect_path(path: str) -> str:
 
 @app.get("/auth")
 async def auth_page(request: Request, from_: str = Query("/", alias="from")):
+    locale = _get_locale(request)
     return templates.TemplateResponse(
         request,
         "auth.html",
         {
             "ingress_path": request.state.ingress_path,
             "from": _safe_redirect_path(from_),
+            "locale": locale,
+            "translations": _load_locale_json(locale),
         },
     )
 
@@ -686,8 +692,38 @@ async def logout(response: Response):
     return {"ok": True}
 
 
+def _load_locale_json(lang: str) -> dict:
+    if lang not in _locale_cache:
+        path = os.path.join(_LOCALE_DIR, f"{lang}.json")
+        try:
+            with open(path, encoding="utf-8") as f:
+                _locale_cache[lang] = json.load(f)
+        except Exception:
+            _locale_cache[lang] = {}
+    return _locale_cache[lang]
+
+
+def _detect_accept_language(accept_language: str) -> str | None:
+    for part in accept_language.split(","):
+        lang = part.split(";")[0].strip().split("-")[0].lower()
+        if lang in _SUPPORTED_LOCALES:
+            return lang
+    return None
+
+
+def _get_locale(request: Request) -> str:
+    """Priority: cookie > LOCALE env var > Accept-Language header > 'en'."""
+    cookie = request.cookies.get("mp_locale", "").strip().lower()
+    if cookie in _SUPPORTED_LOCALES:
+        return cookie
+    if _LOCALE_OVERRIDE:
+        return _LOCALE_OVERRIDE
+    detected = _detect_accept_language(request.headers.get("accept-language", ""))
+    return detected or "en"
+
+
 @app.get("/api/status")
-async def get_status():
+async def get_status(request: Request):
     url, token = get_credentials()
     configured = bool(url and token)
     reachable = False
@@ -734,7 +770,7 @@ async def save_config(payload: ConfigPayload, request: Request):
     if _DOCKER_MODE:
         raise HTTPException(
             status_code=400,
-            detail="Running in Docker mode — configure via environment variables.",
+            detail="Configure via environment variables.",
         )
 
     if not _rate_limiter.check(request, key="config", max_hits=10):

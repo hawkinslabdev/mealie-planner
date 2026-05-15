@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ locale }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&display=swap" rel="stylesheet">
   <link rel="icon" href="{{ ingress_path }}/favicon.ico" sizes="any">
-  <title>Mealie Planner &middot; Unlock</title>
+  <title>{{ translations.auth.pageTitle if translations.auth is defined else 'Mealie Planner · Unlock' }}</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -208,8 +208,8 @@
     </div>
 
     <div class="card__text">
-      <h1>Enter PIN</h1>
-      <p class="sub">Enter your PIN to unlock Mealie Planner.</p>
+      <h1>{{ translations.auth.title if translations.auth is defined else 'Enter PIN' }}</h1>
+      <p class="sub">{{ translations.auth.subtitle if translations.auth is defined else 'Enter your PIN to unlock Mealie Planner.' }}</p>
     </div>
 
     <div class="boxes" id="boxes">
@@ -223,7 +223,7 @@
 
     <p class="error" id="error" aria-live="polite"></p>
 
-    <button class="btn" id="btn" type="button">Unlock</button>
+    <button class="btn" id="btn" type="button">{{ translations.auth.btn if translations.auth is defined else 'Unlock' }}</button>
 
     <div class="meal-dots">
       <span></span><span></span><span></span><span></span>
@@ -231,6 +231,9 @@
 
   </div>
 
+  <script>
+    window._AUTH_TR = {{ translations.auth | tojson if translations.auth is defined else '{}' }};
+  </script>
   <script>
     const boxes = Array.from(document.querySelectorAll('.box'));
     const btn = document.getElementById('btn');
@@ -273,7 +276,8 @@
 
     async function attempt() {
       const pin = boxes.map(b => b.value).join('');
-      if (pin.length < 6) { err.textContent = 'Enter all 6 characters.'; return; }
+      const _tr = (k) => window._AUTH_TR?.[k] ?? null;
+      if (pin.length < 6) { err.textContent = _tr('errorShort') || 'Enter all 6 characters.'; return; }
       btn.disabled = true;
       err.textContent = '';
       try {
@@ -284,7 +288,7 @@
         });
         const data = await res.json();
         if (!res.ok) {
-          err.textContent = data.detail || 'Incorrect PIN.';
+          err.textContent = data.detail || _tr('errorIncorrect') || 'Incorrect PIN.';
           boxes.forEach(b => { b.value = ''; b.classList.remove('box--filled'); });
           boxes[0].focus();
           btn.disabled = false;
@@ -292,7 +296,7 @@
         }
         window.location.href = from;
       } catch {
-        err.textContent = 'Network error. Try again.';
+        err.textContent = _tr('errorNetwork') || 'Network error. Try again.';
         btn.disabled = false;
       }
     }

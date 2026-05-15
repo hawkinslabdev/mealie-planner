@@ -1,4 +1,5 @@
 const RECIPES_STALE_MS = 5 * 60 * 1000;
+const SUPPORTED_LOCALES = ['en', 'de', 'nl', 'es', 'fr', 'pl'];
 
 function planner() {
   return {
@@ -70,6 +71,8 @@ function planner() {
     enabledMealTypes: JSON.parse(localStorage.getItem('enabledMealTypes') || '["dinner"]'),
     _recentRecipes: JSON.parse(localStorage.getItem('recentRecipes') || '[]'),
 
+    locale: window._MP_LOCALE || 'en',
+
     /* computed */
     get filteredRecipes() {
       if (!this.modalSearch) return this.allRecipes;
@@ -82,9 +85,9 @@ function planner() {
       const parse = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d); };
       const a = parse(this.days[0].date), b = parse(this.days[this.days.length - 1].date);
       if (a.getMonth() === b.getMonth()) {
-        return `${a.getDate()}–${b.getDate()} ${a.toLocaleDateString(undefined, {month:'long'})} ${a.getFullYear()}`;
+        return `${a.getDate()}–${b.getDate()} ${a.toLocaleDateString(this.locale, {month:'long'})} ${a.getFullYear()}`;
       }
-      return `${a.toLocaleDateString(undefined,{day:'numeric',month:'short'})} – ${b.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}`;
+      return `${a.toLocaleDateString(this.locale,{day:'numeric',month:'short'})} – ${b.toLocaleDateString(this.locale,{day:'numeric',month:'short',year:'numeric'})}`;
     },
 
     get gridItems() {
@@ -109,7 +112,19 @@ function planner() {
       return this.modalLimit < this.filteredRecipes.length;
     },
 
-    /* slots — values are entry[] */
+    /* i18n */
+    t(key, vars = {}) {
+      const dict = window._MP_I18N || {};
+      const val = key.split('.').reduce((o, k) => o?.[k], dict);
+      if (val == null) return key;
+      return String(val).replace(/\{(\w+)\}/g, (_, k) => (vars[k] != null ? String(vars[k]) : `{${k}}`));
+    },
+
+    setLocale(lang) {
+      if (!SUPPORTED_LOCALES.includes(lang)) return;
+      document.cookie = `mp_locale=${lang};path=/;max-age=${60 * 60 * 24 * 365};SameSite=Lax`;
+      location.reload();
+    },
     slotKey(date, mt) { return date + ':' + mt; },
     getSlot(date, mt) { return date ? (this._slots[this.slotKey(date, mt)] || []) : []; },
     hasSlot(date, mt) { return this.getSlot(date, mt).length > 0; },
@@ -156,7 +171,7 @@ function planner() {
         await this.initMobileScroll();
         await Promise.all([this.loadMealPlan(), this.loadRecipes(), this.loadRecipeActions()]);
       } catch (e) {
-        this.toast('Failed to reach backend. Is the server running?');
+        this.toast(this.t('error.backend'));
       } finally {
         this.initialized = true;
       }
@@ -174,8 +189,8 @@ function planner() {
         this.days.push({
           date,
           isToday: date === todayStr,
-          label: date === todayStr ? 'Today' : d.toLocaleDateString(undefined, {weekday:'long'}),
-          wd: d.toLocaleDateString(undefined, {weekday:'short'}),
+          label: date === todayStr ? this.t('planner.today') : d.toLocaleDateString(this.locale, {weekday:'long'}),
+          wd: d.toLocaleDateString(this.locale, {weekday:'short'}),
           dn: d.getDate(),
         });
       }
@@ -207,7 +222,7 @@ function planner() {
         this._applyPlanEntries(entries);
         this._savePlanCache(start, end, entries);
       } catch (e) {
-        this.planError = e.message || 'Could not load meal plan.';
+        this.planError = this.t('error.loadPlan');
       } finally {
         this.planLoading = false;
         this.planRefreshing = false;
@@ -248,7 +263,7 @@ function planner() {
         this.cacheCount    = this.allRecipes.length;
         this.recipesLoadedAt = Date.now();
       } catch (e) {
-        this.toast('Could not load recipe cache — try refreshing it in settings.');
+        this.toast(this.t('error.recipeCache'));
         this.recipesLoadedAt = Date.now();
       } finally {
         this.recipesRefreshing = false;
@@ -281,7 +296,6 @@ function planner() {
       }
     },
 
-    /* iOS-safe body scroll lock — overflow:hidden alone doesn't work on Safari */
     _lockBodyScroll() {
       this._scrollY = window.scrollY;
       document.body.style.overflow = 'hidden';
@@ -352,12 +366,12 @@ function planner() {
           this.pushRecentRecipe(recipe.id);
         } catch (e) {
           this.setSlot(date, mt, prev);
-          this.toast('Failed to save — ' + (e.message || 'please try again.'));
+          this.toast(this.t('error.saveFailed', {detail: e.message || this.t('error.saveFallback')}));
         }
         return;
       }
 
-      // add mode — append to slot
+      // add mode 
       const optimistic = { recipe_id: recipe.id, recipe_name: recipe.name, image_url: recipe.image_url, recipe_slug: recipe.slug, id: null, _optimistic: true };
       this.setSlot(date, mt, [...this.getSlot(date, mt), optimistic]);
       try {
@@ -387,14 +401,14 @@ function planner() {
         if (entryId) await this._delete(`/api/mealplan/${entryId}`);
       } catch (e) {
         this.setSlot(date, mt, prev);
-        this.toast('Failed to remove — ' + (e.message || 'please try again.'));
+        this.toast(this.t('error.removeFailed', {detail: e.message || this.t('error.saveFallback')}));
         return;
       }
 
       const id = Date.now() + Math.random();
-      this.pendingActions.push({ id, date, mt, prev: entry, message: 'Removed ' + entry.recipe_name });
+      this.pendingActions.push({ id, date, mt, prev: entry, message: this.t('toast.removed', {name: entry.recipe_name}) });
       this.undoBar = true;
-      this.undoMessage = 'Removed ' + entry.recipe_name;
+      this.undoMessage = this.t('toast.removed', {name: entry.recipe_name});
 
       setTimeout(() => {
         const idx = this.pendingActions.findIndex(a => a.id === id);
@@ -413,7 +427,7 @@ function planner() {
         this.setSlot(date, mt, [...this.getSlot(date, mt), this._prefixImg(entry)]);
         this.toast(`✦ ${entry.recipe_name}`, 'info');
       } catch (e) {
-        this.toast('Sparkle failed — ' + (e.message || 'no recipes cached?'));
+        this.toast(this.t('error.sparkleFailed', {detail: e.message || this.t('error.sparkleFallback')}));
       } finally {
         const next = { ...this.sparkling }; delete next[key]; this.sparkling = next;
       }
@@ -453,7 +467,7 @@ function planner() {
       }
     },
 
-    /* undo — re-creates the single removed entry */
+    /* undo which re-creates the single removed entry */
     undoLastAction() {
       const action = this.pendingActions.pop();
       if (!action) return;
@@ -475,7 +489,7 @@ function planner() {
         })
         .catch(() => {
           this.setSlot(date, mt, this.getSlot(date, mt).filter(e => !(e._optimistic && e.recipe_id === entry.recipe_id)));
-          this.toast('Could not undo.');
+          this.toast(this.t('error.undoFailed'));
         });
     },
 
@@ -485,7 +499,7 @@ function planner() {
       localStorage.setItem('recentRecipes', JSON.stringify(this._recentRecipes));
     },
 
-    /* drag — moves a single entry to target slot (no swap) */
+    /* drag which moves a single entry to target slot (no swap) */
     onDragStart(date, mt, entry, event) {
       if (!entry) return;
       this.draggedSlot = { date, mt, entry };
@@ -536,7 +550,7 @@ function planner() {
         // rollback
         this.setSlot(srcDate, srcMt, [...this.getSlot(srcDate, srcMt), srcEntry]);
         this.setSlot(targetDate, targetMt, this.getSlot(targetDate, targetMt).filter(e => e.id !== srcEntry.id));
-        this.toast('Failed to move recipe — ' + (e.message || 'please try again.'));
+        this.toast(this.t('error.moveFailed', {detail: e.message || this.t('error.saveFallback')}));
       }
     },
 
@@ -553,7 +567,7 @@ function planner() {
         this.settingsOpen = false;
         await Promise.all([this.loadMealPlan(), this.loadRecipes()]);
       } catch (e) {
-        this.settingsError = e.message || 'Save failed.';
+        this.settingsError = e.message || this.t('error.saveFallback');
       } finally {
         this.settingsSaving = false;
       }
@@ -573,9 +587,9 @@ function planner() {
         const r = await this._post('/api/cache/refresh', {});
         this.cacheCount = r.count;
         await this.loadRecipes();
-        this.toast(`Cache refreshed — ${r.count} recipes.`, 'success');
+        this.toast(this.t('toast.cacheRefreshed', {n: r.count}), 'success');
       } catch (e) {
-        this.toast('Cache refresh failed.');
+        this.toast(this.t('error.cacheRefreshFailed'));
       } finally {
         this.cacheRefreshing = false;
       }
@@ -593,7 +607,7 @@ function planner() {
     formatDate(dateStr) {
       if (!dateStr) return '';
       const [y,m,d] = dateStr.split('-').map(Number);
-      return new Date(y,m-1,d).toLocaleDateString(undefined, {weekday:'short',month:'short',day:'numeric'});
+      return new Date(y,m-1,d).toLocaleDateString(this.locale, {weekday:'short',month:'short',day:'numeric'});
     },
     getMealieLink(slug) {
       if (!slug) return '#';
@@ -627,11 +641,11 @@ function planner() {
         if (result.type === 'link' && result.url) {
           window.open(result.url, '_blank', 'noopener');
         } else {
-          this.toast('Action sent.', 'success');
+          this.toast(this.t('toast.actionSent'), 'success');
         }
         this.actionMenuOpen = false;
       } catch (e) {
-        this.toast('Action failed — ' + (e.message || 'unknown error'));
+        this.toast(this.t('error.actionFailed', {detail: e.message || this.t('error.actionFallback')}));
       } finally {
         this.actionLoading = null;
       }
@@ -650,8 +664,8 @@ function planner() {
         return {
           date,
           isToday: date === today,
-          label: date === today ? 'Today' : d.toLocaleDateString(undefined, { weekday: 'long' }),
-          wd: d.toLocaleDateString(undefined, { weekday: 'short' }),
+          label: date === today ? this.t('planner.today') : d.toLocaleDateString(this.locale, { weekday: 'long' }),
+          wd: d.toLocaleDateString(this.locale, { weekday: 'short' }),
           dn: d.getDate(),
         };
       });
@@ -694,7 +708,7 @@ function planner() {
         this._slots = next;
         this.mobileDays = [...this.mobileDays, ...batch];
         if (this.mobileDays.length >= MAX) this.mobileHasMore = false;
-      } catch { this.toast('Could not load more days.'); }
+      } catch { this.toast(this.t('error.loadMoreDays')); }
       finally { this.mobileLoadingMore = false; }
     },
 
