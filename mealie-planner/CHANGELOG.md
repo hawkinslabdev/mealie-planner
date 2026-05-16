@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1
+
+- Fix: the planner no longer shows a blank screen while loading
+- Fix: refreshing the recipe cache from settings no longer freezes the panel
+- Fix: large recipe libraries (1000+) no longer cause a crash when the cache refreshes
+
 ## 0.3.0
 
 - The app is now available in English, Dutch, German, Spanish, French, and Polish
