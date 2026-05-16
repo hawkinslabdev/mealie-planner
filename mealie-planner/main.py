@@ -391,10 +391,14 @@ async def _get_cached_recipes(query: str | None = None) -> list[dict]:
 
 
 # Cache refresh
-_refresh_lock = asyncio.Lock()
 _refresh_in_progress = False
 _last_poll_at: int = 0
 _POLL_COOLDOWN_S: int = 30
+
+# Status cache
+_status_cache: dict = {}
+_status_cached_at: float = 0.0
+_STATUS_TTL: int = 30
 
 
 async def refresh_recipe_cache() -> int:
@@ -460,14 +464,22 @@ async def refresh_recipe_cache() -> int:
                     break
                 page += 1
 
-        # Purge recipes deleted from Mealie; guard against wiping on a partial API failure
+        # Purge recipes deleted from Mealie; chunked to stay under SQLite variable limit
         if seen_ids:
-            placeholders = ",".join("?" * len(seen_ids))
-            await db.execute(
-                f"DELETE FROM recipes WHERE id NOT IN ({placeholders})",
-                list(seen_ids),
-            )
-            await db.commit()
+            all_cached = [
+                row[0]
+                async for row in await db.execute("SELECT id FROM recipes")
+            ]
+            to_delete = [rid for rid in all_cached if rid not in seen_ids]
+            chunk = 200
+            for i in range(0, len(to_delete), chunk):
+                batch = to_delete[i : i + chunk]
+                placeholders = ",".join("?" * len(batch))
+                await db.execute(
+                    f"DELETE FROM recipes WHERE id IN ({placeholders})", batch
+                )
+            if to_delete:
+                await db.commit()
 
         await db.execute(
             "INSERT OR REPLACE INTO cache_meta (key, value) VALUES ('recipes_last_refreshed', ?)",
@@ -739,8 +751,13 @@ def _get_locale(request: Request) -> str:
 
 @app.get("/api/status")
 async def get_status(request: Request):
+    global _status_cache, _status_cached_at
     url, token = get_credentials()
     configured = bool(url and token)
+
+    if _status_cache and time.time() - _status_cached_at < _STATUS_TTL:
+        return {**_status_cache, "configured": configured}
+
     reachable = False
     version = None
 
@@ -752,12 +769,15 @@ async def get_status(request: Request):
         except HTTPException:
             pass
 
-    return {
+    result = {
         "configured": configured,
         "mode": get_mode(),
         "mealie_reachable": reachable,
         "version": version,
     }
+    _status_cache = {"mode": get_mode(), "mealie_reachable": reachable, "version": version}
+    _status_cached_at = time.time()
+    return result
 
 
 @app.get("/api/config")
@@ -820,6 +840,8 @@ async def save_config(payload: ConfigPayload, request: Request):
         )
 
     _write_credentials(payload.mealie_url, encrypt_token(token_to_use))
+    global _status_cached_at
+    _status_cached_at = 0.0  # force status re-check after credential change
     _task_manager.spawn(refresh_recipe_cache())
     return {"ok": True}
 
@@ -882,8 +904,11 @@ async def poll_recipe_changes():
 async def force_cache_refresh(request: Request):
     if not _rate_limiter.check(request, key="refresh", max_hits=5):
         raise HTTPException(status_code=429, detail="Too many requests.")
-    count = await refresh_recipe_cache()
-    return {"count": count, "refreshed_at": datetime.utcnow().isoformat()}
+    _task_manager.spawn(refresh_recipe_cache())
+    db = await get_db()
+    cur = await db.execute("SELECT COUNT(*) FROM recipes")
+    row = await cur.fetchone()
+    return {"count": row[0] if row else 0}
 
 
 @app.get("/api/media/{recipe_id}")
