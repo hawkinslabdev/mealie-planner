@@ -325,12 +325,17 @@ function planner() {
       document.addEventListener('touchmove', this._onTouchMove, { passive: false });
     },
     _activateModalScroll() {
-      // iOS WKWebView doesn't register overflow-y:auto as scrollable until a repaint occurs.
-      // Toggle overflow across two rAFs to force the scroll container to activate.
-      const mb = document.querySelector('.modal-body');
-      if (!mb) return;
-      mb.style.overflow = 'hidden';
-      requestAnimationFrame(() => { mb.style.overflow = ''; });
+      // iOS ignores DOM mutations that occur during an opacity transition (the 150ms enter
+      // animation), so it never registers .modal-body as a scroll container on initial render.
+      // Waiting until after the transition and injecting+removing a real DOM node forces iOS
+      // to re-evaluate the scroll container while the element is fully visible.
+      setTimeout(() => {
+        const mb = document.querySelector('.modal-body');
+        if (!mb) return;
+        const sentinel = document.createElement('div');
+        mb.appendChild(sentinel);
+        requestAnimationFrame(() => sentinel.remove());
+      }, 160);
     },
     _unlockBodyScroll() {
       document.body.style.overflow = '';
