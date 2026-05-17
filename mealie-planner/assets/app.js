@@ -309,14 +309,11 @@ function planner() {
     _lockBodyScroll() {
       this._scrollY = window.scrollY;
       document.body.style.overflow = 'hidden';
-      this._preventTouchMove = (e) => {
-        if (!e.target.closest('.modal-body, .settings-inner')) e.preventDefault();
-      };
-      document.addEventListener('touchmove', this._preventTouchMove, { passive: false });
+      document.body.style.touchAction = 'none';
     },
     _unlockBodyScroll() {
       document.body.style.overflow = '';
-      document.removeEventListener('touchmove', this._preventTouchMove, { passive: false });
+      document.body.style.touchAction = '';
       window.scrollTo(0, this._scrollY);
     },
 
