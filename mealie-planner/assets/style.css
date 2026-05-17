@@ -1129,6 +1129,11 @@
      flex-direction: column;
      overflow: hidden;
 }
+ @media (max-width: 579px) {
+     .modal {
+         height: 88vh;
+    }
+}
  @media (min-width: 580px) {
      .modal {
          max-width: 480px;
