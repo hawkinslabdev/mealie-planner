@@ -324,6 +324,14 @@ function planner() {
       document.addEventListener('touchstart', this._onTouchStart, { passive: true });
       document.addEventListener('touchmove', this._onTouchMove, { passive: false });
     },
+    _activateModalScroll() {
+      // iOS WKWebView doesn't register overflow-y:auto as scrollable until a repaint occurs.
+      // Toggle overflow across two rAFs to force the scroll container to activate.
+      const mb = document.querySelector('.modal-body');
+      if (!mb) return;
+      mb.style.overflow = 'hidden';
+      requestAnimationFrame(() => { mb.style.overflow = ''; });
+    },
     _unlockBodyScroll() {
       document.body.style.overflow = '';
       document.body.style.position = '';
@@ -341,7 +349,10 @@ function planner() {
       this.modalOpen = true;
       if (!this.recipesLoadedAt || Date.now() - this.recipesLoadedAt > RECIPES_STALE_MS) this.loadRecipes();
       else this._pollForNewRecipes();
-      this.$nextTick(() => this.$refs.searchInput?.focus());
+      this.$nextTick(() => {
+        this.$refs.searchInput?.focus();
+        this._activateModalScroll();
+      });
     },
 
     openModalReplace(date, mt, entry) {
@@ -350,7 +361,10 @@ function planner() {
       this.modalOpen = true;
       if (!this.recipesLoadedAt || Date.now() - this.recipesLoadedAt > RECIPES_STALE_MS) this.loadRecipes();
       else this._pollForNewRecipes();
-      this.$nextTick(() => this.$refs.searchInput?.focus());
+      this.$nextTick(() => {
+        this.$refs.searchInput?.focus();
+        this._activateModalScroll();
+      });
     },
 
     async _pollForNewRecipes() {
