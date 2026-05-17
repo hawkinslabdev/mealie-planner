@@ -407,7 +407,7 @@
     </div>
   </div>
   <!-- recipe modal -->
-  <div x-show="modalOpen" class="modal-backdrop" @click.self="modalOpen = false"
+  <div x-show="modalOpen" class="modal-backdrop" @click.self="modalOpen = false" @touchmove.prevent
     x-transition:enter="transition ease-out duration-150"
     x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
     x-transition:leave="transition ease-in duration-100"
@@ -432,7 +432,7 @@
         </span>
       </div>
 
-      <div class="modal-body" @scroll="onModalScroll($event)">
+      <div class="modal-body" @scroll="onModalScroll($event)" @touchmove.stop>
         <div x-show="recipesLoadedAt === null" class="center-msg" x-text="t('modal.loadingRecipes')"></div>
 
         <!-- sparkle prompt — empty slot, add mode, no search active -->
