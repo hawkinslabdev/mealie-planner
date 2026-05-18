@@ -383,6 +383,7 @@ function planner() {
         const prev = [...this.getSlot(date, mt)];
         const optimistic = { recipe_id: recipe.id, recipe_name: recipe.name, image_url: recipe.image_url, recipe_slug: recipe.slug, id: null, _optimistic: true };
         this.setSlot(date, mt, prev.map(e => e.id === oldEntry.id ? optimistic : e));
+        this.toast(recipe.name, 'success');
         try {
           if (oldEntry.id) await this._delete(`/api/mealplan/${oldEntry.id}`);
           const entry = await this._post('/api/mealplan', { date, meal_type: mt, recipe_id: recipe.id });
@@ -395,9 +396,10 @@ function planner() {
         return;
       }
 
-      // add mode 
+      // add mode
       const optimistic = { recipe_id: recipe.id, recipe_name: recipe.name, image_url: recipe.image_url, recipe_slug: recipe.slug, id: null, _optimistic: true };
       this.setSlot(date, mt, [...this.getSlot(date, mt), optimistic]);
+      this.toast(recipe.name, 'success');
       try {
         const entry = await this._post('/api/mealplan', { date, meal_type: mt, recipe_id: recipe.id });
         const arr = this.getSlot(date, mt);
@@ -410,7 +412,7 @@ function planner() {
         this.pushRecentRecipe(recipe.id);
       } catch (e) {
         this.setSlot(date, mt, this.getSlot(date, mt).filter(e => !(e._optimistic && e.recipe_id === recipe.id)));
-        this.toast('Failed to save — ' + (e.message || 'please try again.'));
+        this.toast(this.t('error.saveFailed', {detail: e.message || this.t('error.saveFallback')}));
       }
     },
 
@@ -420,14 +422,6 @@ function planner() {
       if (!entry) return;
 
       this.setSlot(date, mt, prev.filter(e => e.id !== entryId));
-
-      try {
-        if (entryId) await this._delete(`/api/mealplan/${entryId}`);
-      } catch (e) {
-        this.setSlot(date, mt, prev);
-        this.toast(this.t('error.removeFailed', {detail: e.message || this.t('error.saveFallback')}));
-        return;
-      }
 
       const id = Date.now() + Math.random();
       this.pendingActions.push({ id, date, mt, prev: entry, message: this.t('toast.removed', {name: entry.recipe_name}) });
@@ -440,6 +434,15 @@ function planner() {
         this.pendingActions.splice(idx, 1);
         if (!this.pendingActions.length) this.undoBar = false;
       }, 7000);
+
+      try {
+        if (entryId) await this._delete(`/api/mealplan/${entryId}`);
+      } catch (e) {
+        this.setSlot(date, mt, prev);
+        this.pendingActions = this.pendingActions.filter(a => a.id !== id);
+        if (!this.pendingActions.length) this.undoBar = false;
+        this.toast(this.t('error.removeFailed', {detail: e.message || this.t('error.saveFallback')}));
+      }
     },
 
     async sparkle(date, mt) {

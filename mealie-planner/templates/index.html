@@ -289,7 +289,7 @@
                     </template>
                     <div x-show="isSparkle(item.date, item.mt)" class="skel skel--chip" style="margin-top:var(--space-1)"></div>
                     <div class="cell-acts" x-show="hasSlot(item.date, item.mt) || isSparkle(item.date, item.mt)">
-                      <button class="ca ca--accent" @click="sparkle(item.date, item.mt)" :title="t('planner.sparkleTitle')"><span class="sparkle-glyph">✦</span> <span x-text="t('planner.sparkle')"></span></button>
+                      <button class="ca ca--accent" :class="{'ca--sparkling': isSparkle(item.date, item.mt)}" @click="sparkle(item.date, item.mt)" :title="t('planner.sparkleTitle')"><span class="sparkle-glyph">✦</span> <span x-text="t('planner.sparkle')"></span></button>
                       <button class="ca" @click="openModal(item.date, item.mt)" x-text="t('planner.addShort')"></button>
                     </div>
                     <template x-if="!hasSlot(item.date, item.mt) && !isSparkle(item.date, item.mt)">
@@ -368,7 +368,7 @@
                   <div x-show="isSparkle(day.date, mt)" class="skel" style="height:44px;border-radius:8px;margin-bottom:var(--space-2)"></div>
                   <p x-show="!hasSlot(day.date, mt) && !isSparkle(day.date, mt)" class="mobile-slot-empty" x-text="t('planner.nothingPlanned')"></p>
                   <div class="mobile-acts">
-                    <button class="ca ca--accent" @click="sparkle(day.date, mt)"><span class="sparkle-glyph">✦</span> <span x-text="t('planner.sparkle')"></span></button>
+                    <button class="ca ca--accent" :class="{'ca--sparkling': isSparkle(day.date, mt)}" @click="sparkle(day.date, mt)"><span class="sparkle-glyph">✦</span> <span x-text="t('planner.sparkle')"></span></button>
                     <span class="ca-sep">·</span>
                     <button class="ca" @click="openModal(day.date, mt)" x-text="t('planner.addShort')"></button>
                   </div>
@@ -520,20 +520,32 @@
     </template>
   </div>
 
-  <!-- undo -->
-  <div x-show="undoBar" class="undo-bar">
-    <span x-text="undoMessage"></span>
-    <button class="undo-btn" @click="undoLastAction()" x-text="t('planner.undo')"></button>
-  </div>
-
-  <!-- toasts -->
-  <div class="toast-stack">
+  <!-- notifications: toasts + undo -->
+  <div class="notif-hub" aria-live="polite" aria-atomic="false">
     <template x-for="t in toasts" :key="t.id">
-      <div class="toast" :class="'toast--' + t.type" x-transition>
+      <div class="toast" :class="'toast--' + t.type"
+        x-transition:enter="toast-enter"
+        x-transition:enter-start="toast-enter-from"
+        x-transition:enter-end="toast-enter-to"
+        x-transition:leave="toast-leave"
+        x-transition:leave-start="toast-leave-from"
+        x-transition:leave-end="toast-leave-to">
+        <span class="toast__icon" aria-hidden="true"></span>
         <span class="toast__msg" x-text="t.msg"></span>
         <button class="toast__close" @click="removeToast(t.id)" :aria-label="t('toast.dismiss')">×</button>
+        <span class="toast__progress" aria-hidden="true"></span>
       </div>
     </template>
+    <div x-show="undoBar" class="undo-bar"
+      x-transition:enter="toast-enter"
+      x-transition:enter-start="toast-enter-from"
+      x-transition:enter-end="toast-enter-to"
+      x-transition:leave="toast-leave"
+      x-transition:leave-start="toast-leave-from"
+      x-transition:leave-end="toast-leave-to">
+      <span x-text="undoMessage"></span>
+      <button class="undo-btn" @click="undoLastAction()" x-text="t('planner.undo')"></button>
+    </div>
   </div>
 
   <!-- logout modal -->
