@@ -35,6 +35,8 @@
     "cacheRefresh": "Actualizar",
     "cacheRefreshing": "Actualizando…",
     "recipesCount": "{n} recetas guardadas",
+    "optionsLabel": "Opciones",
+    "showQuickAdd": "Mostrar botón de crear e importar",
     "sourceLabel": "Fuente",
     "github": "Ver en GitHub",
     "languageLabel": "Idioma"
@@ -81,7 +83,8 @@
     "feelingLucky": "¿Te sientes con suerte?",
     "feelingLuckySub": "Elige una receta aleatoria para mí",
     "recentlyUsed": "Usadas recientemente",
-    "loadingMore": "cargando más…"
+    "loadingMore": "cargando más…",
+    "close": "Cerrar"
   },
   "actions": {
     "title": "Acciones"
@@ -112,7 +115,30 @@
     "moveFailed": "Error al mover la receta — {detail}",
     "saveFallback": "inténtalo de nuevo.",
     "sparkleFallback": "¿no hay recetas en caché?",
-    "actionFallback": "error desconocido"
+    "actionFallback": "error desconocido",
+    "networkOffline": "No se puede contactar el servidor — verifica tu conexión e inténtalo de nuevo."
+  },
+  "quickAdd": {
+    "title": "Añadir a Mealie",
+    "tabUrl": "Importar desde web",
+    "tabNew": "Nueva receta",
+    "urlLabel": "URL de la receta",
+    "urlPlaceholder": "https://...",
+    "urlHint": "Pega la URL de una página de receta. Mealie importará los ingredientes y pasos automáticamente — suele tardar 10–20 segundos.",
+    "nameLabel": "Nombre de la receta",
+    "namePlaceholder": "ej. Lasaña de la abuela",
+    "imageLabel": "Foto (opcional)",
+    "imagePlaceholder": "Elegir imagen…",
+    "btnImport": "Importar y añadir al plan",
+    "btnCreate": "Crear y añadir al plan",
+    "importing": "Obteniendo receta… (suele tardar 10–20 segundos)",
+    "creating": "Creando receta…",
+    "btnCellShort": "+ nueva receta",
+    "btnCellCreate": "nueva receta",
+    "addedToSlot": "✦ {name} añadido al plan",
+    "errorUrlRequired": "Pega primero la URL de una página de receta.",
+    "errorNameRequired": "El nombre de la receta no puede estar vacío.",
+    "errorAddedNotPlanned": "{name} se creó en Mealie pero no se pudo añadir a este hueco — búscalo con + añadir."
   },
   "auth": {
     "pageTitle": "Mealie Planner · Desbloquear",

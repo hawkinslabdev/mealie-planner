@@ -55,6 +55,18 @@ function planner() {
     pendingActions: [],
     _scrollY: 0,
 
+    showQuickAdd: localStorage.getItem('showQuickAdd') !== 'false',  // pill in Settings → Options
+    quickAddOpen: false,
+    quickAddDate: null,
+    quickAddMt: null,
+    quickAddTab: 'url',
+    quickAddUrl: '',
+    quickAddName: '',
+    quickAddImageFile: null,
+    quickAddImagePreview: null,
+    quickAddLoading: false,
+    quickAddError: null,
+
     activeCell: null,  // { date, mt } last clicked cell
 
     recipeActions: [],
@@ -172,7 +184,13 @@ function planner() {
         const cfg = await this._fetch('/api/config');
         this.settingsForm.mealie_url = cfg.mealie_url;
         // Load data first so mobile skeleton (mobileDays.length === 0) persists until ready
-        await Promise.all([this.loadMealPlan(), this.loadRecipes(), this.loadRecipeActions()]);
+        const [, , , settings] = await Promise.all([
+          this.loadMealPlan(),
+          this.loadRecipes(),
+          this.loadRecipeActions(),
+          this._fetch('/api/settings').catch(() => ({})),
+        ]);
+        if (typeof settings.show_quick_add === 'boolean') this.showQuickAdd = settings.show_quick_add;
         await this.initMobileScroll();
         document.addEventListener('visibilitychange', () => {
           if (document.visibilityState !== 'visible' || !this.days.length) return;
@@ -315,7 +333,7 @@ function planner() {
       document.body.style.width = '100%';
       this._onTouchStart = (e) => { this._touchStartY = e.touches[0]?.clientY ?? 0; };
       this._onTouchMove = (e) => {
-        const el = e.target.closest('.modal-body, .settings-inner');
+        const el = e.target.closest('.modal-body, .settings-inner, .qa-body');
         if (!el) { e.preventDefault(); return; }
         // at scroll boundaries prevent default so rubber-band doesn't leak to body
         if (el.scrollTop <= 0 && e.touches[0].clientY > this._touchStartY) { e.preventDefault(); return; }
@@ -482,7 +500,7 @@ function planner() {
       if (event.key === 'ArrowLeft') { event.preventDefault(); if (!this.modalOpen) this.shiftPage(-1); }
       else if (event.key === 'ArrowRight') { event.preventDefault(); if (!this.modalOpen) this.shiftPage(1); }
       else if (event.key === 'r' || event.key === 'R') { if (!this.modalOpen) this.sparkleActive(); }
-      else if (event.key === 'Escape') { this.modalOpen = false; this.themeMenuOpen = false; this.settingsOpen = false; this.actionMenuOpen = false; }
+      else if (event.key === 'Escape') { this.modalOpen = false; if (this.quickAddOpen) this.closeQuickAdd(); this.themeMenuOpen = false; this.settingsOpen = false; this.actionMenuOpen = false; }
       else if (event.key === 'Tab' && this.modalOpen) {
         const modal = document.querySelector('.modal');
         if (!modal) return;
@@ -745,6 +763,125 @@ function planner() {
       if (obj.image_url.startsWith('/api/')) return { ...obj, image_url: api(obj.image_url) };
       return obj;
     },
+    _imgError(e, seed) {
+      const G = [
+        'linear-gradient(135deg,#f97316,#dc2626)',
+        'linear-gradient(135deg,#f59e0b,#d97706)',
+        'linear-gradient(135deg,#84cc16,#16a34a)',
+        'linear-gradient(135deg,#06b6d4,#0284c7)',
+        'linear-gradient(135deg,#a855f7,#ec4899)',
+        'linear-gradient(135deg,#fb7185,#f97316)',
+        'linear-gradient(135deg,#78350f,#d97706)',
+        'linear-gradient(135deg,#fde68a,#fbbf24)',
+        'linear-gradient(135deg,#4ade80,#22d3ee)',
+        'linear-gradient(135deg,#e879f9,#818cf8)',
+        'linear-gradient(135deg,#f43f5e,#9f1239)',
+        'linear-gradient(135deg,#854d0e,#92400e)',
+      ];
+      const i = seed ? [...seed].reduce((a, c) => a + c.charCodeAt(0), 0) % G.length : 0;
+      const t = e.target;
+      t.onerror = null;
+      t.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+      t.style.backgroundImage = G[i];
+    },
+
+    /* quick-add */
+    openQuickAdd(date, mt) {
+      this.quickAddDate = date;
+      this.quickAddMt = mt;
+      this.quickAddTab = 'url';
+      this.quickAddUrl = '';
+      this.quickAddName = '';
+      this.quickAddImageFile = null;
+      if (this.quickAddImagePreview) { URL.revokeObjectURL(this.quickAddImagePreview); this.quickAddImagePreview = null; }
+      this.quickAddLoading = false;
+      this.quickAddError = null;
+      this.quickAddOpen = true;
+      this.$nextTick(() => setTimeout(() => this.$refs.quickAddUrlInput?.focus(), 120));
+    },
+
+    closeQuickAdd() {
+      this.quickAddOpen = false;
+      if (this.quickAddImagePreview) { URL.revokeObjectURL(this.quickAddImagePreview); this.quickAddImagePreview = null; }
+    },
+
+    onQuickAddFileChange(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      this.quickAddImageFile = file;
+      if (this.quickAddImagePreview) URL.revokeObjectURL(this.quickAddImagePreview);
+      this.quickAddImagePreview = URL.createObjectURL(file);
+    },
+
+    async importRecipeFromUrl() {
+      const url = this.quickAddUrl.trim();
+      if (!url) { this.quickAddError = this.t('quickAdd.errorUrlRequired'); return; }
+      this.quickAddLoading = true;
+      this.quickAddError = null;
+      try {
+        const recipe = await this._post('/api/recipes/import-url', { url });
+        await this._addCreatedRecipeToSlot(recipe, this.quickAddDate, this.quickAddMt);
+        this.closeQuickAdd();
+      } catch (e) {
+        this.quickAddError = this._friendlyError(e);
+      } finally {
+        this.quickAddLoading = false;
+      }
+    },
+
+    async quickCreateRecipe() {
+      const name = this.quickAddName.trim();
+      if (!name) { this.quickAddError = this.t('quickAdd.errorNameRequired'); return; }
+      this.quickAddLoading = true;
+      this.quickAddError = null;
+      try {
+        const recipe = await this._post('/api/recipes/quick-create', { name });
+        if (this.quickAddImageFile) {
+          try {
+            const fd = new FormData();
+            fd.append('file', this.quickAddImageFile, this.quickAddImageFile.name);
+            await fetch(api(`/api/recipes/${recipe.slug}/image`), { method: 'POST', body: fd });
+          } catch (_) {}
+        }
+        await this._addCreatedRecipeToSlot(recipe, this.quickAddDate, this.quickAddMt);
+        this.closeQuickAdd();
+      } catch (e) {
+        this.quickAddError = this._friendlyError(e);
+      } finally {
+        this.quickAddLoading = false;
+      }
+    },
+
+    _friendlyError(e) {
+      if (e instanceof TypeError && e.message && e.message.toLowerCase().includes('fetch')) {
+        return this.t('error.networkOffline');
+      }
+      return e.message || this.t('error.saveFallback');
+    },
+
+    async _addCreatedRecipeToSlot(recipe, date, mt) {
+      const prefixed = this._prefixImg(recipe);
+      if (!this.allRecipes.find(r => r.id === prefixed.id)) {
+        this.allRecipes = [prefixed, ...this.allRecipes];
+      }
+      const optimistic = { recipe_id: prefixed.id, recipe_name: prefixed.name, image_url: prefixed.image_url, recipe_slug: prefixed.slug, id: null, _optimistic: true };
+      this.setSlot(date, mt, [...this.getSlot(date, mt), optimistic]);
+      try {
+        const entry = await this._post('/api/mealplan', { date, meal_type: mt, recipe_id: prefixed.id });
+        const arr = this.getSlot(date, mt);
+        const idx = arr.findIndex(e => e._optimistic && e.recipe_id === prefixed.id);
+        if (idx !== -1) {
+          const updated = [...arr];
+          updated[idx] = this._prefixImg(entry);
+          this.setSlot(date, mt, updated);
+        }
+        this.pushRecentRecipe(prefixed.id);
+        this.toast(this.t('quickAdd.addedToSlot', { name: prefixed.name }), 'success');
+      } catch (e) {
+        this.setSlot(date, mt, this.getSlot(date, mt).filter(e => !(e._optimistic && e.recipe_id === prefixed.id)));
+        this.toast(this.t('quickAdd.errorAddedNotPlanned', { name: prefixed.name }));
+      }
+    },
 
     /* http */
     _extractError(body, status) {
@@ -768,9 +905,18 @@ function planner() {
       }
       return r.json().catch(() => ({}));
     },
+    async _patch(path, body) {
+      const r = await fetch(api(path), { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+      if (!r.ok) { const b = await r.json().catch(() => ({})); throw new Error(this._extractError(b, r.status)); }
+      return r.json().catch(() => ({}));
+    },
     async _delete(path) {
       const r = await fetch(api(path), { method:'DELETE' });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    },
+    _saveSettings(patch) {
+      if ('show_quick_add' in patch) localStorage.setItem('showQuickAdd', String(patch.show_quick_add));
+      this._patch('/api/settings', patch).catch(() => {});
     },
   };
 }

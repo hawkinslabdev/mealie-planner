@@ -307,7 +307,9 @@
          position: fixed;
          inset: 0;
          z-index: 50;
-         background: light-dark(rgba(0,0,0,.35), rgba(0,0,0,.65));
+         background: light-dark(rgba(0,0,0,.18), rgba(0,0,0,.52));
+         backdrop-filter: blur(4px);
+         -webkit-backdrop-filter: blur(4px);
          display: flex;
          align-items: flex-end;
     }
@@ -1117,7 +1119,9 @@
      position: fixed;
      inset: 0;
      z-index: 50;
-     background: light-dark(rgba(0,0,0,.35), rgba(0,0,0,.65));
+     background: light-dark(rgba(0,0,0,.18), rgba(0,0,0,.52));
+     backdrop-filter: blur(4px);
+     -webkit-backdrop-filter: blur(4px);
      display: flex;
      align-items: flex-end;
      justify-content: center;
@@ -1355,6 +1359,20 @@
      overflow: hidden;
 }
  /* alpine enter */
+ /* modal panel enter — CSS animation replays whenever display:none→visible */
+ @keyframes modal-panel-in {
+     from {
+         opacity: 0;
+         transform: translateY(16px) scale(0.97);
+    }
+     to {
+         opacity: 1;
+         transform: translateY(0) scale(1);
+    }
+}
+ .modal {
+     animation: modal-panel-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
  .toast-enter {
      transition: opacity 220ms cubic-bezier(0.16, 1, 0.3, 1),
                  transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -1745,6 +1763,12 @@
  .duration-150 {
      transition-duration: 150ms;
 }
+ .duration-200 {
+     transition-duration: 200ms;
+}
+ .scale-75 {
+     transform: scale(0.75) !important;
+}
  .icon-btn:focus-visible, .btn:focus-visible, .week-nav-btn:focus-visible, .pill:focus-visible, .chip:focus-visible, .ca:focus-visible, .recipe-card:focus-visible, .theme-opt:focus-visible {
      outline: 2px solid var(--accent);
      outline-offset: 2px;
@@ -1833,4 +1857,269 @@
      transform: translateY(-2px);
      box-shadow: 0 4px 12px oklch(0% 0 0 / 0.22), 0 0 0 1px oklch(0% 0 0 / 0.08);
      transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Options toggle slider ──────────────────────────────────────────── */
+ .opt-row {
+     display: flex;
+     align-items: center;
+     justify-content: space-between;
+     gap: var(--space-4);
+}
+ .opt-label {
+     font-size: var(--text-sm);
+     color: var(--text-muted);
+     font-weight: 500;
+     flex: 1;
+}
+ .opt-toggle {
+     position: relative;
+     width: 38px;
+     height: 22px;
+     flex-shrink: 0;
+     border-radius: 100px;
+     background: var(--bg-subtle);
+     border: 1px solid var(--border);
+     cursor: pointer;
+     transition: background .15s, border-color .15s;
+     padding: 0;
+}
+ .opt-toggle::after {
+     content: '';
+     position: absolute;
+     left: 2px;
+     top: 2px;
+     width: 16px;
+     height: 16px;
+     border-radius: 50%;
+     background: var(--border-strong);
+     transition: transform .15s cubic-bezier(0.16, 1, 0.3, 1), background .15s;
+}
+ .opt-toggle--on {
+     background: var(--accent-muted);
+     border-color: var(--accent);
+}
+ .opt-toggle--on::after {
+     transform: translateX(16px);
+     background: var(--accent);
+}
+ .opt-toggle:focus-visible {
+     outline: 2px solid var(--accent);
+     outline-offset: 2px;
+}
+
+/* ── Quick-add cell create button ───────────────────────────────────── */
+ .cell-create-btn {
+     position: absolute;
+     bottom: var(--space-2);
+     right: var(--space-2);
+     background: transparent;
+     border: 1px solid transparent;
+     border-radius: 7px;
+     padding: 4px 8px;
+     font-family: inherit;
+     font-size: 0.625rem;
+     font-weight: 500;
+     color: var(--text-subtle);
+     cursor: pointer;
+     opacity: 0;
+     transition: opacity .12s, color .12s, background .12s, border-color .12s, transform .18s cubic-bezier(0.16, 1, 0.3, 1);
+     line-height: 1;
+     display: flex;
+     align-items: center;
+     gap: 3px;
+     white-space: nowrap;
+     z-index: 1;
+}
+ .g-cell:hover .cell-create-btn {
+     opacity: 1;
+}
+ .cell-create-btn:hover {
+     color: var(--accent);
+     background: var(--accent-muted);
+     border-color: color-mix(in oklch, var(--accent) 22%, transparent);
+     transform: translateY(-1px);
+}
+ .cell-create-btn:focus-visible {
+     outline: 2px solid var(--accent);
+     outline-offset: 2px;
+     opacity: 1;
+}
+
+/* ── Quick-add modal ────────────────────────────────────────────────── */
+ .qa-tabs {
+     display: flex;
+     gap: var(--space-1);
+     padding: var(--space-3) var(--space-5);
+     border-bottom: 1px solid var(--border);
+     flex-shrink: 0;
+}
+ .qa-tab {
+     font-family: inherit;
+     font-size: var(--text-sm);
+     font-weight: 500;
+     padding: .3125rem var(--space-3);
+     border-radius: 7px;
+     border: 1px solid transparent;
+     background: transparent;
+     color: var(--text-subtle);
+     cursor: pointer;
+     transition: color .15s, background .15s, border-color .15s;
+}
+ .qa-tab:hover:not(.qa-tab--on) {
+     color: var(--text-muted);
+     background: var(--bg-subtle);
+}
+ .qa-tab--on {
+     background: var(--accent-muted);
+     border-color: color-mix(in oklch, var(--accent) 25%, transparent);
+     color: var(--accent);
+}
+ .qa-tab:focus-visible {
+     outline: 2px solid var(--accent);
+     outline-offset: 2px;
+}
+ .qa-body {
+     flex: 1;
+     min-height: 0;
+     overflow-y: auto;
+     -webkit-overflow-scrolling: touch;
+     touch-action: pan-y;
+     overscroll-behavior: contain;
+     padding: var(--space-5);
+     display: flex;
+     flex-direction: column;
+     gap: var(--space-4);
+}
+ .qa-hint {
+     font-size: var(--text-xs);
+     color: var(--text-subtle);
+     line-height: 1.55;
+}
+ .qa-file-label {
+     display: flex;
+     align-items: center;
+     gap: var(--space-3);
+     padding: var(--space-3) var(--space-4);
+     border: 1px dashed var(--border);
+     border-radius: 8px;
+     cursor: pointer;
+     color: var(--text-muted);
+     font-size: var(--text-sm);
+     transition: border-color .15s, color .15s, background .15s;
+     overflow: hidden;
+}
+ .qa-file-label:hover {
+     border-color: var(--accent);
+     color: var(--text);
+     background: var(--accent-muted);
+}
+ .qa-file-input {
+     position: absolute;
+     width: 0;
+     height: 0;
+     opacity: 0;
+}
+ .qa-file-name {
+     flex: 1;
+     min-width: 0;
+     overflow: hidden;
+     text-overflow: ellipsis;
+     white-space: nowrap;
+}
+ .qa-preview {
+     width: 40px;
+     height: 40px;
+     object-fit: cover;
+     border-radius: 6px;
+     background: var(--bg-subtle);
+     flex-shrink: 0;
+}
+ .qa-footer {
+     padding: var(--space-4) var(--space-5);
+     border-top: 1px solid var(--border);
+     display: flex;
+     flex-direction: column;
+     gap: var(--space-2);
+     flex-shrink: 0;
+}
+
+/* compact modal */
+ @media (max-width: 579px) {
+     .modal--compact {
+         height: auto;
+         max-height: 90vh;
+    }
+}
+
+ .modal-load-more {
+     text-align: center;
+     padding: var(--space-3);
+     font-size: var(--text-sm);
+     color: var(--text-subtle);
+     opacity: .45;
+}
+ .modal-section-label {
+     font-size: var(--text-xs);
+     font-weight: 500;
+     color: var(--text-subtle);
+     text-transform: uppercase;
+     letter-spacing: .07em;
+     padding: var(--space-1) var(--space-1) var(--space-2);
+}
+
+/* spinner inside buttons */
+ @keyframes btn-spin {
+     to { transform: rotate(360deg); }
+}
+ .btn-spinner {
+     animation: btn-spin .8s linear infinite;
+     flex-shrink: 0;
+}
+
+/* image upload label */
+ .qa-file-label--has-file {
+     border-color: var(--accent);
+     border-style: solid;
+}
+
+/* floating action button */
+ .fab {
+     position: fixed;
+     bottom: 28px;
+     right: 28px;
+     width: 56px;
+     height: 56px;
+     border-radius: 50%;
+     background: var(--accent);
+     color: #fff;
+     border: none;
+     cursor: pointer;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     box-shadow: 0 4px 16px oklch(0% 0 0 / 0.28), 0 1px 3px oklch(0% 0 0 / 0.18);
+     z-index: 35;
+     transition: transform .18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .18s, background .15s;
+}
+ .fab:hover {
+     background: var(--accent);
+     filter: brightness(1.12);
+     transform: scale(1.07);
+     box-shadow: 0 8px 28px oklch(0% 0 0 / 0.36), 0 2px 6px oklch(0% 0 0 / 0.18);
+}
+ .fab:active {
+     transform: scale(0.93);
+     box-shadow: 0 2px 8px oklch(0% 0 0 / 0.22);
+     transition-duration: 0.06s;
+}
+
+/* success flash on recipe chip entering from quick-add */
+ @keyframes chip-pop {
+     0%   { transform: scale(0.88) translateY(-6px); opacity: 0; }
+     60%  { transform: scale(1.04) translateY(1px);  opacity: 1; }
+     100% { transform: scale(1) translateY(0);        opacity: 1; }
+}
+ .chip--pop {
+     animation: chip-pop 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

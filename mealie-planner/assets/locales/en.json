@@ -35,6 +35,8 @@
     "cacheRefresh": "Refresh",
     "cacheRefreshing": "Refreshing…",
     "recipesCount": "{n} recipes saved",
+    "optionsLabel": "Options",
+    "showQuickAdd": "Show create & import button",
     "sourceLabel": "Source",
     "github": "Visit on GitHub",
     "languageLabel": "Language"
@@ -74,6 +76,7 @@
   "modal": {
     "titleReplace": "Change recipe",
     "titleAdd": "Add recipe",
+    "close": "Close",
     "searchPlaceholder": "Search recipes…",
     "refreshingRecipes": "Refreshing recipes",
     "noMatch": "No recipes match \"{q}\"",
@@ -112,7 +115,30 @@
     "moveFailed": "Failed to move recipe — {detail}",
     "saveFallback": "please try again.",
     "sparkleFallback": "no recipes cached?",
-    "actionFallback": "unknown error"
+    "actionFallback": "unknown error",
+    "networkOffline": "Couldn't reach the server — check your connection and try again."
+  },
+  "quickAdd": {
+    "title": "Add to Mealie",
+    "tabUrl": "Import from website",
+    "tabNew": "New recipe",
+    "urlLabel": "Recipe URL",
+    "urlPlaceholder": "https://...",
+    "urlHint": "Paste a recipe website URL. Mealie will fetch the ingredients and steps automatically — usually takes 10–20 seconds.",
+    "nameLabel": "Recipe name",
+    "namePlaceholder": "e.g. Grandma's lasagna",
+    "imageLabel": "Photo (optional)",
+    "imagePlaceholder": "Choose an image…",
+    "btnImport": "Import & add to plan",
+    "btnCreate": "Create & add to plan",
+    "importing": "Fetching recipe… (usually 10–20 seconds)",
+    "creating": "Creating recipe…",
+    "btnCellShort": "+ new recipe",
+    "btnCellCreate": "new recipe",
+    "addedToSlot": "✦ {name} added to plan",
+    "errorUrlRequired": "Paste the URL of a recipe page first.",
+    "errorNameRequired": "Recipe name can't be empty.",
+    "errorAddedNotPlanned": "{name} was created in Mealie but couldn't be added to this slot — search for it with + add."
   },
   "auth": {
     "pageTitle": "Mealie Planner · Unlock",

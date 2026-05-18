@@ -17,7 +17,7 @@ load_dotenv()
 import aiosqlite
 import httpx
 from cryptography.fernet import Fernet, InvalidToken
-from fastapi import FastAPI, HTTPException, Query, Request, Response
+from fastapi import FastAPI, HTTPException, Query, Request, Response, UploadFile
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -351,6 +351,12 @@ async def init_db() -> None:
             value TEXT NOT NULL
         )
     """)
+    await db.execute("""
+        CREATE TABLE IF NOT EXISTS settings (
+            key   TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+        )
+    """)
     await db.commit()
 
 
@@ -388,6 +394,29 @@ async def _get_cached_recipes(query: str | None = None) -> list[dict]:
         }
         for r in rows
     ]
+
+
+async def _upsert_recipe_cache(recipe_data: dict) -> None:
+    recipe_id = recipe_data.get("id")
+    slug = recipe_data.get("slug")
+    name = recipe_data.get("name")
+    if not all([recipe_id, slug, name]):
+        return
+    description = recipe_data.get("description") or ""
+    tags = json.dumps(
+        [t.get("name") for t in (recipe_data.get("tags") or []) if isinstance(t, dict)]
+    )
+    db = await get_db()
+    await db.execute(
+        """INSERT INTO recipes (id, slug, name, description, tags, image_url, cached_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT(id) DO UPDATE SET
+             slug=excluded.slug, name=excluded.name,
+             description=excluded.description, tags=excluded.tags,
+             image_url=excluded.image_url, cached_at=excluded.cached_at""",
+        (recipe_id, slug, name, description, tags, "", int(time.time())),
+    )
+    await db.commit()
 
 
 # Cache refresh
@@ -846,6 +875,47 @@ async def save_config(payload: ConfigPayload, request: Request):
     return {"ok": True}
 
 
+_SETTINGS_DEFAULTS: dict[str, object] = {
+    "show_quick_add": True,
+}
+_ALLOWED_SETTINGS: set[str] = set(_SETTINGS_DEFAULTS)
+
+
+@app.get("/api/settings")
+async def get_settings():
+    db = await get_db()
+    async with db.execute("SELECT key, value FROM settings") as cur:
+        rows = await cur.fetchall()
+    result = dict(_SETTINGS_DEFAULTS)
+    for row in rows:
+        if row[0] in _ALLOWED_SETTINGS:
+            try:
+                result[row[0]] = json.loads(row[1])
+            except Exception:
+                pass
+    return result
+
+
+class SettingsPatch(BaseModel):
+    show_quick_add: bool | None = None
+
+
+@app.patch("/api/settings")
+async def update_settings(payload: SettingsPatch, request: Request):
+    if not _rate_limiter.check(request, key="settings", max_hits=30):
+        raise HTTPException(status_code=429, detail="Too many requests.")
+    db = await get_db()
+    updates = payload.model_dump(exclude_none=True)
+    for key, value in updates.items():
+        await db.execute(
+            "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+            (key, json.dumps(value)),
+        )
+    if updates:
+        await db.commit()
+    return {"ok": True}
+
+
 @app.get("/api/recipes")
 async def get_recipes(q: str | None = None):
     await ensure_cache_fresh()
@@ -960,6 +1030,166 @@ async def get_recipe(slug: str):
         "description": data.get("description"),
         "image_url": f"/api/media/{data['id']}" if data.get("id") else None,
     }
+
+
+class ImportUrlPayload(BaseModel):
+    url: str
+
+    @field_validator("url")
+    @classmethod
+    def _check_url(cls, v: str) -> str:
+        v = v.strip()
+        parsed = urlparse(v)
+        if parsed.scheme not in ("http", "https") or not parsed.netloc:
+            raise ValueError("URL must be a valid http or https address.")
+        return v
+
+
+class QuickCreatePayload(BaseModel):
+    name: str
+
+    @field_validator("name")
+    @classmethod
+    def _check_name(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("Recipe name cannot be empty.")
+        if len(v) > 200:
+            raise ValueError("Recipe name is too long (max 200 characters).")
+        return v
+
+
+@app.post("/api/recipes/import-url")
+async def import_recipe_url(payload: ImportUrlPayload, request: Request):
+    if not _rate_limiter.check(request, key="recipe-create", max_hits=5):
+        raise HTTPException(status_code=429, detail="Too many requests.")
+
+    mealie_url, token = get_credentials()
+    if not mealie_url or not token:
+        raise HTTPException(status_code=400, detail="Mealie not configured")
+
+    async with httpx.AsyncClient(timeout=35.0) as client:
+        try:
+            resp = await client.post(
+                f"{mealie_url.rstrip('/')}/api/recipes/create-url",
+                json={"url": payload.url, "includeTags": True},
+                headers={"Authorization": f"Bearer {token}"},
+            )
+            resp.raise_for_status()
+            slug = resp.json()
+            if not isinstance(slug, str) or not slug:
+                raise HTTPException(status_code=502, detail="Unexpected response from Mealie.")
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code in (400, 422):
+                raise HTTPException(status_code=422, detail="Could not import recipe — check the URL or try a different one.")
+            raise HTTPException(status_code=502, detail=f"Mealie error: {e.response.status_code}")
+        except httpx.HTTPError as e:
+            raise HTTPException(status_code=502, detail=str(e))
+
+    data = await mealie_get(f"/api/recipes/{slug}")
+    recipe_id = data.get("id")
+    if not recipe_id:
+        raise HTTPException(status_code=502, detail="Recipe imported but ID not found.")
+
+    await _upsert_recipe_cache(data)
+
+    return {
+        "id": recipe_id,
+        "slug": data.get("slug"),
+        "name": data.get("name"),
+        "description": data.get("description") or "",
+        "image_url": f"/api/media/{recipe_id}",
+    }
+
+
+@app.post("/api/recipes/quick-create")
+async def quick_create_recipe(payload: QuickCreatePayload, request: Request):
+    if not _rate_limiter.check(request, key="recipe-create", max_hits=5):
+        raise HTTPException(status_code=429, detail="Too many requests.")
+
+    mealie_url, token = get_credentials()
+    if not mealie_url or not token:
+        raise HTTPException(status_code=400, detail="Mealie not configured")
+
+    client = await get_http_client()
+    try:
+        resp = await client.post(
+            f"{mealie_url.rstrip('/')}/api/recipes",
+            json={"name": payload.name},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        resp.raise_for_status()
+        slug = resp.json()
+        if not isinstance(slug, str) or not slug:
+            raise HTTPException(status_code=502, detail="Unexpected response from Mealie.")
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=422, detail=f"Mealie error: {e.response.status_code}")
+    except httpx.HTTPError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+    data = await mealie_get(f"/api/recipes/{slug}")
+    recipe_id = data.get("id")
+    if not recipe_id:
+        raise HTTPException(status_code=502, detail="Recipe created but ID not found.")
+
+    await _upsert_recipe_cache(data)
+
+    return {
+        "id": recipe_id,
+        "slug": data.get("slug"),
+        "name": data.get("name"),
+        "description": data.get("description") or "",
+        "image_url": f"/api/media/{recipe_id}",
+    }
+
+
+_ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+_MAX_IMAGE_BYTES = 10 * 1024 * 1024  # 10 MB
+
+
+@app.post("/api/recipes/{slug}/image")
+async def upload_recipe_image(slug: str, file: UploadFile, request: Request):
+    _require_slug(slug, "recipe slug")
+    if not _rate_limiter.check(request, key="recipe-image", max_hits=10):
+        raise HTTPException(status_code=429, detail="Too many requests.")
+
+    content_type = (file.content_type or "").split(";")[0].strip().lower()
+    if content_type not in _ALLOWED_IMAGE_TYPES:
+        raise HTTPException(status_code=400, detail="File must be a JPEG, PNG, WebP, or GIF image.")
+
+    contents = await file.read()
+    if len(contents) > _MAX_IMAGE_BYTES:
+        raise HTTPException(status_code=413, detail="Image too large (max 10 MB).")
+
+    mealie_url, token = get_credentials()
+    if not mealie_url or not token:
+        raise HTTPException(status_code=400, detail="Mealie not configured")
+
+    ext = ""
+    if file.filename and "." in file.filename:
+        ext = file.filename.rsplit(".", 1)[-1].lower()
+    if not ext:
+        ext = content_type.split("/")[-1]
+    if ext == "jpeg":
+        ext = "jpg"
+    if ext not in ("jpg", "png", "webp", "gif"):
+        ext = "jpg"
+
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        try:
+            resp = await client.put(
+                f"{mealie_url.rstrip('/')}/api/recipes/{slug}/image",
+                headers={"Authorization": f"Bearer {token}"},
+                files={"image": (file.filename or f"image.{ext}", contents, content_type)},
+                data={"extension": ext},
+            )
+            resp.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            raise HTTPException(status_code=e.response.status_code, detail="Image upload failed.")
+        except httpx.HTTPError as e:
+            raise HTTPException(status_code=502, detail=str(e))
+
+    return {"ok": True}
 
 
 def _normalize_entry(entry: dict) -> dict:

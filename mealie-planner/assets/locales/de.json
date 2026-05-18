@@ -35,6 +35,8 @@
     "cacheRefresh": "Aktualisieren",
     "cacheRefreshing": "Wird aktualisiert…",
     "recipesCount": "{n} Rezepte gespeichert",
+    "optionsLabel": "Optionen",
+    "showQuickAdd": "Erstellen- & Importieren-Schaltfläche anzeigen",
     "sourceLabel": "Quelle",
     "github": "Auf GitHub ansehen",
     "languageLabel": "Sprache"
@@ -81,7 +83,8 @@
     "feelingLucky": "Glück auf?",
     "feelingLuckySub": "Wähle ein zufälliges Rezept für mich",
     "recentlyUsed": "Zuletzt verwendet",
-    "loadingMore": "Mehr laden…"
+    "loadingMore": "Mehr laden…",
+    "close": "Schließen"
   },
   "actions": {
     "title": "Aktionen"
@@ -112,7 +115,30 @@
     "moveFailed": "Rezept verschieben fehlgeschlagen — {detail}",
     "saveFallback": "Bitte erneut versuchen.",
     "sparkleFallback": "Keine Rezepte im Cache?",
-    "actionFallback": "Unbekannter Fehler"
+    "actionFallback": "Unbekannter Fehler",
+    "networkOffline": "Server nicht erreichbar – bitte Verbindung prüfen und erneut versuchen."
+  },
+  "quickAdd": {
+    "title": "Zu Mealie hinzufügen",
+    "tabUrl": "Von Website importieren",
+    "tabNew": "Neues Rezept",
+    "urlLabel": "Rezept-URL",
+    "urlPlaceholder": "https://...",
+    "urlHint": "Füge die URL einer Rezeptseite ein. Mealie ruft Zutaten und Schritte automatisch ab – das dauert meist 10–20 Sekunden.",
+    "nameLabel": "Rezeptname",
+    "namePlaceholder": "z. B. Omas Lasagne",
+    "imageLabel": "Foto (optional)",
+    "imagePlaceholder": "Bild auswählen…",
+    "btnImport": "Importieren & zum Plan hinzufügen",
+    "btnCreate": "Erstellen & zum Plan hinzufügen",
+    "importing": "Rezept wird abgerufen… (meist 10–20 Sekunden)",
+    "creating": "Rezept wird erstellt…",
+    "btnCellShort": "+ neues Rezept",
+    "btnCellCreate": "neues Rezept",
+    "addedToSlot": "✦ {name} zum Plan hinzugefügt",
+    "errorUrlRequired": "Bitte zuerst die URL einer Rezeptseite einfügen.",
+    "errorNameRequired": "Rezeptname darf nicht leer sein.",
+    "errorAddedNotPlanned": "{name} wurde in Mealie erstellt, konnte aber nicht zum Slot hinzugefügt werden – suche es mit + hinzu."
   },
   "auth": {
     "pageTitle": "Mealie Planner · Entsperren",

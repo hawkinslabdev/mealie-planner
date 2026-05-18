@@ -35,6 +35,8 @@
     "cacheRefresh": "Odśwież",
     "cacheRefreshing": "Odświeżanie…",
     "recipesCount": "{n} przepisów zapisanych",
+    "optionsLabel": "Opcje",
+    "showQuickAdd": "Pokaż przycisk tworzenia i importowania",
     "sourceLabel": "Źródło",
     "github": "Zobacz na GitHub",
     "languageLabel": "Język"
@@ -81,7 +83,8 @@
     "feelingLucky": "Masz ochotę na niespodziankę?",
     "feelingLuckySub": "Wybierz dla mnie losowy przepis",
     "recentlyUsed": "Ostatnio używane",
-    "loadingMore": "ładowanie…"
+    "loadingMore": "ładowanie…",
+    "close": "Zamknij"
   },
   "actions": {
     "title": "Akcje"
@@ -112,7 +115,30 @@
     "moveFailed": "Błąd przenoszenia przepisu — {detail}",
     "saveFallback": "spróbuj ponownie.",
     "sparkleFallback": "brak przepisów w pamięci?",
-    "actionFallback": "nieznany błąd"
+    "actionFallback": "nieznany błąd",
+    "networkOffline": "Nie można połączyć się z serwerem — sprawdź połączenie i spróbuj ponownie."
+  },
+  "quickAdd": {
+    "title": "Dodaj do Mealie",
+    "tabUrl": "Importuj ze strony",
+    "tabNew": "Nowy przepis",
+    "urlLabel": "URL przepisu",
+    "urlPlaceholder": "https://...",
+    "urlHint": "Wklej adres strony z przepisem. Mealie pobierze składniki i kroki automatycznie — zwykle trwa to 10–20 sekund.",
+    "nameLabel": "Nazwa przepisu",
+    "namePlaceholder": "np. Lasagne babci",
+    "imageLabel": "Zdjęcie (opcjonalne)",
+    "imagePlaceholder": "Wybierz obraz…",
+    "btnImport": "Importuj i dodaj do planu",
+    "btnCreate": "Utwórz i dodaj do planu",
+    "importing": "Pobieranie przepisu… (zwykle 10–20 sekund)",
+    "creating": "Tworzenie przepisu…",
+    "btnCellShort": "+ nowy przepis",
+    "btnCellCreate": "nowy przepis",
+    "addedToSlot": "✦ {name} dodano do planu",
+    "errorUrlRequired": "Najpierw wklej adres strony z przepisem.",
+    "errorNameRequired": "Nazwa przepisu nie może być pusta.",
+    "errorAddedNotPlanned": "{name} został utworzony w Mealie, ale nie udało się dodać do tego slotu — wyszukaj go przez + dodaj."
   },
   "auth": {
     "pageTitle": "Mealie Planner · Odblokuj",

@@ -19,7 +19,7 @@
 </head>
 <body>
 
-<div x-data="planner()" x-init="init(); $watch('modalOpen', v => v ? $data._lockBodyScroll() : $data._unlockBodyScroll()); $watch('settingsOpen', v => $data._onSettingsToggle(v))" x-cloak @keydown.window="onKeydown($event)">
+<div x-data="planner()" x-init="init(); $watch('modalOpen', v => v ? $data._lockBodyScroll() : $data._unlockBodyScroll()); $watch('quickAddOpen', v => v ? $data._lockBodyScroll() : $data._unlockBodyScroll()); $watch('settingsOpen', v => $data._onSettingsToggle(v))" x-cloak @keydown.window="onKeydown($event)">
 
   <!-- navbar -->
   <nav class="navbar" :class="mode === 'haos' && 'navbar--haos'">
@@ -109,7 +109,7 @@
       </div>
       <div class="settings-sheet-hdr">
         <p class="settings-sheet-title" x-text="t('settings.title')"></p>
-        <button @click="settingsOpen = false" class="icon-btn">
+        <button @click="settingsOpen = false" class="icon-btn" :aria-label="t('modal.close')">
           <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
@@ -179,6 +179,17 @@
               <span x-show="cacheRefreshing" x-text="t('settings.cacheRefreshing')"></span>
             </button>
             <span x-show="cacheCount !== null" style="font-size:var(--text-sm);color:var(--text-muted)" x-text="t('settings.recipesCount', {n: cacheCount})"></span>
+          </div>
+        </div>
+
+        <div>
+          <p class="section-label" x-text="t('settings.optionsLabel')"></p>
+          <div class="opt-row">
+            <span class="opt-label" x-text="t('settings.showQuickAdd')"></span>
+            <button role="switch" :aria-checked="showQuickAdd"
+                    class="opt-toggle" :class="showQuickAdd && 'opt-toggle--on'"
+                    @click="showQuickAdd = !showQuickAdd; _saveSettings({show_quick_add: showQuickAdd})"
+                    :title="t('settings.showQuickAdd')"></button>
           </div>
         </div>
 
@@ -274,7 +285,7 @@
                              @mouseenter="showTooltip(entry, $event)"
                              @mouseleave="hideTooltip()"
                              @dblclick="openModalReplace(item.date, item.mt, entry)">
-                          <img class="chip__thumb" :src="entry.image_url" :alt="entry.recipe_name" @error="$event.target.style.display='none'">
+                          <img class="chip__thumb" :src="entry.image_url" :alt="entry.recipe_name" @error="_imgError($event, entry.recipe_name)">
                           <span class="chip__name" x-text="entry.recipe_name"></span>
                           <button class="chip__rm" @click.stop="removeRecipe(item.date, item.mt, entry.id)" :title="t('planner.remove')">
                             <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -291,10 +302,17 @@
                     <div class="cell-acts" x-show="hasSlot(item.date, item.mt) || isSparkle(item.date, item.mt)">
                       <button class="ca ca--accent" :class="{'ca--sparkling': isSparkle(item.date, item.mt)}" @click="sparkle(item.date, item.mt)" :title="t('planner.sparkleTitle')"><span class="sparkle-glyph">✦</span> <span x-text="t('planner.sparkle')"></span></button>
                       <button class="ca" @click="openModal(item.date, item.mt)" x-text="t('planner.addShort')"></button>
+                      <button class="ca" x-show="showQuickAdd" @click.stop="openQuickAdd(item.date, item.mt)" x-text="t('quickAdd.btnCellShort')"></button>
                     </div>
                     <template x-if="!hasSlot(item.date, item.mt) && !isSparkle(item.date, item.mt)">
                       <button class="cell-empty-btn" @click="openModal(item.date, item.mt)" :title="t('planner.addRecipe')">
                         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                      </button>
+                    </template>
+                    <template x-if="!hasSlot(item.date, item.mt) && !isSparkle(item.date, item.mt) && showQuickAdd">
+                      <button class="cell-create-btn" @click.stop="openQuickAdd(item.date, item.mt)" :title="t('quickAdd.title')">
+                        <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                        <span x-text="t('quickAdd.btnCellCreate')"></span>
                       </button>
                     </template>
                   </div>
@@ -351,7 +369,7 @@
                       <img class="mobile-thumb"
                         :src="entry.image_url"
                         :alt="entry.recipe_name"
-                        @error="$event.target.style.display='none'">
+                        @error="_imgError($event, entry.recipe_name)">
                       <div class="mobile-recipe-info">
                         <p class="mobile-recipe-name" x-text="entry.recipe_name"></p>
                         <div style="display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap">
@@ -371,6 +389,8 @@
                     <button class="ca ca--accent" :class="{'ca--sparkling': isSparkle(day.date, mt)}" @click="sparkle(day.date, mt)"><span class="sparkle-glyph">✦</span> <span x-text="t('planner.sparkle')"></span></button>
                     <span class="ca-sep">·</span>
                     <button class="ca" @click="openModal(day.date, mt)" x-text="t('planner.addShort')"></button>
+                    <span x-show="showQuickAdd" class="ca-sep">·</span>
+                    <button x-show="showQuickAdd" class="ca" @click="openQuickAdd(day.date, mt)" x-text="t('quickAdd.btnCellShort')"></button>
                   </div>
                 </div>
               </template>
@@ -419,7 +439,7 @@
           <p class="modal-title" x-text="modalMode === 'replace' ? t('modal.titleReplace') : t('modal.titleAdd')"></p>
           <p class="modal-subtitle" x-text="(modalMt || '') + ' · ' + formatDate(modalDate)"></p>
         </div>
-        <button @click="modalOpen = false" class="icon-btn">
+        <button @click="modalOpen = false" class="icon-btn" :aria-label="t('modal.close')">
           <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
@@ -449,11 +469,11 @@
         <!-- recent -->
         <template x-if="recipesLoadedAt !== null && !modalSearch && recentRecipeObjects.length">
           <div>
-            <p style="font-size:var(--text-xs);font-weight:500;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.07em;padding:var(--space-1) var(--space-1) var(--space-2)" x-text="t('modal.recentlyUsed')"></p>
+            <p class="modal-section-label" x-text="t('modal.recentlyUsed')"></p>
             <div class="recipe-grid">
               <template x-for="r in recentRecipeObjects" :key="'recent-' + r.id">
                 <button @click="selectRecipe(r)" class="recipe-card recipe-card--recent">
-                  <img :src="r.image_url" :alt="r.name" loading="lazy" decoding="async" @error="$event.target.style.display='none'">
+                  <img :src="r.image_url" :alt="r.name" loading="lazy" decoding="async" @error="_imgError($event, r.name)">
                   <span class="recipe-card__name" x-text="r.name"></span>
                 </button>
               </template>
@@ -467,12 +487,12 @@
         <div x-show="recipesLoadedAt !== null && filteredRecipes.length > 0" class="recipe-grid">
           <template x-for="r in visibleRecipes" :key="r.id">
             <button @click="selectRecipe(r)" class="recipe-card">
-              <img :src="r.image_url" :alt="r.name" loading="lazy" decoding="async" @error="$event.target.style.display='none'">
+              <img :src="r.image_url" :alt="r.name" loading="lazy" decoding="async" @error="_imgError($event, r.name)">
               <span class="recipe-card__name" x-text="r.name"></span>
             </button>
           </template>
         </div>
-        <div x-show="hasMoreRecipes" style="text-align:center;padding:var(--space-3);font-size:var(--text-sm);color:var(--text-subtle);opacity:.5" x-text="t('modal.loadingMore')"></div>
+        <div x-show="hasMoreRecipes" class="modal-load-more" x-text="t('modal.loadingMore')"></div>
       </div>
 
     </div>
@@ -545,6 +565,121 @@
       x-transition:leave-end="toast-leave-to">
       <span x-text="undoMessage"></span>
       <button class="undo-btn" @click="undoLastAction()" x-text="t('planner.undo')"></button>
+    </div>
+  </div>
+
+  <!-- floating add button -->
+  <button x-show="showQuickAdd && configured"
+          class="fab"
+          @click="openQuickAdd(_dateStr(new Date()), enabledMealTypes[0] || 'dinner')"
+          :title="t('quickAdd.title')"
+          x-transition:enter="transition ease-out duration-200"
+          x-transition:enter-start="opacity-0 scale-75"
+          x-transition:enter-end="opacity-100 scale-100"
+          x-transition:leave="transition ease-in duration-150"
+          x-transition:leave-start="opacity-100 scale-100"
+          x-transition:leave-end="opacity-0 scale-75">
+    <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+    </svg>
+  </button>
+
+  <!-- quick-add modal -->
+  <div x-show="quickAddOpen" class="modal-backdrop" @click.self="closeQuickAdd()"
+    x-transition:enter="transition ease-out duration-150"
+    x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+    x-transition:leave="transition ease-in duration-100"
+    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+    <div class="modal modal--compact">
+
+      <div class="modal-header">
+        <div>
+          <p class="modal-title" x-text="t('quickAdd.title')"></p>
+          <p class="modal-subtitle" x-text="(quickAddMt || '') + ' · ' + formatDate(quickAddDate)"></p>
+        </div>
+        <button @click="closeQuickAdd()" class="icon-btn" :title="t('modal.close')">
+          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="qa-tabs">
+        <button class="qa-tab" :class="quickAddTab === 'url' && 'qa-tab--on'"
+                @click="quickAddTab = 'url'; quickAddError = null; $nextTick(() => $refs.quickAddUrlInput?.focus())"
+                x-text="t('quickAdd.tabUrl')"></button>
+        <button class="qa-tab" :class="quickAddTab === 'recipe' && 'qa-tab--on'"
+                @click="quickAddTab = 'recipe'; quickAddError = null; $nextTick(() => $refs.quickAddNameInput?.focus())"
+                x-text="t('quickAdd.tabNew')"></button>
+      </div>
+
+      <!-- Tab: Import URL -->
+      <div x-show="quickAddTab === 'url'" class="qa-body"
+           x-transition:enter="transition ease-out duration-100"
+           x-transition:enter-start="opacity-0"
+           x-transition:enter-end="opacity-100">
+        <div class="form-stack">
+          <div class="form-field">
+            <label class="form-label" x-text="t('quickAdd.urlLabel')"></label>
+            <input type="url" x-model="quickAddUrl" x-ref="quickAddUrlInput"
+                   :placeholder="t('quickAdd.urlPlaceholder')"
+                   class="form-input"
+                   :disabled="quickAddLoading"
+                   @keydown.enter="!quickAddLoading && importRecipeFromUrl()">
+          </div>
+          <p class="qa-hint" x-text="t('quickAdd.urlHint')"></p>
+        </div>
+      </div>
+
+      <!-- Tab: New recipe -->
+      <div x-show="quickAddTab === 'recipe'" class="qa-body"
+           x-transition:enter="transition ease-out duration-100"
+           x-transition:enter-start="opacity-0"
+           x-transition:enter-end="opacity-100">
+        <div class="form-stack">
+          <div class="form-field">
+            <label class="form-label" x-text="t('quickAdd.nameLabel')"></label>
+            <input type="text" x-model="quickAddName" x-ref="quickAddNameInput"
+                   :placeholder="t('quickAdd.namePlaceholder')"
+                   class="form-input"
+                   maxlength="200"
+                   :disabled="quickAddLoading"
+                   @keydown.enter="!quickAddLoading && quickCreateRecipe()">
+          </div>
+          <div class="form-field">
+            <label class="form-label" x-text="t('quickAdd.imageLabel')"></label>
+            <label class="qa-file-label" :class="quickAddImageFile && 'qa-file-label--has-file'">
+              <svg x-show="!quickAddImagePreview" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <img x-show="quickAddImagePreview" :src="quickAddImagePreview" class="qa-preview" alt="">
+              <span class="qa-file-name" x-text="quickAddImageFile ? quickAddImageFile.name : t('quickAdd.imagePlaceholder')"></span>
+              <input type="file" class="qa-file-input" accept="image/*" @change="onQuickAddFileChange($event)">
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-footer">
+        <p x-show="quickAddError" class="error-msg" x-text="quickAddError"></p>
+
+        <!-- URL import button -->
+        <button x-show="quickAddTab === 'url'"
+                @click="importRecipeFromUrl()"
+                :disabled="quickAddLoading || !quickAddUrl.trim()"
+                class="btn btn-primary btn-full">
+          <svg x-show="quickAddLoading" class="btn-spinner" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <span x-show="!quickAddLoading" x-text="t('quickAdd.btnImport')"></span>
+          <span x-show="quickAddLoading" x-text="t('quickAdd.importing')"></span>
+        </button>
+
+        <!-- New recipe button -->
+        <button x-show="quickAddTab === 'recipe'"
+                @click="quickCreateRecipe()"
+                :disabled="quickAddLoading || !quickAddName.trim()"
+                class="btn btn-primary btn-full">
+          <svg x-show="quickAddLoading" class="btn-spinner" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <span x-show="!quickAddLoading" x-text="t('quickAdd.btnCreate')"></span>
+          <span x-show="quickAddLoading" x-text="t('quickAdd.creating')"></span>
+        </button>
+      </div>
+
     </div>
   </div>
 

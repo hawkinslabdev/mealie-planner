@@ -35,6 +35,8 @@
     "cacheRefresh": "Vernieuwen",
     "cacheRefreshing": "Bezig met vernieuwen…",
     "recipesCount": "{n} recepten opgeslagen",
+    "optionsLabel": "Opties",
+    "showQuickAdd": "Knop voor aanmaken & importeren tonen",
     "sourceLabel": "Bron",
     "github": "Bekijk op GitHub",
     "languageLabel": "Taal"
@@ -81,7 +83,8 @@
     "feelingLucky": "Op goed geluk?",
     "feelingLuckySub": "Kies een willekeurig recept voor mij",
     "recentlyUsed": "Recent gebruikt",
-    "loadingMore": "meer laden…"
+    "loadingMore": "meer laden…",
+    "close": "Sluiten"
   },
   "actions": {
     "title": "Acties"
@@ -112,7 +115,30 @@
     "moveFailed": "Recept verplaatsen mislukt — {detail}",
     "saveFallback": "Probeer het opnieuw.",
     "sparkleFallback": "Geen recepten in cache?",
-    "actionFallback": "Onbekende fout"
+    "actionFallback": "Onbekende fout",
+    "networkOffline": "Server niet bereikbaar — controleer je verbinding en probeer opnieuw."
+  },
+  "quickAdd": {
+    "title": "Toevoegen aan Mealie",
+    "tabUrl": "Van website importeren",
+    "tabNew": "Nieuw recept",
+    "urlLabel": "Recept-URL",
+    "urlPlaceholder": "https://...",
+    "urlHint": "Plak de URL van een receptpagina. Mealie haalt de ingrediënten en stappen automatisch op — meestal 10–20 seconden.",
+    "nameLabel": "Receptnaam",
+    "namePlaceholder": "bijv. Oma's lasagne",
+    "imageLabel": "Foto (optioneel)",
+    "imagePlaceholder": "Kies een afbeelding…",
+    "btnImport": "Importeren & aan plan toevoegen",
+    "btnCreate": "Aanmaken & aan plan toevoegen",
+    "importing": "Recept ophalen… (meestal 10–20 seconden)",
+    "creating": "Recept aanmaken…",
+    "btnCellShort": "+ nieuw recept",
+    "btnCellCreate": "nieuw recept",
+    "addedToSlot": "✦ {name} aan plan toegevoegd",
+    "errorUrlRequired": "Plak eerst de URL van een receptpagina.",
+    "errorNameRequired": "Receptnaam mag niet leeg zijn.",
+    "errorAddedNotPlanned": "{name} is aangemaakt in Mealie maar kon niet aan dit slot worden toegevoegd — zoek het via + toevoegen."
   },
   "auth": {
     "pageTitle": "Mealie Planner · Ontgrendelen",

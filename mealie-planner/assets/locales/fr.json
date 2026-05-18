@@ -35,6 +35,8 @@
     "cacheRefresh": "Actualiser",
     "cacheRefreshing": "Actualisation…",
     "recipesCount": "{n} recettes enregistrées",
+    "optionsLabel": "Options",
+    "showQuickAdd": "Afficher le bouton créer & importer",
     "sourceLabel": "Source",
     "github": "Voir sur GitHub",
     "languageLabel": "Langue"
@@ -81,7 +83,8 @@
     "feelingLucky": "Vous vous sentez chanceux ?",
     "feelingLuckySub": "Choisissez une recette aléatoire pour moi",
     "recentlyUsed": "Utilisées récemment",
-    "loadingMore": "chargement…"
+    "loadingMore": "chargement…",
+    "close": "Fermer"
   },
   "actions": {
     "title": "Actions"
@@ -112,7 +115,30 @@
     "moveFailed": "Échec du déplacement de la recette — {detail}",
     "saveFallback": "veuillez réessayer.",
     "sparkleFallback": "aucune recette en cache ?",
-    "actionFallback": "erreur inconnue"
+    "actionFallback": "erreur inconnue",
+    "networkOffline": "Impossible de contacter le serveur — vérifiez votre connexion et réessayez."
+  },
+  "quickAdd": {
+    "title": "Ajouter à Mealie",
+    "tabUrl": "Importer depuis un site",
+    "tabNew": "Nouvelle recette",
+    "urlLabel": "URL de la recette",
+    "urlPlaceholder": "https://...",
+    "urlHint": "Collez l'URL d'une page de recette. Mealie récupérera les ingrédients et les étapes automatiquement — cela prend généralement 10–20 secondes.",
+    "nameLabel": "Nom de la recette",
+    "namePlaceholder": "ex. Lasagnes de grand-mère",
+    "imageLabel": "Photo (optionnelle)",
+    "imagePlaceholder": "Choisir une image…",
+    "btnImport": "Importer et ajouter au plan",
+    "btnCreate": "Créer et ajouter au plan",
+    "importing": "Récupération de la recette… (généralement 10–20 secondes)",
+    "creating": "Création de la recette…",
+    "btnCellShort": "+ nouvelle recette",
+    "btnCellCreate": "nouvelle recette",
+    "addedToSlot": "✦ {name} ajouté au plan",
+    "errorUrlRequired": "Collez d'abord l'URL d'une page de recette.",
+    "errorNameRequired": "Le nom de la recette ne peut pas être vide.",
+    "errorAddedNotPlanned": "{name} a été créé dans Mealie mais n'a pas pu être ajouté à ce créneau — cherchez-le avec + ajouter."
   },
   "auth": {
     "pageTitle": "Mealie Planner · Déverrouiller",

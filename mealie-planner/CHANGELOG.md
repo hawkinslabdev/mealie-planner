@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0
+
+- You can create or import a recipe from a URL directly from the planner, without opening Mealie
+- Recipe cards now show a colour gradient when no thumbnail is available
+- Various settings are now stored server-side and follow you across browsers and devices
+- Fix: Modal and settings overlays now animate smoothly
+- Security: Package updates
+
 ## 0.3.3
 
 - Various small animation and interaction improvements
