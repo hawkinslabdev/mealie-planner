@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.3
+
+- Various small animation and interaction improvements
+- Notifications (toasts and undo bar) now share a single area; on mobile they stack as overlapping cards
+- Fix: adding or removing a recipe now gives instant feedback, without waiting for Mealie to respond
+- Fix: long recipe names no longer overflow toast notifications or the undo bar
+
 ## 0.3.2
 
 - Fix: the recipe picker can now be scrolled on iOS (Home Assistant Companion app)
