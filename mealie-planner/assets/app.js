@@ -83,7 +83,11 @@ function planner() {
     _mobileObserver: null,
 
     enabledMealTypes: JSON.parse(localStorage.getItem('enabledMealTypes') || '["dinner"]'),
-    _recentRecipes: JSON.parse(localStorage.getItem('recentRecipes') || '[]'),
+    _recentRecipes: (() => {
+      const raw = JSON.parse(localStorage.getItem('recentRecipes') || '[]');
+      if (raw.length && typeof raw[0] === 'string') return raw.map(id => ({id, addedAt: 0}));
+      return raw;
+    })(),
 
     locale: window._MP_LOCALE || 'en',
 
@@ -115,8 +119,9 @@ function planner() {
     },
 
     get recentRecipeObjects() {
-      return this._recentRecipes.map(id => this.allRecipes.find(r => r.id === id)).filter(Boolean);
+      return this._recentRecipes.map(r => this.allRecipes.find(rec => rec.id === r.id)).filter(Boolean).slice(0, 4);
     },
+
 
     get visibleRecipes() {
       return this.filteredRecipes.slice(0, this.modalLimit);
@@ -363,6 +368,7 @@ function planner() {
       this.$nextTick(() => setTimeout(() => this.$refs.searchInput?.focus(), 160));
     },
 
+
     openModalReplace(date, mt, entry) {
       this.modalDate = date; this.modalMt = mt; this.modalSearch = ''; this.modalLimit = 24;
       this.modalMode = 'replace'; this.modalReplaceEntry = entry;
@@ -541,7 +547,8 @@ function planner() {
 
     /* recent */
     pushRecentRecipe(recipeId) {
-      this._recentRecipes = [recipeId, ...this._recentRecipes.filter(id => id !== recipeId)].slice(0, 12);
+      const entry = {id: recipeId, addedAt: Date.now()};
+      this._recentRecipes = [entry, ...this._recentRecipes.filter(r => r.id !== recipeId)].slice(0, 12);
       localStorage.setItem('recentRecipes', JSON.stringify(this._recentRecipes));
     },
 
@@ -823,8 +830,12 @@ function planner() {
       this.quickAddError = null;
       try {
         const recipe = await this._post('/api/recipes/import-url', { url });
-        await this._addCreatedRecipeToSlot(recipe, this.quickAddDate, this.quickAddMt);
-        this.quickAddDone = { name: recipe.name, slug: recipe.slug };
+        const prefixed = this._prefixImg(recipe);
+        if (!this.allRecipes.find(r => r.id === prefixed.id)) {
+          this.allRecipes = [prefixed, ...this.allRecipes];
+        }
+        this.pushRecentRecipe(prefixed.id);
+        this.quickAddDone = { name: recipe.name, slug: recipe.slug, fromUrl: true };
       } catch (e) {
         this.quickAddError = this._friendlyError(e);
       } finally {
@@ -879,7 +890,6 @@ function planner() {
           this.setSlot(date, mt, updated);
         }
         this.pushRecentRecipe(prefixed.id);
-        this.toast(this.t('quickAdd.addedToSlot', { name: prefixed.name }), 'success');
       } catch (e) {
         this.setSlot(date, mt, this.getSlot(date, mt).filter(e => !(e._optimistic && e.recipe_id === prefixed.id)));
         this.toast(this.t('quickAdd.errorAddedNotPlanned', { name: prefixed.name }));

@@ -1071,18 +1071,26 @@ async def import_recipe_url(payload: ImportUrlPayload, request: Request):
     async with httpx.AsyncClient(timeout=35.0) as client:
         try:
             resp = await client.post(
-                f"{mealie_url.rstrip('/')}/api/recipes/create-url",
-                json={"url": payload.url, "includeTags": True},
+                f"{mealie_url.rstrip('/')}/api/recipes/create/url",
+                json={"url": payload.url, "include_tags": True},
                 headers={"Authorization": f"Bearer {token}"},
             )
             resp.raise_for_status()
-            slug = resp.json()
-            if not isinstance(slug, str) or not slug:
-                raise HTTPException(status_code=502, detail="Unexpected response from Mealie.")
+            body = resp.json()
+            # Mealie returns bare slug string (older) or {"slug": "..."} object (newer)
+            if isinstance(body, str) and body:
+                slug = body
+            elif isinstance(body, dict):
+                slug = body.get("slug") or body.get("name")
+                if not slug:
+                    raise HTTPException(status_code=502, detail=f"Unexpected Mealie response: {body}")
+            else:
+                raise HTTPException(status_code=502, detail=f"Unexpected Mealie response: {body!r}")
         except httpx.HTTPStatusError as e:
+            detail = e.response.text[:200] if e.response.content else str(e)
             if e.response.status_code in (400, 422):
-                raise HTTPException(status_code=422, detail="Could not import recipe — check the URL or try a different one.")
-            raise HTTPException(status_code=502, detail=f"Mealie error: {e.response.status_code}")
+                raise HTTPException(status_code=422, detail=f"Could not import recipe — {detail}")
+            raise HTTPException(status_code=502, detail=f"Mealie {e.response.status_code}: {detail}")
         except httpx.HTTPError as e:
             raise HTTPException(status_code=502, detail=str(e))
 

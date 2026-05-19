@@ -1,153 +1,153 @@
 {
-  "nav": {
-    "settings": "Settings",
-    "logout": "Log out",
-    "unreachable": "Unreachable"
-  },
-  "theme": {
-    "system": "System",
-    "light": "Light",
-    "dark": "Dark"
-  },
-  "onboard": {
-    "title": "What's for dinner this week?",
-    "desc": "Connect your Mealie instance to browse your recipe library and plan meals for the week, right here in Home Assistant."
-  },
-  "settings": {
-    "title": "Settings",
-    "connectionLabel": "Mealie connection",
-    "dockerNotice": "You're all set! These are configured via the environment variables <code>MEALIE_API_URL</code> and <code>MEALIE_API_KEY</code>.",
-    "connected": "Connected to Mealie",
-    "unreachable": "Configured but Mealie is currently unreachable",
-    "urlLabel": "Instance URL",
-    "tokenLabel": "API token",
-    "tokenPlaceholderUpdate": "Leave blank to keep current token",
-    "tokenPlaceholderNew": "Your Mealie API token",
-    "btnUpdate": "Update",
-    "btnSave": "Save & validate",
-    "btnValidating": "Validating…",
-    "dayRangeLabel": "Day range",
-    "pastDays": "Show days before · {n} day(s)",
-    "futureDays": "Show days after · {n} day(s)",
-    "tipKeyboard": "Tip! Use ← → to scroll one day at a time.",
-    "mealSlotsLabel": "Visible meal slots",
-    "cacheLabel": "Recipe cache",
-    "cacheRefresh": "Refresh",
-    "cacheRefreshing": "Refreshing…",
-    "recipesCount": "{n} recipes saved",
-    "optionsLabel": "Options",
-    "showQuickAdd": "Show create & import button",
-    "sourceLabel": "Source",
-    "github": "Visit on GitHub",
-    "languageLabel": "Language"
-  },
-  "meal": {
-    "breakfast": "Breakfast",
-    "lunch": "Lunch",
-    "dinner": "Dinner",
-    "side": "Side"
-  },
-  "empty": {
-    "title": "Connect to Mealie",
-    "desc": "Add your Mealie URL and API token to start planning.",
-    "btn": "Open settings"
-  },
-  "planner": {
-    "retry": "Retry",
-    "prevDay": "Previous day",
-    "nextDay": "Next day",
-    "updatingPlan": "Updating meal plan",
-    "today": "Today",
-    "remove": "Remove",
-    "openInMealie": "Open in Mealie",
-    "open": "open",
-    "openInMealieMobile": "open in Mealie ↗",
-    "sparkleTitle": "Add random recipe",
-    "sparkle": "sparkle",
-    "addRecipe": "Add recipe",
-    "changeRecipe": "change",
-    "addShort": "+ add",
-    "goToToday": "Today",
-    "noSlotsEnabled": "No meal slots enabled. Open settings to add some!",
-    "nothingPlanned": "Nothing planned.",
-    "endOfRange": "60 days ahead",
-    "undo": "Undo"
-  },
-  "modal": {
-    "titleReplace": "Change recipe",
-    "titleAdd": "Add recipe",
-    "close": "Close",
-    "searchPlaceholder": "Search recipes…",
-    "refreshingRecipes": "Refreshing recipes",
-    "noMatch": "No recipes match \"{q}\"",
-    "loadingRecipes": "Loading recipes…",
-    "feelingLucky": "Feeling lucky?",
-    "feelingLuckySub": "Pick a random recipe for me",
-    "recentlyUsed": "Recently used",
-    "loadingMore": "loading more…"
-  },
-  "actions": {
-    "title": "Actions"
-  },
-  "logout": {
-    "title": "Log out?",
-    "desc": "Your PIN will be required again.",
-    "cancel": "Cancel",
-    "confirm": "Log out"
-  },
-  "toast": {
-    "removed": "Removed {name}",
-    "cacheRefreshed": "Cache refreshed — {n} recipes.",
-    "actionSent": "Action sent.",
-    "dismiss": "Dismiss"
-  },
-  "error": {
-    "backend": "Failed to reach backend. Is the server running?",
-    "recipeCache": "Could not load recipe cache — try refreshing it in settings.",
-    "saveFailed": "Failed to save — {detail}",
-    "removeFailed": "Failed to remove — {detail}",
-    "sparkleFailed": "Sparkle failed — {detail}",
-    "undoFailed": "Could not undo.",
-    "cacheRefreshFailed": "Cache refresh failed.",
-    "actionFailed": "Action failed — {detail}",
-    "loadMoreDays": "Could not load more days.",
-    "loadPlan": "Could not load meal plan.",
-    "moveFailed": "Failed to move recipe — {detail}",
-    "saveFallback": "please try again.",
-    "sparkleFallback": "no recipes cached?",
-    "actionFallback": "unknown error",
-    "networkOffline": "Couldn't reach the server — check your connection and try again."
-  },
-  "quickAdd": {
-    "title": "Add to Mealie",
-    "tabUrl": "Import from website",
-    "tabNew": "New recipe",
-    "urlLabel": "Recipe URL",
-    "urlPlaceholder": "https://...",
-    "urlHint": "Paste a recipe website URL. Mealie will fetch the ingredients and steps automatically — usually takes 10–20 seconds.",
-    "nameLabel": "Recipe name",
-    "namePlaceholder": "e.g. Grandma's lasagna",
-    "imageLabel": "Photo (optional)",
-    "imagePlaceholder": "Choose an image…",
-    "btnImport": "Import & add to plan",
-    "btnCreate": "Create & add to plan",
-    "importing": "Fetching recipe… (usually 10–20 seconds)",
-    "creating": "Creating recipe…",
-    "btnCellShort": "+ new recipe",
-    "btnCellCreate": "new recipe",
-    "addedToSlot": "✦ {name} added to plan",
-    "errorUrlRequired": "Paste the URL of a recipe page first.",
-    "errorNameRequired": "Recipe name can't be empty.",
-    "errorAddedNotPlanned": "{name} was created in Mealie but couldn't be added to this slot — search for it with + add.",
-    "openInMealie": "Open in Mealie to add ingredients & steps ↗"
-  },
-  "auth": {
-    "pageTitle": "Mealie Planner · Unlock",
-    "title": "Enter PIN",
-    "subtitle": "Enter your PIN to unlock Mealie Planner.",
-    "btn": "Unlock",
-    "errorShort": "Enter all 6 characters.",
-    "errorIncorrect": "Incorrect PIN.",
-    "errorNetwork": "Network error. Try again."
-  }
+    "nav": {
+        "settings": "Settings",
+        "logout": "Log out",
+        "unreachable": "Unreachable"
+    },
+    "theme": {
+        "system": "System",
+        "light": "Light",
+        "dark": "Dark"
+    },
+    "onboard": {
+        "title": "What's for dinner this week?",
+        "desc": "Connect your Mealie instance to browse your recipe library and plan meals for the week, right here in Home Assistant."
+    },
+    "settings": {
+        "title": "Settings",
+        "connectionLabel": "Mealie connection",
+        "dockerNotice": "You're all set! These are configured via the environment variables <code>MEALIE_API_URL</code> and <code>MEALIE_API_KEY</code>.",
+        "connected": "Connected to Mealie",
+        "unreachable": "Configured but Mealie is currently unreachable",
+        "urlLabel": "Instance URL",
+        "tokenLabel": "API token",
+        "tokenPlaceholderUpdate": "Leave blank to keep current token",
+        "tokenPlaceholderNew": "Your Mealie API token",
+        "btnUpdate": "Update",
+        "btnSave": "Save & validate",
+        "btnValidating": "Validating…",
+        "dayRangeLabel": "Day range",
+        "pastDays": "Show days before · {n} day(s)",
+        "futureDays": "Show days after · {n} day(s)",
+        "tipKeyboard": "Tip! Use ← → to scroll one day at a time.",
+        "mealSlotsLabel": "Visible meal slots",
+        "cacheLabel": "Recipe cache",
+        "cacheRefresh": "Refresh",
+        "cacheRefreshing": "Refreshing…",
+        "recipesCount": "{n} recipes saved",
+        "optionsLabel": "Options",
+        "showQuickAdd": "Show create & import button",
+        "sourceLabel": "Source",
+        "github": "Visit on GitHub",
+        "languageLabel": "Language"
+    },
+    "meal": {
+        "breakfast": "Breakfast",
+        "lunch": "Lunch",
+        "dinner": "Dinner",
+        "side": "Side"
+    },
+    "empty": {
+        "title": "Connect to Mealie",
+        "desc": "Add your Mealie URL and API token to start planning.",
+        "btn": "Open settings"
+    },
+    "planner": {
+        "retry": "Retry",
+        "prevDay": "Previous day",
+        "nextDay": "Next day",
+        "updatingPlan": "Updating meal plan",
+        "today": "Today",
+        "remove": "Remove",
+        "openInMealie": "Open in Mealie",
+        "open": "open",
+        "openInMealieMobile": "open in Mealie ↗",
+        "sparkleTitle": "Add random recipe",
+        "sparkle": "sparkle",
+        "addRecipe": "Add recipe",
+        "changeRecipe": "change",
+        "addShort": "+ add",
+        "goToToday": "Today",
+        "noSlotsEnabled": "No meal slots enabled. Open settings to add some!",
+        "nothingPlanned": "Nothing planned.",
+        "endOfRange": "60 days ahead",
+        "undo": "Undo"
+    },
+    "modal": {
+        "titleReplace": "Change recipe",
+        "titleAdd": "Add recipe",
+        "close": "Close",
+        "searchPlaceholder": "Search recipes…",
+        "refreshingRecipes": "Refreshing recipes",
+        "noMatch": "No recipes match \"{q}\"",
+        "loadingRecipes": "Loading recipes…",
+        "feelingLucky": "Feeling lucky?",
+        "feelingLuckySub": "Pick a random recipe for me",
+        "recentlyUsed": "Recently used",
+        "loadingMore": "loading more…"
+    },
+    "actions": {
+        "title": "Actions"
+    },
+    "logout": {
+        "title": "Log out?",
+        "desc": "Your PIN will be required again.",
+        "cancel": "Cancel",
+        "confirm": "Log out"
+    },
+    "toast": {
+        "removed": "Removed {name}",
+        "cacheRefreshed": "Cache refreshed — {n} recipes.",
+        "actionSent": "Action sent.",
+        "dismiss": "Dismiss"
+    },
+    "error": {
+        "backend": "Failed to reach backend. Is the server running?",
+        "recipeCache": "Could not load recipe cache — try refreshing it in settings.",
+        "saveFailed": "Failed to save — {detail}",
+        "removeFailed": "Failed to remove — {detail}",
+        "sparkleFailed": "Sparkle failed — {detail}",
+        "undoFailed": "Could not undo.",
+        "cacheRefreshFailed": "Cache refresh failed.",
+        "actionFailed": "Action failed — {detail}",
+        "loadMoreDays": "Could not load more days.",
+        "loadPlan": "Could not load meal plan.",
+        "moveFailed": "Failed to move recipe — {detail}",
+        "saveFallback": "please try again.",
+        "sparkleFallback": "no recipes cached?",
+        "actionFallback": "unknown error",
+        "networkOffline": "Couldn't reach the server — check your connection and try again."
+    },
+    "quickAdd": {
+        "title": "Add to Mealie",
+        "tabUrl": "Import from website",
+        "tabNew": "New recipe",
+        "urlLabel": "Recipe URL",
+        "urlPlaceholder": "https://...",
+        "urlHint": "Paste a recipe website URL. Mealie will fetch the ingredients and steps automatically — usually takes 10–20 seconds.",
+        "nameLabel": "Recipe name",
+        "namePlaceholder": "e.g. Grandma's lasagna",
+        "imageLabel": "Photo (optional)",
+        "imagePlaceholder": "Choose an image…",
+        "btnImport": "Import",
+        "btnCreate": "Create & add to plan",
+        "importing": "Fetching recipe… (usually 10–20 seconds)",
+        "creating": "Creating recipe…",
+        "btnCellShort": "+ new recipe",
+        "btnCellCreate": "new recipe",
+        "addedToSlot": "✦ {name} added to plan",
+        "errorUrlRequired": "Paste the URL of a recipe page first.",
+        "errorNameRequired": "Recipe name can't be empty.",
+        "errorAddedNotPlanned": "{name} was created in Mealie but couldn't be added to this slot — search for it with + add.",
+        "openInMealie": "Open in Mealie to add ingredients & steps ↗"
+    },
+    "auth": {
+        "pageTitle": "Mealie Planner · Unlock",
+        "title": "Enter PIN",
+        "subtitle": "Enter your PIN to unlock Mealie Planner.",
+        "btn": "Unlock",
+        "errorShort": "Enter all 6 characters.",
+        "errorIncorrect": "Incorrect PIN.",
+        "errorNetwork": "Network error. Try again."
+    }
 }

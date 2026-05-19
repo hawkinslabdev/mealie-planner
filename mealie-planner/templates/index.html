@@ -308,12 +308,6 @@
                         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                       </button>
                     </template>
-                    <template x-if="!hasSlot(item.date, item.mt) && !isSparkle(item.date, item.mt) && showQuickAdd">
-                      <button class="cell-create-btn" @click.stop="openQuickAdd(item.date, item.mt)" :title="t('quickAdd.title')">
-                        <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                        <span x-text="t('quickAdd.btnCellCreate')"></span>
-                      </button>
-                    </template>
                   </div>
                 </template>
               </div>
@@ -475,7 +469,7 @@
                 </button>
               </template>
             </div>
-            <hr style="border:none;border-top:1px solid var(--border);margin:var(--space-3) 0">
+            <hr style="border:none;border-top:1px solid var(--border);margin:var(--space-4) 0">
           </div>
         </template>
 
@@ -537,7 +531,7 @@
     </template>
   </div>
 
-  <!-- notifications: toasts + undo -->
+  <!-- notifications: toasts -->
   <div class="notif-hub" aria-live="polite" aria-atomic="false">
     <template x-for="t in toasts" :key="t.id">
       <div class="toast" :class="'toast--' + t.type"
@@ -553,16 +547,18 @@
         <span class="toast__progress" aria-hidden="true"></span>
       </div>
     </template>
-    <div x-show="undoBar" class="undo-bar"
-      x-transition:enter="toast-enter"
-      x-transition:enter-start="toast-enter-from"
-      x-transition:enter-end="toast-enter-to"
-      x-transition:leave="toast-leave"
-      x-transition:leave-start="toast-leave-from"
-      x-transition:leave-end="toast-leave-to">
-      <span x-text="undoMessage"></span>
-      <button class="undo-btn" @click="undoLastAction()" x-text="t('planner.undo')"></button>
-    </div>
+  </div>
+
+  <!-- undo bar — separate from notif-hub to avoid corrupting nth-child stacking -->
+  <div x-show="undoBar" class="undo-bar"
+    x-transition:enter="toast-enter"
+    x-transition:enter-start="toast-enter-from"
+    x-transition:enter-end="toast-enter-to"
+    x-transition:leave="toast-leave"
+    x-transition:leave-start="toast-leave-from"
+    x-transition:leave-end="toast-leave-to">
+    <span x-text="undoMessage"></span>
+    <button class="undo-btn" @click="undoLastAction()" x-text="t('planner.undo')"></button>
   </div>
 
   <!-- floating add button -->
@@ -592,7 +588,6 @@
       <div class="modal-header">
         <div>
           <p class="modal-title" x-text="t('quickAdd.title')"></p>
-          <p class="modal-subtitle" x-text="(quickAddMt || '') + ' · ' + formatDate(quickAddDate)"></p>
         </div>
         <button @click="closeQuickAdd()" class="icon-btn" :title="t('modal.close')">
           <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -663,6 +658,7 @@
             </div>
             <a :href="getMealieLink(quickAddDone.slug)" target="_blank" rel="noopener noreferrer"
                class="btn btn-ghost btn-full" x-text="t('quickAdd.openInMealie')"></a>
+            <button @click="closeQuickAdd()" class="btn btn-ghost btn-full" x-text="t('modal.close')"></button>
           </div>
         </template>
 
@@ -689,6 +685,8 @@
               <span x-show="!quickAddLoading" x-text="t('quickAdd.btnCreate')"></span>
               <span x-show="quickAddLoading" x-text="t('quickAdd.creating')"></span>
             </button>
+
+            <button @click="closeQuickAdd()" :disabled="quickAddLoading" class="btn btn-ghost btn-full" x-text="t('modal.close')"></button>
           </div>
         </template>
       </div>
