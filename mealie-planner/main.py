@@ -27,6 +27,7 @@ from starlette.responses import Response as StarletteResponse
 from urllib.parse import urlparse
 
 logger = logging.getLogger("mealie_planner")
+logger.setLevel(logging.DEBUG if os.environ.get("DEV_MODE") else logging.INFO)
 
 
 # Task manager
@@ -142,6 +143,22 @@ _IMPECCABLE_LIVE_SNIPPET = (
     b'\n<script src="http://localhost:8400/live.js"></script>'
     b"\n<!-- impeccable-live-end -->\n"
 )
+
+
+_MAX_JSON_BODY_BYTES = 64 * 1024  # 64 KB; image uploads have their own 10 MB check
+
+
+class MaxBodySizeMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        if "application/json" in request.headers.get("content-type", ""):
+            cl = request.headers.get("content-length")
+            if cl and int(cl) > _MAX_JSON_BODY_BYTES:
+                return StarletteResponse(
+                    content='{"detail":"Request body too large"}',
+                    status_code=413,
+                    media_type="application/json",
+                )
+        return await call_next(request)
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
@@ -369,18 +386,21 @@ async def _cache_last_refreshed() -> int | None:
         return int(row[0]) if row else None
 
 
-async def _get_cached_recipes(query: str | None = None) -> list[dict]:
+async def _get_cached_recipes(
+    query: str | None = None, limit: int = 500, offset: int = 0
+) -> list[dict]:
     db = await get_db()
     if query:
         q = f"%{query.lower()}%"
         async with db.execute(
-            "SELECT id, slug, name, description, tags FROM recipes WHERE lower(name) LIKE ? ORDER BY name",
-            (q,),
+            "SELECT id, slug, name, description, tags FROM recipes WHERE lower(name) LIKE ? ORDER BY name LIMIT ? OFFSET ?",
+            (q, limit, offset),
         ) as cur:
             rows = await cur.fetchall()
     else:
         async with db.execute(
-            "SELECT id, slug, name, description, tags FROM recipes ORDER BY name"
+            "SELECT id, slug, name, description, tags FROM recipes ORDER BY name LIMIT ? OFFSET ?",
+            (limit, offset),
         ) as cur:
             rows = await cur.fetchall()
     return [
@@ -659,6 +679,8 @@ class IngressAndAuthMiddleware(BaseHTTPMiddleware):
                     else:
                         token = request.cookies.get(_SESSION_COOKIE)
                         if not token or not _verify_session_token(token):
+                            ip = request.client.host if request.client else "unknown"
+                            logger.warning("access.denied path=%s ip=%s", path, ip)
                             return RedirectResponse(
                                 url=f"/auth?from={_safe_redirect_path(request.url.path)}",
                                 status_code=302,
@@ -669,6 +691,7 @@ class IngressAndAuthMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(IngressAndAuthMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(MaxBodySizeMiddleware)
 
 
 # Routes
@@ -727,9 +750,12 @@ async def verify_pin(payload: PinPayload, request: Request, response: Response):
             status_code=429, detail="Too many attempts. Try again later."
         )
 
+    ip = _rate_limiter._client_ip(request)
     if not hmac.compare_digest(payload.pin, _PIN_CODE):
+        logger.warning("auth.pin_failed ip=%s", ip)
         raise HTTPException(status_code=401, detail="Incorrect PIN")
 
+    logger.info("auth.pin_success ip=%s", ip)
     _secure = request.url.scheme == "https"
     response.set_cookie(
         key=_SESSION_COOKIE,
@@ -852,8 +878,13 @@ async def save_config(payload: ConfigPayload, request: Request):
     client = await get_http_client()
     headers = {"Authorization": f"Bearer {token_to_use}"}
     try:
+        # SSRF: scheme is validated by ConfigPayload; follow_redirects=False prevents
+        # chained redirects to internal hosts. IP-range blocking is impractical here —
+        # the Mealie URL is a user-configured, trusted internal address in this add-on.
         resp = await client.get(
-            f"{payload.mealie_url.rstrip('/')}/api/app/about", headers=headers
+            f"{payload.mealie_url.rstrip('/')}/api/app/about",
+            headers=headers,
+            follow_redirects=False,
         )
         resp.raise_for_status()
     except httpx.HTTPStatusError as e:
@@ -869,6 +900,8 @@ async def save_config(payload: ConfigPayload, request: Request):
         )
 
     _write_credentials(payload.mealie_url, encrypt_token(token_to_use))
+    ip = request.client.host if request.client else "unknown"
+    logger.info("config.updated url=%s ip=%s", payload.mealie_url, ip)
     global _status_cached_at
     _status_cached_at = 0.0  # force status re-check after credential change
     _task_manager.spawn(refresh_recipe_cache())
@@ -917,9 +950,13 @@ async def update_settings(payload: SettingsPatch, request: Request):
 
 
 @app.get("/api/recipes")
-async def get_recipes(q: str | None = None):
+async def get_recipes(
+    q: str | None = None,
+    limit: int = Query(default=500, ge=1, le=1000),
+    offset: int = Query(default=0, ge=0),
+):
     await ensure_cache_fresh()
-    return await _get_cached_recipes(q)
+    return await _get_cached_recipes(q, limit=limit, offset=offset)
 
 
 @app.get("/api/recipes/poll")
@@ -1407,7 +1444,7 @@ async def sparkle(date: str, meal_type: str = "dinner"):
     except HTTPException:
         pass
 
-    all_recipes = await _get_cached_recipes()
+    all_recipes = await _get_cached_recipes(limit=10000)
     if not all_recipes:
         raise HTTPException(
             status_code=404,
