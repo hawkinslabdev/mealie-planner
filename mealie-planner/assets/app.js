@@ -1,6 +1,7 @@
 const RECIPES_STALE_MS = 5 * 60 * 1000;
 const PLAN_CACHE_TTL_MS = 5 * 60 * 1000;
-const SUPPORTED_LOCALES = ['en', 'de', 'nl', 'es', 'fr', 'pl'];
+const SUPPORTED_LOCALES = ['en', 'de', 'nl', 'es', 'fr', 'it', 'pl'];
+const LOCALE_NAMES = { en: 'English', de: 'Deutsch', nl: 'Nederlands', es: 'Español', fr: 'Français', it: 'Italiano', pl: 'Polski' };
 
 function planner() {
   return {

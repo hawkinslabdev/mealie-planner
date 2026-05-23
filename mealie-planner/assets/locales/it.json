@@ -1,0 +1,153 @@
+{
+    "nav": {
+        "settings": "Impostazioni",
+        "logout": "Disconnetti",
+        "unreachable": "Non raggiungibile"
+    },
+    "theme": {
+        "system": "Sistema",
+        "light": "Chiaro",
+        "dark": "Scuro"
+    },
+    "onboard": {
+        "title": "Cosa si mangia per cena questa settimana?",
+        "desc": "Collega la tua istanza Mealie per sfogliare la tua raccolta di ricette e pianificare i pasti della settimana, direttamente qui su Home Assistant."
+    },
+    "settings": {
+        "title": "Impostazioni",
+        "connectionLabel": "Connessione a Mealie",
+        "dockerNotice": "Tutto pronto! Queste opzioni sono configurate tramite le variabili d'ambiente <code>MEALIE_API_URL</code> e <code>MEALIE_API_KEY</code>.",
+        "connected": "Connesso a Mealie",
+        "unreachable": "Configurato, ma Mealie al momento non è raggiungibile",
+        "urlLabel": "URL dell'istanza",
+        "tokenLabel": "Token API",
+        "tokenPlaceholderUpdate": "Lascia vuoto per mantenere il token attuale",
+        "tokenPlaceholderNew": "Il tuo token API di Mealie",
+        "btnUpdate": "Aggiorna",
+        "btnSave": "Salva e convalida",
+        "btnValidating": "Convalida in corso…",
+        "dayRangeLabel": "Intervallo di giorni",
+        "pastDays": "Mostra i giorni precedenti · {n} giorn* (i)",
+        "futureDays": "Mostra i giorni successivi · {n} giorn* (i)",
+        "tipKeyboard": "Suggerimento! Usa ← → per scorrere un giorno alla volta.",
+        "mealSlotsLabel": "Fasce orarie pasti visibili",
+        "cacheLabel": "Cache delle ricette",
+        "cacheRefresh": "Aggiorna",
+        "cacheRefreshing": "Aggiornamento in corso…",
+        "recipesCount": "{n} ricette salvate",
+        "optionsLabel": "Opzioni",
+        "showQuickAdd": "Mostra pulsante crea e importa",
+        "sourceLabel": "Sorgente",
+        "github": "Visita su GitHub",
+        "languageLabel": "Lingua"
+    },
+    "meal": {
+        "breakfast": "Colazione",
+        "lunch": "Pranzo",
+        "dinner": "Cena",
+        "side": "Contorno"
+    },
+    "empty": {
+        "title": "Connetti a Mealie",
+        "desc": "Aggiungi l'URL di Mealie e il tuo token API per iniziare la pianificazione.",
+        "btn": "Apri impostazioni"
+    },
+    "planner": {
+        "retry": "Riprova",
+        "prevDay": "Giorno precedente",
+        "nextDay": "Giorno successivo",
+        "updatingPlan": "Aggiornamento del piano dei pasti",
+        "today": "Oggi",
+        "remove": "Rimuovi",
+        "openInMealie": "Apri in Mealie",
+        "open": "apri",
+        "openInMealieMobile": "apri in Mealie ↗",
+        "sparkleTitle": "Aggiungi ricetta casuale",
+        "sparkle": "scintilla",
+        "addRecipe": "Aggiungi ricetta",
+        "changeRecipe": "cambia",
+        "addShort": "+ aggiungi",
+        "goToToday": "Oggi",
+        "noSlotsEnabled": "Nessuna fascia oraria pasto abilitata. Apri le impostazioni per aggiungerne una!",
+        "nothingPlanned": "Nulla di pianificato.",
+        "endOfRange": "60 giorni in avanti",
+        "undo": "Annulla"
+    },
+    "modal": {
+        "titleReplace": "Cambia ricetta",
+        "titleAdd": "Aggiungi ricetta",
+        "close": "Chiudi",
+        "searchPlaceholder": "Cerca ricette…",
+        "refreshingRecipes": "Aggiornamento delle ricette",
+        "noMatch": "Nessuna ricetta corrisponde a \"{q}\"",
+        "loadingRecipes": "Caricamento ricette…",
+        "feelingLucky": "Ti senti fortunato?",
+        "feelingLuckySub": "Scegli una ricetta casuale per me",
+        "recentlyUsed": "Usate di recente",
+        "loadingMore": "caricamento altri elementi…"
+    },
+    "actions": {
+        "title": "Azioni"
+    },
+    "logout": {
+        "title": "Disconnettersi?",
+        "desc": "Sarà necessario inserire nuovamente il PIN.",
+        "cancel": "Annulla",
+        "confirm": "Disconnetti"
+    },
+    "toast": {
+        "removed": "Rimosso: {name}",
+        "cacheRefreshed": "Cache aggiornata — {n} ricette.",
+        "actionSent": "Azione inviata.",
+        "dismiss": "Chiudi"
+    },
+    "error": {
+        "backend": "Impossibile raggiungere il backend. Il server è avviato?",
+        "recipeCache": "Impossibile caricare la cache delle ricette — prova ad aggiornarla nelle impostazioni.",
+        "saveFailed": "Salvataggio fallito — {detail}",
+        "removeFailed": "Rimozione fallita — {detail}",
+        "sparkleFailed": "Inserimento casuale fallito — {detail}",
+        "undoFailed": "Impossibile annullare l'azione.",
+        "cacheRefreshFailed": "Aggiornamento della cache fallito.",
+        "actionFailed": "Azione fallita — {detail}",
+        "loadMoreDays": "Impossibile caricare altri giorni.",
+        "loadPlan": "Impossibile caricare il piano dei pasti.",
+        "moveFailed": "Impossibile spostare la ricetta — {detail}",
+        "saveFallback": "per favore riprova.",
+        "sparkleFallback": "nessuna ricetta in cache?",
+        "actionFallback": "errore sconosciuto",
+        "networkOffline": "Impossibile raggiungere il server — controlla la connessione e riprova."
+    },
+    "quickAdd": {
+        "title": "Aggiungi a Mealie",
+        "tabUrl": "Importa da sito web",
+        "tabNew": "Nuova ricetta",
+        "urlLabel": "URL della ricetta",
+        "urlPlaceholder": "https://...",
+        "urlHint": "Incolla l'URL del sito web di una ricetta. Mealie recupererà automaticamente ingredienti e passaggi — di solito richiede 10-20 secondi.",
+        "nameLabel": "Nome della ricetta",
+        "namePlaceholder": "es. Lasagne della nonna",
+        "imageLabel": "Foto (opzionale)",
+        "imagePlaceholder": "Scegli un'immagine…",
+        "btnImport": "Importa",
+        "btnCreate": "Crea e aggiungi al piano",
+        "importing": "Recupero ricetta in corso… (di solito 10-20 secondi)",
+        "creating": "Creazione ricetta in corso…",
+        "btnCellShort": "+ nuova ricetta",
+        "btnCellCreate": "nuova ricetta",
+        "addedToSlot": "✦ {name} aggiunta al piano",
+        "errorUrlRequired": "Prima incolla l'URL della pagina di una ricetta.",
+        "errorNameRequired": "Il nome della ricetta non può essere vuoto.",
+        "errorAddedNotPlanned": "{name} è stata creata su Mealie ma non è stato possibile aggiungerla a questa fascia oraria — cercala tramite + aggiungi.",
+        "openInMealie": "Apri in Mealie per aggiungere ingredienti e passaggi ↗"
+    },
+    "auth": {
+        "pageTitle": "Mealie Planner · Sblocca",
+        "title": "Inserisci il PIN",
+        "subtitle": "Inserisci il tuo PIN per sbloccare Mealie Planner.",
+        "btn": "Sblocca",
+        "errorShort": "Inserisci tutti e 6 i caratteri.",
+        "errorIncorrect": "PIN errato.",
+        "errorNetwork": "Errore di rete. Riprova."
+    }
+}
