@@ -198,12 +198,9 @@
           <p class="section-label" x-text="t('settings.languageLabel')"></p>
           <div class="form-field">
             <select :value="locale" @change="setLocale($event.target.value)" class="form-input">
-              <option value="en">English</option>
-              <option value="de">Deutsch</option>
-              <option value="nl">Nederlands</option>
-              <option value="es">Español</option>
-              <option value="fr">Français</option>
-              <option value="pl">Polski</option>
+              <template x-for="code in SUPPORTED_LOCALES" :key="code">
+                <option :value="code" :selected="code === locale" x-text="LOCALE_NAMES[code]"></option>
+              </template>
             </select>
           </div>
         </div>
