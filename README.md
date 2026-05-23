@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/license-AGPL%203.0-blue)](LICENSE)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/hawkinslabdev/mealie-planner/.github%2Fworkflows%2Fbuild-container.yml)](#)
-[![GitHub Tag](https://img.shields.io/github/v/tag/hawkinslabdev/mealie-planner?label=version)](#)
+[![GitHub Tag](https://img.shields.io/github/v/tag/hawkinslabdev/mealie-planner?label=version)](https://github.com/hawkinslabdev/mealie-planner/blob/main/mealie-planner/CHANGELOG.md)
 [![Join Discussion](https://img.shields.io/badge/Home%20Assistant-Forum-03a9f4?logo=homeassistant)](https://community.home-assistant.io/t/mealie-planner-plan-your-recipes/1010565)
 [![Support](https://img.shields.io/badge/Support-Buy%20me%20a%20coffee-fdd734?logo=buy-me-a-coffee)](https://coff.ee/hawkinslabdev)
 
