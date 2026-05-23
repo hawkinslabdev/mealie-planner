@@ -31,7 +31,7 @@
         "futureDays": "Mostra i giorni successivi · {n} giorn* (i)",
         "tipKeyboard": "Suggerimento! Usa ← → per scorrere un giorno alla volta.",
         "mealSlotsLabel": "Fasce orarie pasti visibili",
-        "cacheLabel": "Cache delle ricette",
+        "cacheLabel": "Raccolta di ricette",
         "cacheRefresh": "Aggiorna",
         "cacheRefreshing": "Aggiornamento in corso…",
         "recipesCount": "{n} ricette salvate",
@@ -39,6 +39,7 @@
         "showQuickAdd": "Mostra pulsante crea e importa",
         "sourceLabel": "Sorgente",
         "github": "Visita su GitHub",
+        "accentLabel": "Colore accento",
         "languageLabel": "Lingua"
     },
     "meal": {
@@ -48,14 +49,12 @@
         "side": "Contorno"
     },
     "empty": {
-        "title": "Connetti a Mealie",
-        "desc": "Aggiungi l'URL di Mealie e il tuo token API per iniziare la pianificazione.",
+        "title": "Pianifica la tua settimana",
+        "desc": "Collega la tua raccolta di ricette Mealie per iniziare a pianificare i pasti della settimana.",
         "btn": "Apri impostazioni"
     },
     "planner": {
         "retry": "Riprova",
-        "prevDay": "Giorno precedente",
-        "nextDay": "Giorno successivo",
         "updatingPlan": "Aggiornamento del piano dei pasti",
         "today": "Oggi",
         "remove": "Rimuovi",
@@ -71,7 +70,9 @@
         "noSlotsEnabled": "Nessuna fascia oraria pasto abilitata. Apri le impostazioni per aggiungerne una!",
         "nothingPlanned": "Nulla di pianificato.",
         "endOfRange": "60 giorni in avanti",
-        "undo": "Annulla"
+        "undo": "Annulla",
+        "prevPeriod": "Periodo precedente",
+        "nextPeriod": "Periodo successivo"
     },
     "modal": {
         "titleReplace": "Cambia ricetta",
@@ -97,24 +98,24 @@
     },
     "toast": {
         "removed": "Rimosso: {name}",
-        "cacheRefreshed": "Cache aggiornata — {n} ricette.",
+        "cacheRefreshed": "Raccolta sincronizzata — {n} ricette.",
         "actionSent": "Azione inviata.",
         "dismiss": "Chiudi"
     },
     "error": {
         "backend": "Impossibile raggiungere il backend. Il server è avviato?",
-        "recipeCache": "Impossibile caricare la cache delle ricette — prova ad aggiornarla nelle impostazioni.",
+        "recipeCache": "Impossibile caricare la raccolta di ricette — prova ad aggiornarla nelle impostazioni.",
         "saveFailed": "Salvataggio fallito — {detail}",
         "removeFailed": "Rimozione fallita — {detail}",
         "sparkleFailed": "Inserimento casuale fallito — {detail}",
         "undoFailed": "Impossibile annullare l'azione.",
-        "cacheRefreshFailed": "Aggiornamento della cache fallito.",
+        "cacheRefreshFailed": "Sincronizzazione della raccolta fallita.",
         "actionFailed": "Azione fallita — {detail}",
         "loadMoreDays": "Impossibile caricare altri giorni.",
         "loadPlan": "Impossibile caricare il piano dei pasti.",
         "moveFailed": "Impossibile spostare la ricetta — {detail}",
         "saveFallback": "per favore riprova.",
-        "sparkleFallback": "nessuna ricetta in cache?",
+        "sparkleFallback": "nessuna ricetta nella raccolta?",
         "actionFallback": "errore sconosciuto",
         "networkOffline": "Impossibile raggiungere il server — controlla la connessione e riprova."
     },

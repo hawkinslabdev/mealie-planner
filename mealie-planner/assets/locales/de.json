@@ -31,7 +31,7 @@
         "futureDays": "Zukünftige Tage · {n} Tag(e)",
         "tipKeyboard": "Tipp! Mit ← → einen Tag weiter scrollen.",
         "mealSlotsLabel": "Sichtbare Mahlzeiten",
-        "cacheLabel": "Rezept-Cache",
+        "cacheLabel": "Rezeptbibliothek",
         "cacheRefresh": "Aktualisieren",
         "cacheRefreshing": "Wird aktualisiert…",
         "recipesCount": "{n} Rezepte gespeichert",
@@ -39,6 +39,7 @@
         "showQuickAdd": "Erstellen- & Importieren-Schaltfläche anzeigen",
         "sourceLabel": "Quelle",
         "github": "Auf GitHub ansehen",
+        "accentLabel": "Akzentfarbe",
         "languageLabel": "Sprache"
     },
     "meal": {
@@ -48,14 +49,12 @@
         "side": "Beilage"
     },
     "empty": {
-        "title": "Mit Mealie verbinden",
-        "desc": "Gib deine Mealie-URL und deinen API-Token ein, um mit der Planung zu beginnen.",
+        "title": "Plane deine Woche",
+        "desc": "Verbinde deine Mealie-Rezeptsammlung, um Mahlzeiten für die Woche zu planen.",
         "btn": "Einstellungen öffnen"
     },
     "planner": {
         "retry": "Erneut versuchen",
-        "prevDay": "Vorheriger Tag",
-        "nextDay": "Nächster Tag",
         "updatingPlan": "Mahlzeitenplan wird aktualisiert",
         "today": "Heute",
         "remove": "Entfernen",
@@ -71,7 +70,9 @@
         "noSlotsEnabled": "Keine Mahlzeiten aktiviert. Öffne die Einstellungen, um welche hinzuzufügen!",
         "nothingPlanned": "Nichts geplant.",
         "endOfRange": "60 Tage voraus",
-        "undo": "Rückgängig"
+        "undo": "Rückgängig",
+        "prevPeriod": "Vorheriger Zeitraum",
+        "nextPeriod": "Nächster Zeitraum"
     },
     "modal": {
         "titleReplace": "Rezept ändern",
@@ -97,24 +98,24 @@
     },
     "toast": {
         "removed": "{name} entfernt",
-        "cacheRefreshed": "Cache aktualisiert — {n} Rezepte.",
+        "cacheRefreshed": "Bibliothek synchronisiert — {n} Rezepte.",
         "actionSent": "Aktion ausgeführt.",
         "dismiss": "Schließen"
     },
     "error": {
         "backend": "Backend nicht erreichbar. Läuft der Server?",
-        "recipeCache": "Rezept-Cache konnte nicht geladen werden — bitte in den Einstellungen aktualisieren.",
+        "recipeCache": "Rezeptbibliothek konnte nicht geladen werden — bitte in den Einstellungen aktualisieren.",
         "saveFailed": "Speichern fehlgeschlagen — {detail}",
         "removeFailed": "Entfernen fehlgeschlagen — {detail}",
         "sparkleFailed": "Zufallsrezept fehlgeschlagen — {detail}",
         "undoFailed": "Rückgängig machen fehlgeschlagen.",
-        "cacheRefreshFailed": "Cache-Aktualisierung fehlgeschlagen.",
+        "cacheRefreshFailed": "Bibliothek-Synchronisierung fehlgeschlagen.",
         "actionFailed": "Aktion fehlgeschlagen — {detail}",
         "loadMoreDays": "Weitere Tage konnten nicht geladen werden.",
         "loadPlan": "Mahlzeitenplan konnte nicht geladen werden.",
         "moveFailed": "Rezept verschieben fehlgeschlagen — {detail}",
         "saveFallback": "Bitte erneut versuchen.",
-        "sparkleFallback": "Keine Rezepte im Cache?",
+        "sparkleFallback": "Keine Rezepte in der Bibliothek?",
         "actionFallback": "Unbekannter Fehler",
         "networkOffline": "Server nicht erreichbar – bitte Verbindung prüfen und erneut versuchen."
     },

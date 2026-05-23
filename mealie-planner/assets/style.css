@@ -9,9 +9,9 @@
      --text: oklch(93% 0.004 70);
      --text-muted: oklch(63% 0.006 70);
      --text-subtle: oklch(57% 0.006 70);
-     --accent: oklch(60% 0.11 275);
-     --accent-muted: oklch(60% 0.11 275 / 0.12);
-     --accent-cell: oklch(60% 0.11 275 / 0.08);
+     --accent: oklch(63% 0.14 58);
+     --accent-muted: oklch(63% 0.14 58 / 0.12);
+     --accent-cell: oklch(63% 0.14 58 / 0.08);
      --on-accent: oklch(98% 0.002 70);
      --chip-bf: oklch(74% 0.13 68);
      --chip-lu: oklch(67% 0.15 142);
@@ -48,9 +48,9 @@
          --text: oklch(16% 0.006 70);
          --text-muted: oklch(46% 0.007 70);
          --text-subtle: oklch(43% 0.006 70);
-         --accent: oklch(42% 0.12 275);
-         --accent-muted: oklch(42% 0.12 275 / 0.10);
-         --accent-cell: oklch(42% 0.12 275 / 0.08);
+         --accent: oklch(44% 0.15 55);
+         --accent-muted: oklch(44% 0.15 55 / 0.10);
+         --accent-cell: oklch(44% 0.15 55 / 0.08);
          --on-accent: oklch(98% 0.002 70);
          --chip-bf: oklch(50% 0.16 65);
          --chip-lu: oklch(44% 0.18 142);
@@ -72,18 +72,168 @@
      --text: oklch(16% 0.006 70);
      --text-muted: oklch(46% 0.007 70);
      --text-subtle: oklch(43% 0.006 70);
-     --accent: oklch(42% 0.12 275);
-     --accent-muted: oklch(42% 0.12 275 / 0.10);
-     --accent-cell: oklch(42% 0.12 275 / 0.08);
+     --accent: oklch(44% 0.15 55);
+     --accent-muted: oklch(44% 0.15 55 / 0.10);
+     --accent-cell: oklch(44% 0.15 55 / 0.08);
      --on-accent: oklch(98% 0.002 70);
      --chip-bf: oklch(50% 0.16 65);
      --chip-lu: oklch(44% 0.18 142);
-     --chip-di: oklch(42% 0.20 305);
+     --chip-di: oklch(44% 0.22 15);
      --chip-si: oklch(46% 0.13 195);
      --ok: oklch(44% 0.20 145);
      --warn: oklch(48% 0.18 68);
      --err: oklch(42% 0.25 25);
 }
+ :root[data-accent="lavender"] {
+     --accent:      oklch(60% 0.11 275);
+     --accent-muted: oklch(60% 0.11 275 / 0.12);
+     --accent-cell: oklch(60% 0.11 275 / 0.08);
+     --chip-bf: oklch(73% 0.09 42);
+     --chip-lu: oklch(67% 0.11 158);
+     --chip-di: oklch(61% 0.18 348);
+     --chip-si: oklch(65% 0.14 228);
+}
+ @media (prefers-color-scheme: light) {
+     :root[data-accent="lavender"]:not([data-theme="dark"]) {
+         --accent:      oklch(42% 0.12 275);
+         --accent-muted: oklch(42% 0.12 275 / 0.10);
+         --accent-cell: oklch(42% 0.12 275 / 0.08);
+         --chip-bf: oklch(46% 0.09 42);
+         --chip-lu: oklch(42% 0.11 158);
+         --chip-di: oklch(44% 0.20 348);
+         --chip-si: oklch(44% 0.14 228);
+    }
+}
+ :root[data-accent="lavender"][data-theme="light"] {
+     --accent:      oklch(42% 0.12 275);
+     --accent-muted: oklch(42% 0.12 275 / 0.10);
+     --accent-cell: oklch(42% 0.12 275 / 0.08);
+     --chip-bf: oklch(46% 0.09 42);
+     --chip-lu: oklch(42% 0.11 158);
+     --chip-di: oklch(44% 0.20 348);
+     --chip-si: oklch(44% 0.14 228);
+}
+
+ :root[data-accent="sage"] {
+     --accent:      oklch(59% 0.12 145);
+     --accent-muted: oklch(59% 0.12 145 / 0.12);
+     --accent-cell: oklch(59% 0.12 145 / 0.08);
+     --chip-bf: oklch(73% 0.17 78);
+     --chip-lu: oklch(65% 0.17 105);
+     --chip-di: oklch(57% 0.17 22);
+     --chip-si: oklch(63% 0.14 178);
+}
+ @media (prefers-color-scheme: light) {
+     :root[data-accent="sage"]:not([data-theme="dark"]) {
+         --accent:      oklch(41% 0.13 143);
+         --accent-muted: oklch(41% 0.13 143 / 0.10);
+         --accent-cell: oklch(41% 0.13 143 / 0.08);
+         --chip-bf: oklch(49% 0.17 78);
+         --chip-lu: oklch(43% 0.17 105);
+         --chip-di: oklch(40% 0.17 22);
+         --chip-si: oklch(44% 0.14 178);
+    }
+}
+ :root[data-accent="sage"][data-theme="light"] {
+     --accent:      oklch(41% 0.13 143);
+     --accent-muted: oklch(41% 0.13 143 / 0.10);
+     --accent-cell: oklch(41% 0.13 143 / 0.08);
+     --chip-bf: oklch(49% 0.17 78);
+     --chip-lu: oklch(43% 0.17 105);
+     --chip-di: oklch(40% 0.17 22);
+     --chip-si: oklch(44% 0.14 178);
+}
+
+ :root[data-accent="terracotta"] {
+     --accent:      oklch(62% 0.13 34);
+     --accent-muted: oklch(62% 0.13 34 / 0.12);
+     --accent-cell: oklch(62% 0.13 34 / 0.08);
+     --chip-bf: oklch(76% 0.18 82);
+     --chip-lu: oklch(66% 0.18 136);
+     --chip-di: oklch(55% 0.14 248);
+     --chip-si: oklch(64% 0.14 183);
+}
+ @media (prefers-color-scheme: light) {
+     :root[data-accent="terracotta"]:not([data-theme="dark"]) {
+         --accent:      oklch(44% 0.14 32);
+         --accent-muted: oklch(44% 0.14 32 / 0.10);
+         --accent-cell: oklch(44% 0.14 32 / 0.08);
+         --chip-bf: oklch(51% 0.18 82);
+         --chip-lu: oklch(43% 0.18 136);
+         --chip-di: oklch(39% 0.14 248);
+         --chip-si: oklch(45% 0.14 183);
+    }
+}
+ :root[data-accent="terracotta"][data-theme="light"] {
+     --accent:      oklch(44% 0.14 32);
+     --accent-muted: oklch(44% 0.14 32 / 0.10);
+     --accent-cell: oklch(44% 0.14 32 / 0.08);
+     --chip-bf: oklch(51% 0.18 82);
+     --chip-lu: oklch(43% 0.18 136);
+     --chip-di: oklch(39% 0.14 248);
+     --chip-si: oklch(45% 0.14 183);
+}
+
+ :root[data-accent="slate"] {
+     --accent:      oklch(60% 0.09 228);
+     --accent-muted: oklch(60% 0.09 228 / 0.12);
+     --accent-cell: oklch(60% 0.09 228 / 0.08);
+     --chip-bf: oklch(73% 0.14 52);
+     --chip-lu: oklch(65% 0.12 152);
+     --chip-di: oklch(58% 0.18 10);
+     --chip-si: oklch(63% 0.13 178);
+}
+ @media (prefers-color-scheme: light) {
+     :root[data-accent="slate"]:not([data-theme="dark"]) {
+         --accent:      oklch(42% 0.10 226);
+         --accent-muted: oklch(42% 0.10 226 / 0.10);
+         --accent-cell: oklch(42% 0.10 226 / 0.08);
+         --chip-bf: oklch(48% 0.14 52);
+         --chip-lu: oklch(42% 0.12 152);
+         --chip-di: oklch(41% 0.20 10);
+         --chip-si: oklch(44% 0.13 178);
+    }
+}
+ :root[data-accent="slate"][data-theme="light"] {
+     --accent:      oklch(42% 0.10 226);
+     --accent-muted: oklch(42% 0.10 226 / 0.10);
+     --accent-cell: oklch(42% 0.10 226 / 0.08);
+     --chip-bf: oklch(48% 0.14 52);
+     --chip-lu: oklch(42% 0.12 152);
+     --chip-di: oklch(41% 0.20 10);
+     --chip-si: oklch(44% 0.13 178);
+}
+
+ .accent-swatches {
+     display: flex;
+     gap: var(--space-2);
+     flex-wrap: wrap;
+}
+ .accent-swatch {
+     width: 28px;
+     height: 28px;
+     border-radius: 50%;
+     background: var(--sw);
+     border: none;
+     cursor: pointer;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     color: oklch(98% 0 0);
+     transition: transform .12s;
+     flex-shrink: 0;
+}
+ .accent-swatch:hover {
+     transform: scale(1.12);
+}
+ .accent-swatch--on {
+     box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--sw);
+}
+ .accent-swatch:focus-visible {
+     outline: 2px solid var(--accent);
+     outline-offset: 3px;
+}
+
  *, *::before, *::after {
      box-sizing: border-box;
      margin: 0;
@@ -182,6 +332,24 @@
      cursor: pointer;
      transition: border-color .15s, color .15s, background .15s;
      flex-shrink: 0;
+     position: relative;
+}
+ .icon-btn[title]:focus-visible::after {
+     content: attr(title);
+     position: absolute;
+     bottom: calc(100% + 6px);
+     left: 50%;
+     transform: translateX(-50%);
+     background: var(--bg-subtle);
+     color: var(--text);
+     border: 1px solid var(--border);
+     border-radius: 6px;
+     padding: 3px 8px;
+     font-size: var(--text-xs);
+     font-weight: 400;
+     white-space: nowrap;
+     pointer-events: none;
+     z-index: 100;
 }
  .icon-btn:hover, .icon-btn.active {
      border-color: var(--border);
@@ -350,6 +518,11 @@
          min-height: 44px;
          padding-top: 11px;
          padding-bottom: 11px;
+    }
+     .mobile-recipe-info .ca {
+         min-height: 44px;
+         padding: 0 12px;
+         font-size: var(--text-sm);
     }
      .tip-keyboard-only {
          display: none;
@@ -832,6 +1005,10 @@
      white-space: nowrap;
      transition: color .15s, background .15s, border-color .15s, transform 80ms;
 }
+ .ca--sm {
+     font-size: 0.7rem;
+     padding: 2px 8px;
+}
  .ca:hover {
      color: var(--text);
      background: var(--bg-muted);
@@ -880,10 +1057,9 @@
      padding: var(--space-8) var(--space-6);
      gap: var(--space-3);
 }
- .empty-state__emoji {
-     font-size: 3rem;
-     line-height: 1;
-     opacity: 0.85;
+ .empty-state__art {
+     opacity: 0.9;
+     margin-bottom: var(--space-2);
 }
  .empty-state__title {
      font-size: 1.25rem;

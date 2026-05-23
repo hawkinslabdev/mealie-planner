@@ -31,7 +31,7 @@
         "futureDays": "Jours suivants · {n} jour(s)",
         "tipKeyboard": "Astuce ! Utilisez ← → pour faire défiler jour par jour.",
         "mealSlotsLabel": "Créneaux repas visibles",
-        "cacheLabel": "Cache des recettes",
+        "cacheLabel": "Bibliothèque de recettes",
         "cacheRefresh": "Actualiser",
         "cacheRefreshing": "Actualisation…",
         "recipesCount": "{n} recettes enregistrées",
@@ -39,6 +39,7 @@
         "showQuickAdd": "Afficher le bouton créer & importer",
         "sourceLabel": "Source",
         "github": "Voir sur GitHub",
+        "accentLabel": "Couleur d'accent",
         "languageLabel": "Langue"
     },
     "meal": {
@@ -48,14 +49,12 @@
         "side": "Accompagnement"
     },
     "empty": {
-        "title": "Se connecter à Mealie",
-        "desc": "Ajoutez votre URL Mealie et votre jeton API pour commencer à planifier.",
+        "title": "Planifiez votre semaine",
+        "desc": "Connectez votre collection de recettes Mealie pour planifier vos repas de la semaine.",
         "btn": "Ouvrir les paramètres"
     },
     "planner": {
         "retry": "Réessayer",
-        "prevDay": "Jour précédent",
-        "nextDay": "Jour suivant",
         "updatingPlan": "Mise à jour du plan de repas",
         "today": "Aujourd'hui",
         "remove": "Supprimer",
@@ -71,7 +70,9 @@
         "noSlotsEnabled": "Aucun créneau actif. Ouvrez les paramètres pour en ajouter !",
         "nothingPlanned": "Rien de prévu.",
         "endOfRange": "60 jours à venir",
-        "undo": "Annuler"
+        "undo": "Annuler",
+        "prevPeriod": "Période précédente",
+        "nextPeriod": "Période suivante"
     },
     "modal": {
         "titleReplace": "Changer la recette",
@@ -97,24 +98,24 @@
     },
     "toast": {
         "removed": "{name} supprimé",
-        "cacheRefreshed": "Cache actualisé — {n} recettes.",
+        "cacheRefreshed": "Bibliothèque synchronisée — {n} recettes.",
         "actionSent": "Action envoyée.",
         "dismiss": "Fermer"
     },
     "error": {
         "backend": "Impossible de joindre le serveur. Est-il en cours d'exécution ?",
-        "recipeCache": "Impossible de charger le cache des recettes — actualisez-le dans les paramètres.",
+        "recipeCache": "Impossible de charger la bibliothèque de recettes — actualisez-la dans les paramètres.",
         "saveFailed": "Échec de l'enregistrement — {detail}",
         "removeFailed": "Échec de la suppression — {detail}",
         "sparkleFailed": "Échec de la recette aléatoire — {detail}",
         "undoFailed": "Impossible d'annuler.",
-        "cacheRefreshFailed": "Échec de l'actualisation du cache.",
+        "cacheRefreshFailed": "Échec de la synchronisation de la bibliothèque.",
         "actionFailed": "Échec de l'action — {detail}",
         "loadMoreDays": "Impossible de charger plus de jours.",
         "loadPlan": "Impossible de charger le plan de repas.",
         "moveFailed": "Échec du déplacement de la recette — {detail}",
         "saveFallback": "veuillez réessayer.",
-        "sparkleFallback": "aucune recette en cache ?",
+        "sparkleFallback": "aucune recette dans votre bibliothèque ?",
         "actionFallback": "erreur inconnue",
         "networkOffline": "Impossible de contacter le serveur — vérifiez votre connexion et réessayez."
     },

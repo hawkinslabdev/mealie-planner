@@ -31,7 +31,7 @@
         "futureDays": "Días posteriores · {n} día(s)",
         "tipKeyboard": "¡Consejo! Usa ← → para desplazarte un día a la vez.",
         "mealSlotsLabel": "Franjas de comida visibles",
-        "cacheLabel": "Caché de recetas",
+        "cacheLabel": "Biblioteca de recetas",
         "cacheRefresh": "Actualizar",
         "cacheRefreshing": "Actualizando…",
         "recipesCount": "{n} recetas guardadas",
@@ -39,6 +39,7 @@
         "showQuickAdd": "Mostrar botón de crear e importar",
         "sourceLabel": "Fuente",
         "github": "Ver en GitHub",
+        "accentLabel": "Color de acento",
         "languageLabel": "Idioma"
     },
     "meal": {
@@ -48,14 +49,12 @@
         "side": "Acompañamiento"
     },
     "empty": {
-        "title": "Conectar con Mealie",
-        "desc": "Añade tu URL de Mealie y tu token de API para comenzar a planificar.",
+        "title": "Planifica tu semana",
+        "desc": "Conecta tu colección de recetas de Mealie para planificar las comidas de la semana.",
         "btn": "Abrir configuración"
     },
     "planner": {
         "retry": "Reintentar",
-        "prevDay": "Día anterior",
-        "nextDay": "Día siguiente",
         "updatingPlan": "Actualizando plan de comidas",
         "today": "Hoy",
         "remove": "Eliminar",
@@ -71,7 +70,9 @@
         "noSlotsEnabled": "No hay franjas activas. ¡Abre la configuración para añadir alguna!",
         "nothingPlanned": "Nada planificado.",
         "endOfRange": "60 días por delante",
-        "undo": "Deshacer"
+        "undo": "Deshacer",
+        "prevPeriod": "Período anterior",
+        "nextPeriod": "Período siguiente"
     },
     "modal": {
         "titleReplace": "Cambiar receta",
@@ -97,24 +98,24 @@
     },
     "toast": {
         "removed": "{name} eliminado",
-        "cacheRefreshed": "Caché actualizada — {n} recetas.",
+        "cacheRefreshed": "Biblioteca sincronizada — {n} recetas.",
         "actionSent": "Acción enviada.",
         "dismiss": "Cerrar"
     },
     "error": {
         "backend": "No se puede conectar al servidor. ¿Está en ejecución?",
-        "recipeCache": "No se pudo cargar la caché de recetas — actualízala en la configuración.",
+        "recipeCache": "No se pudo cargar la biblioteca de recetas — actualízala en la configuración.",
         "saveFailed": "Error al guardar — {detail}",
         "removeFailed": "Error al eliminar — {detail}",
         "sparkleFailed": "Error al obtener receta aleatoria — {detail}",
         "undoFailed": "No se pudo deshacer.",
-        "cacheRefreshFailed": "Error al actualizar la caché.",
+        "cacheRefreshFailed": "Error al sincronizar la biblioteca.",
         "actionFailed": "Error en la acción — {detail}",
         "loadMoreDays": "No se pudieron cargar más días.",
         "loadPlan": "No se pudo cargar el plan de comidas.",
         "moveFailed": "Error al mover la receta — {detail}",
         "saveFallback": "inténtalo de nuevo.",
-        "sparkleFallback": "¿no hay recetas en caché?",
+        "sparkleFallback": "¿no hay recetas en tu biblioteca?",
         "actionFallback": "error desconocido",
         "networkOffline": "No se puede contactar el servidor — verifica tu conexión e inténtalo de nuevo."
     },

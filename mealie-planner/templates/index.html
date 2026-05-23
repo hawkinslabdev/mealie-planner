@@ -195,6 +195,42 @@
         </div>
 
         <div>
+          <p class="section-label" x-text="t('settings.accentLabel')"></p>
+          <div class="accent-swatches">
+            <button class="accent-swatch" :class="accentTheme === 'amber' && 'accent-swatch--on'"
+                    style="--sw: oklch(63% 0.14 58)" @click="setAccentTheme('amber')" title="Amber">
+              <svg x-show="accentTheme === 'amber'" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 13l4 4L19 7"/>
+              </svg>
+            </button>
+            <button class="accent-swatch" :class="accentTheme === 'lavender' && 'accent-swatch--on'"
+                    style="--sw: oklch(60% 0.11 275)" @click="setAccentTheme('lavender')" title="Lavender">
+              <svg x-show="accentTheme === 'lavender'" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 13l4 4L19 7"/>
+              </svg>
+            </button>
+            <button class="accent-swatch" :class="accentTheme === 'sage' && 'accent-swatch--on'"
+                    style="--sw: oklch(59% 0.12 145)" @click="setAccentTheme('sage')" title="Sage">
+              <svg x-show="accentTheme === 'sage'" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 13l4 4L19 7"/>
+              </svg>
+            </button>
+            <button class="accent-swatch" :class="accentTheme === 'terracotta' && 'accent-swatch--on'"
+                    style="--sw: oklch(62% 0.13 34)" @click="setAccentTheme('terracotta')" title="Terracotta">
+              <svg x-show="accentTheme === 'terracotta'" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 13l4 4L19 7"/>
+              </svg>
+            </button>
+            <button class="accent-swatch" :class="accentTheme === 'slate' && 'accent-swatch--on'"
+                    style="--sw: oklch(60% 0.09 228)" @click="setAccentTheme('slate')" title="Slate">
+              <svg x-show="accentTheme === 'slate'" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 13l4 4L19 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div>
           <p class="section-label" x-text="t('settings.languageLabel')"></p>
           <div class="form-field">
             <select :value="locale" @change="setLocale($event.target.value)" class="form-input">
@@ -221,7 +257,36 @@
 
   <!-- empty state -->
   <div x-show="initialized && !configured && !settingsOpen" class="empty-state">
-    <span class="empty-state__emoji">🍽</span>
+    <svg class="empty-state__art" width="130" height="82" viewBox="0 0 130 82" fill="none" aria-hidden="true">
+      <!-- Breakfast row: amber -->
+      <rect x="0" y="0" width="38" height="28" rx="7" fill="var(--chip-bf)" opacity="0.15"/>
+      <rect x="0" y="0" width="38" height="28" rx="7" stroke="var(--chip-bf)" stroke-width="1.2" opacity="0.5"/>
+      <rect x="8" y="7" width="18" height="4" rx="2" fill="var(--chip-bf)" opacity="0.65"/>
+      <rect x="8" y="15" width="12" height="3" rx="1.5" fill="var(--chip-bf)" opacity="0.4"/>
+      <!-- Lunch row: green -->
+      <rect x="46" y="0" width="38" height="28" rx="7" fill="var(--chip-lu)" opacity="0.15"/>
+      <rect x="46" y="0" width="38" height="28" rx="7" stroke="var(--chip-lu)" stroke-width="1.2" opacity="0.5"/>
+      <rect x="54" y="7" width="20" height="4" rx="2" fill="var(--chip-lu)" opacity="0.65"/>
+      <rect x="54" y="15" width="14" height="3" rx="1.5" fill="var(--chip-lu)" opacity="0.4"/>
+      <!-- Empty slot -->
+      <rect x="92" y="0" width="38" height="28" rx="7" stroke="var(--border-strong)" stroke-width="1.2" stroke-dasharray="3.5 2.5"/>
+      <line x1="111" y1="8" x2="111" y2="20" stroke="var(--text-subtle)" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+      <line x1="105" y1="14" x2="117" y2="14" stroke="var(--text-subtle)" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+      <!-- Dinner row: tomato -->
+      <rect x="0" y="36" width="38" height="28" rx="7" fill="var(--chip-di)" opacity="0.15"/>
+      <rect x="0" y="36" width="38" height="28" rx="7" stroke="var(--chip-di)" stroke-width="1.2" opacity="0.5"/>
+      <rect x="8" y="43" width="22" height="4" rx="2" fill="var(--chip-di)" opacity="0.65"/>
+      <rect x="8" y="51" width="14" height="3" rx="1.5" fill="var(--chip-di)" opacity="0.4"/>
+      <!-- Empty slot -->
+      <rect x="46" y="36" width="38" height="28" rx="7" stroke="var(--border-strong)" stroke-width="1.2" stroke-dasharray="3.5 2.5"/>
+      <line x1="65" y1="44" x2="65" y2="56" stroke="var(--text-subtle)" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+      <line x1="59" y1="50" x2="71" y2="50" stroke="var(--text-subtle)" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+      <!-- Side row: teal -->
+      <rect x="92" y="36" width="38" height="28" rx="7" fill="var(--chip-si)" opacity="0.15"/>
+      <rect x="92" y="36" width="38" height="28" rx="7" stroke="var(--chip-si)" stroke-width="1.2" opacity="0.5"/>
+      <rect x="100" y="43" width="16" height="4" rx="2" fill="var(--chip-si)" opacity="0.65"/>
+      <rect x="100" y="51" width="10" height="3" rx="1.5" fill="var(--chip-si)" opacity="0.4"/>
+    </svg>
     <p class="empty-state__title" x-text="t('empty.title')"></p>
     <p class="empty-state__desc" x-text="t('empty.desc')"></p>
     <button @click="settingsOpen = true" class="btn btn-primary" x-text="t('empty.btn')"></button>
@@ -238,10 +303,10 @@
 
     <!-- week bar -->
     <div class="week-bar">
-      <button class="week-nav-btn" @click="shiftPage(-1)" :title="t('planner.prevDay')">
+      <button class="week-nav-btn" @click="shiftPeriod(-1)" :title="t('planner.prevPeriod')">
         <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
       </button>
-      <button class="week-nav-btn" @click="shiftPage(1)" :title="t('planner.nextDay')">
+      <button class="week-nav-btn" @click="shiftPeriod(1)" :title="t('planner.nextPeriod')">
         <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
       </button>
       <span class="week-range" x-text="weekRangeLabel"></span>
@@ -291,8 +356,8 @@
                         </div>
                         <div class="chip-acts">
                           <a class="ca" :href="getMealieLink(entry.recipe_slug)" target="_blank" :title="t('planner.openInMealie')">↗ <span x-text="t('planner.open')"></span></a>
-                          <button class="ca" @click.stop="openModalReplace(item.date, item.mt, entry)" x-text="t('planner.changeRecipe')"></button>
-                          <button class="ca" x-show="recipeActions.length > 0" @click.stop="openActionMenu(entry, $event)">···</button>
+                          <button class="ca ca--sm" @click.stop="openModalReplace(item.date, item.mt, entry)" x-text="t('planner.changeRecipe')"></button>
+                          <button class="ca ca--sm" x-show="recipeActions.length > 0" @click.stop="openActionMenu(entry, $event)">···</button>
                         </div>
                       </div>
                     </template>
@@ -426,7 +491,7 @@
       <div class="modal-header">
         <div>
           <p class="modal-title" x-text="modalMode === 'replace' ? t('modal.titleReplace') : t('modal.titleAdd')"></p>
-          <p class="modal-subtitle" x-text="(modalMt || '') + ' · ' + formatDate(modalDate)"></p>
+          <p class="modal-subtitle" x-text="(modalMt ? t('meal.' + modalMt) : '') + ' · ' + formatDate(modalDate)"></p>
         </div>
         <button @click="modalOpen = false" class="icon-btn" :aria-label="t('modal.close')">
           <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -444,7 +509,7 @@
       <div class="modal-body" @scroll="onModalScroll($event)">
         <div x-show="recipesLoadedAt === null" class="center-msg" x-text="t('modal.loadingRecipes')"></div>
 
-        <!-- sparkle prompt — empty slot, add mode, no search active -->
+        <!-- sparkle prompt: empty slot, add mode, no search active -->
         <template x-if="recipesLoadedAt !== null && modalMode === 'add' && !hasSlot(modalDate, modalMt) && !modalSearch">
           <button class="modal-sparkle" @click="modalSparkle()">
             <span class="modal-sparkle__icon">✦</span>
@@ -531,8 +596,8 @@
 
   <!-- notifications: toasts -->
   <div class="notif-hub" aria-live="polite" aria-atomic="false">
-    <template x-for="t in toasts" :key="t.id">
-      <div class="toast" :class="'toast--' + t.type"
+    <template x-for="toast in toasts" :key="toast.id">
+      <div class="toast" :class="'toast--' + toast.type"
         x-transition:enter="toast-enter"
         x-transition:enter-start="toast-enter-from"
         x-transition:enter-end="toast-enter-to"
@@ -540,14 +605,14 @@
         x-transition:leave-start="toast-leave-from"
         x-transition:leave-end="toast-leave-to">
         <span class="toast__icon" aria-hidden="true"></span>
-        <span class="toast__msg" x-text="t.msg"></span>
-        <button class="toast__close" @click="removeToast(t.id)" :aria-label="t('toast.dismiss')">×</button>
+        <span class="toast__msg" x-text="toast.msg"></span>
+        <button class="toast__close" @click="removeToast(toast.id)" :aria-label="t('toast.dismiss')">×</button>
         <span class="toast__progress" aria-hidden="true"></span>
       </div>
     </template>
   </div>
 
-  <!-- undo bar — separate from notif-hub to avoid corrupting nth-child stacking -->
+  <!-- undo bar: separate from notif-hub to avoid corrupting nth-child stacking -->
   <div x-show="undoBar" class="undo-bar"
     x-transition:enter="toast-enter"
     x-transition:enter-start="toast-enter-from"

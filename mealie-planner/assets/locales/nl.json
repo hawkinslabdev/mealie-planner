@@ -1,153 +1,154 @@
 {
-  "nav": {
-    "settings": "Instellingen",
-    "logout": "Uitloggen",
-    "unreachable": "Onbereikbaar"
-  },
-  "theme": {
-    "system": "Systeem",
-    "light": "Licht",
-    "dark": "Donker"
-  },
-  "onboard": {
-    "title": "Wat staat er deze week op het menu?",
-    "desc": "Verbind je Mealie-instantie om je receptenbibliotheek te doorzoeken en maaltijden voor de week te plannen, rechtstreeks in Home Assistant."
-  },
-  "settings": {
-    "title": "Instellingen",
-    "connectionLabel": "Mealie-verbinding",
-    "dockerNotice": "Alles klaar! Deze worden geconfigureerd via de omgevingsvariabelen <code>MEALIE_API_URL</code> en <code>MEALIE_API_KEY</code>.",
-    "connected": "Verbonden met Mealie",
-    "unreachable": "Geconfigureerd, maar Mealie is momenteel onbereikbaar",
-    "urlLabel": "Instantie-URL",
-    "tokenLabel": "API-token",
-    "tokenPlaceholderUpdate": "Leeg laten om het huidige token te behouden",
-    "tokenPlaceholderNew": "Jouw Mealie API-token",
-    "btnUpdate": "Bijwerken",
-    "btnSave": "Opslaan & valideren",
-    "btnValidating": "Valideren…",
-    "dayRangeLabel": "Dagbereik",
-    "pastDays": "Toon vorige dagen · {n} dag(en)",
-    "futureDays": "Toon volgende dagen · {n} dag(en)",
-    "tipKeyboard": "Tip! Gebruik ← → om één dag per keer te scrollen.",
-    "mealSlotsLabel": "Toon maaltijden",
-    "cacheLabel": "Receptencache",
-    "cacheRefresh": "Vernieuwen",
-    "cacheRefreshing": "Bezig met vernieuwen…",
-    "recipesCount": "{n} recepten opgeslagen",
-    "optionsLabel": "Opties",
-    "showQuickAdd": "Knop voor aanmaken & importeren tonen",
-    "sourceLabel": "Bron",
-    "github": "Bekijk op GitHub",
-    "languageLabel": "Taal"
-  },
-  "meal": {
-    "breakfast": "Ontbijt",
-    "lunch": "Lunch",
-    "dinner": "Diner",
-    "side": "Bijgerecht"
-  },
-  "empty": {
-    "title": "Verbinden met Mealie",
-    "desc": "Voeg je Mealie-URL en API-token toe om te beginnen met plannen.",
-    "btn": "Instellingen openen"
-  },
-  "planner": {
-    "retry": "Opnieuw proberen",
-    "prevDay": "Vorige dag",
-    "nextDay": "Volgende dag",
-    "updatingPlan": "Maaltijdplan bijwerken",
-    "today": "Vandaag",
-    "remove": "Verwijderen",
-    "openInMealie": "Openen in Mealie",
-    "open": "openen",
-    "openInMealieMobile": "openen in Mealie ↗",
-    "sparkleTitle": "Willekeurig recept toevoegen",
-    "sparkle": "willekeurig",
-    "addRecipe": "Recept toevoegen",
-    "changeRecipe": "wijzigen",
-    "addShort": "+ toevoegen",
-    "goToToday": "Vandaag",
-    "noSlotsEnabled": "Geen maaltijdslots actief. Open instellingen om er een toe te voegen!",
-    "nothingPlanned": "Niets gepland.",
-    "endOfRange": "60 dagen vooruit",
-    "undo": "Ongedaan"
-  },
-  "modal": {
-    "titleReplace": "Recept wijzigen",
-    "titleAdd": "Recept toevoegen",
-    "searchPlaceholder": "Recepten zoeken…",
-    "refreshingRecipes": "Recepten vernieuwen",
-    "noMatch": "Geen recepten gevonden voor \"{q}\"",
-    "loadingRecipes": "Recepten laden…",
-    "feelingLucky": "Op goed geluk?",
-    "feelingLuckySub": "Kies een willekeurig recept voor mij",
-    "recentlyUsed": "Recent gebruikt",
-    "loadingMore": "meer laden…",
-    "close": "Sluiten"
-  },
-  "actions": {
-    "title": "Acties"
-  },
-  "logout": {
-    "title": "Uitloggen?",
-    "desc": "Je PIN is daarna opnieuw vereist.",
-    "cancel": "Annuleren",
-    "confirm": "Uitloggen"
-  },
-  "toast": {
-    "removed": "{name} verwijderd",
-    "cacheRefreshed": "Cache vernieuwd — {n} recepten.",
-    "actionSent": "Actie verzonden.",
-    "dismiss": "Sluiten"
-  },
-  "error": {
-    "backend": "Backend niet bereikbaar. Draait de server?",
-    "recipeCache": "Receptencache kon niet worden geladen — vernieuw de cache via instellingen.",
-    "saveFailed": "Opslaan mislukt — {detail}",
-    "removeFailed": "Verwijderen mislukt — {detail}",
-    "sparkleFailed": "Willekeurig recept mislukt — {detail}",
-    "undoFailed": "Ongedaan maken mislukt.",
-    "cacheRefreshFailed": "Cache vernieuwen mislukt.",
-    "actionFailed": "Actie mislukt — {detail}",
-    "loadMoreDays": "Meer dagen konden niet worden geladen.",
-    "loadPlan": "Maaltijdplan kon niet worden geladen.",
-    "moveFailed": "Recept verplaatsen mislukt — {detail}",
-    "saveFallback": "Probeer het opnieuw.",
-    "sparkleFallback": "Geen recepten in cache?",
-    "actionFallback": "Onbekende fout",
-    "networkOffline": "Server niet bereikbaar — controleer je verbinding en probeer opnieuw."
-  },
-  "quickAdd": {
-    "title": "Toevoegen aan Mealie",
-    "tabUrl": "Van website importeren",
-    "tabNew": "Nieuw recept",
-    "urlLabel": "Recept-URL",
-    "urlPlaceholder": "https://...",
-    "urlHint": "Plak de URL van een receptpagina. Mealie haalt de ingrediënten en stappen automatisch op — meestal 10–20 seconden.",
-    "nameLabel": "Receptnaam",
-    "namePlaceholder": "bijv. Oma's lasagne",
-    "imageLabel": "Foto (optioneel)",
-    "imagePlaceholder": "Kies een afbeelding…",
-    "btnImport": "Importeren",
-    "btnCreate": "Aanmaken & aan plan toevoegen",
-    "importing": "Recept ophalen… (meestal 10–20 seconden)",
-    "creating": "Recept aanmaken…",
-    "btnCellShort": "+ nieuw recept",
-    "btnCellCreate": "nieuw recept",
-    "addedToSlot": "✦ {name} aan plan toegevoegd",
-    "errorUrlRequired": "Plak eerst de URL van een receptpagina.",
-    "errorNameRequired": "Receptnaam mag niet leeg zijn.",
-    "errorAddedNotPlanned": "{name} is aangemaakt in Mealie maar kon niet aan dit slot worden toegevoegd — zoek het via + toevoegen.",
-    "openInMealie": "Open in Mealie om ingrediënten & stappen toe te voegen ↗"
-  },
-  "auth": {
-    "pageTitle": "Mealie Planner · Ontgrendelen",
-    "title": "PIN invoeren",
-    "subtitle": "Voer je PIN in om Mealie Planner te ontgrendelen.",
-    "btn": "Ontgrendelen",
-    "errorShort": "Voer alle 6 tekens in.",
-    "errorIncorrect": "Onjuiste PIN.",
-    "errorNetwork": "Netwerkfout. Probeer het opnieuw."
-  }
+    "nav": {
+        "settings": "Instellingen",
+        "logout": "Uitloggen",
+        "unreachable": "Onbereikbaar"
+    },
+    "theme": {
+        "system": "Systeem",
+        "light": "Licht",
+        "dark": "Donker"
+    },
+    "onboard": {
+        "title": "Wat staat er deze week op het menu?",
+        "desc": "Verbind je Mealie-omgeving om je receptenbibliotheek te doorzoeken en maaltijden voor de week te plannen, rechtstreeks in Home Assistant."
+    },
+    "settings": {
+        "title": "Instellingen",
+        "connectionLabel": "Mealie-verbinding",
+        "dockerNotice": "Alles klaar! Deze worden geconfigureerd via de omgevingsvariabelen <code>MEALIE_API_URL</code> en <code>MEALIE_API_KEY</code>.",
+        "connected": "Verbonden met Mealie",
+        "unreachable": "Geconfigureerd, maar Mealie is momenteel onbereikbaar",
+        "urlLabel": "Mealie-URL",
+        "tokenLabel": "API-token",
+        "tokenPlaceholderUpdate": "Leeg laten om het huidige token te behouden",
+        "tokenPlaceholderNew": "Jouw Mealie API-token",
+        "btnUpdate": "Bijwerken",
+        "btnSave": "Opslaan & valideren",
+        "btnValidating": "Valideren…",
+        "dayRangeLabel": "Dagbereik",
+        "pastDays": "Toon vorige dagen · {n} dag(en)",
+        "futureDays": "Toon volgende dagen · {n} dag(en)",
+        "tipKeyboard": "Tip! Gebruik ← → om één dag per keer te scrollen.",
+        "mealSlotsLabel": "Toon maaltijden",
+        "cacheLabel": "Receptenbibliotheek",
+        "cacheRefresh": "Vernieuwen",
+        "cacheRefreshing": "Bezig met vernieuwen…",
+        "recipesCount": "{n} recepten opgeslagen",
+        "optionsLabel": "Opties",
+        "showQuickAdd": "Knop voor aanmaken & importeren tonen",
+        "sourceLabel": "Bron",
+        "github": "Bekijk op GitHub",
+        "accentLabel": "Accentkleur",
+        "languageLabel": "Taal"
+    },
+    "meal": {
+        "breakfast": "Ontbijt",
+        "lunch": "Lunch",
+        "dinner": "Diner",
+        "side": "Bijgerecht"
+    },
+    "empty": {
+        "title": "Plan je week",
+        "desc": "Verbind je Mealie-receptenverzameling om maaltijden voor de week te plannen.",
+        "btn": "Instellingen openen"
+    },
+    "planner": {
+        "retry": "Opnieuw proberen",
+        "updatingPlan": "Maaltijdplan bijwerken",
+        "today": "Vandaag",
+        "remove": "Verwijderen",
+        "openInMealie": "Openen in Mealie",
+        "open": "openen",
+        "openInMealieMobile": "openen in Mealie ↗",
+        "sparkleTitle": "Willekeurig recept toevoegen",
+        "sparkle": "willekeurig",
+        "addRecipe": "Recept toevoegen",
+        "changeRecipe": "wijzigen",
+        "addShort": "+ toevoegen",
+        "goToToday": "Vandaag",
+        "noSlotsEnabled": "Geen maaltijdslots actief. Open instellingen om er een toe te voegen!",
+        "nothingPlanned": "Niets gepland.",
+        "endOfRange": "60 dagen vooruit",
+        "undo": "Ongedaan",
+        "prevPeriod": "Vorige periode",
+        "nextPeriod": "Volgende periode"
+    },
+    "modal": {
+        "titleReplace": "Recept wijzigen",
+        "titleAdd": "Recept toevoegen",
+        "searchPlaceholder": "Recepten zoeken…",
+        "refreshingRecipes": "Recepten vernieuwen",
+        "noMatch": "Geen recepten gevonden voor \"{q}\"",
+        "loadingRecipes": "Recepten laden…",
+        "feelingLucky": "Op goed geluk?",
+        "feelingLuckySub": "Kies een willekeurig recept voor mij",
+        "recentlyUsed": "Recent gebruikt",
+        "loadingMore": "meer laden…",
+        "close": "Sluiten"
+    },
+    "actions": {
+        "title": "Acties"
+    },
+    "logout": {
+        "title": "Uitloggen?",
+        "desc": "Je PIN is daarna opnieuw vereist.",
+        "cancel": "Annuleren",
+        "confirm": "Uitloggen"
+    },
+    "toast": {
+        "removed": "{name} verwijderd",
+        "cacheRefreshed": "Bibliotheek gesynchroniseerd — {n} recepten.",
+        "actionSent": "Actie verzonden.",
+        "dismiss": "Sluiten"
+    },
+    "error": {
+        "backend": "Backend niet bereikbaar. Draait de server?",
+        "recipeCache": "Receptenbibliotheek kon niet worden geladen — vernieuw via instellingen.",
+        "saveFailed": "Opslaan mislukt — {detail}",
+        "removeFailed": "Verwijderen mislukt — {detail}",
+        "sparkleFailed": "Willekeurig recept mislukt — {detail}",
+        "undoFailed": "Ongedaan maken mislukt.",
+        "cacheRefreshFailed": "Bibliotheek synchroniseren mislukt.",
+        "actionFailed": "Actie mislukt — {detail}",
+        "loadMoreDays": "Meer dagen konden niet worden geladen.",
+        "loadPlan": "Maaltijdplan kon niet worden geladen.",
+        "moveFailed": "Recept verplaatsen mislukt — {detail}",
+        "saveFallback": "Probeer het opnieuw.",
+        "sparkleFallback": "Geen recepten in de bibliotheek?",
+        "actionFallback": "Onbekende fout",
+        "networkOffline": "Server niet bereikbaar — controleer je verbinding en probeer opnieuw."
+    },
+    "quickAdd": {
+        "title": "Toevoegen aan Mealie",
+        "tabUrl": "Van website importeren",
+        "tabNew": "Nieuw recept",
+        "urlLabel": "Recept-URL",
+        "urlPlaceholder": "https://...",
+        "urlHint": "Plak de URL van een receptpagina. Mealie haalt de ingrediënten en stappen automatisch op — meestal 10–20 seconden.",
+        "nameLabel": "Receptnaam",
+        "namePlaceholder": "bijv. Oma's lasagne",
+        "imageLabel": "Foto (optioneel)",
+        "imagePlaceholder": "Kies een afbeelding…",
+        "btnImport": "Importeren",
+        "btnCreate": "Aanmaken & aan plan toevoegen",
+        "importing": "Recept ophalen… (meestal 10–20 seconden)",
+        "creating": "Recept aanmaken…",
+        "btnCellShort": "+ nieuw recept",
+        "btnCellCreate": "nieuw recept",
+        "addedToSlot": "✦ {name} aan plan toegevoegd",
+        "errorUrlRequired": "Plak eerst de URL van een receptpagina.",
+        "errorNameRequired": "Receptnaam mag niet leeg zijn.",
+        "errorAddedNotPlanned": "{name} is aangemaakt in Mealie maar kon niet aan dit slot worden toegevoegd — zoek het via + toevoegen.",
+        "openInMealie": "Open in Mealie om ingrediënten & stappen toe te voegen ↗"
+    },
+    "auth": {
+        "pageTitle": "Mealie Planner · Ontgrendelen",
+        "title": "PIN invoeren",
+        "subtitle": "Voer je PIN in om Mealie Planner te ontgrendelen.",
+        "btn": "Ontgrendelen",
+        "errorShort": "Voer alle 6 tekens in.",
+        "errorIncorrect": "Onjuiste PIN.",
+        "errorNetwork": "Netwerkfout. Probeer het opnieuw."
+    }
 }

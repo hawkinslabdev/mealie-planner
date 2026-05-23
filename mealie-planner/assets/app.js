@@ -11,6 +11,7 @@ function planner() {
     pastDays:   Math.min(14, Math.max(0, parseInt(localStorage.getItem('pastDays')   ?? '0',  10))),
     futureDays: Math.min(14, Math.max(0, parseInt(localStorage.getItem('futureDays') ?? '7',  10))),
     colorTheme: localStorage.getItem('colorTheme') || 'system',
+    accentTheme: localStorage.getItem('accentTheme') || 'lavender',
     themeMenuOpen: false,
     planLoading: false,
     planRefreshing: false,
@@ -173,11 +174,23 @@ function planner() {
       localStorage.setItem('colorTheme', mode);
       this.applyTheme();
     },
+    applyAccent() {
+      const el = document.documentElement;
+      if (this.accentTheme === 'amber') el.removeAttribute('data-accent');
+      else el.setAttribute('data-accent', this.accentTheme);
+    },
+    setAccentTheme(name) {
+      this.accentTheme = name;
+      localStorage.setItem('accentTheme', name);
+      this.applyAccent();
+    },
 
     /* init */
     async init() {
       this.applyTheme();
+      this.applyAccent();
       this.buildDays();
+      
       // Show desktop skeleton immediately when there is no cached plan data
       const _s = this.days[0]?.date, _e = this.days.at(-1)?.date;
       if (_s && !this._loadPlanCache(_s, _e)) this.planLoading = true;
@@ -308,6 +321,12 @@ function planner() {
     /* nav */
     async shiftPage(delta) {
       this.dayOffset += delta;
+      this.buildDays();
+      await this.loadMealPlan();
+      this.scrollToToday();
+    },
+    async shiftPeriod(dir) {
+      this.dayOffset += dir * this.days.length;
       this.buildDays();
       await this.loadMealPlan();
       this.scrollToToday();
