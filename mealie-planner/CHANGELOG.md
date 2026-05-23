@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.2
+
+- Added Italian translation (thanks to @albanobattistella!) 
+- Refactored locale selector in the UI for easier locale management
+
 ## 0.4.1
 
 - Fix: remove add recipe text, replaced by the quick add button
