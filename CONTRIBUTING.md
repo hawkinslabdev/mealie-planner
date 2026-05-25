@@ -6,6 +6,7 @@ Thank you for considering helping me out. Please follow the steps below to get y
 
 ```bash
 # Create and activate the virtual environment
+cd mealieplanner/
 python3 -m venv .venv
 source .venv/bin/activate
 
@@ -16,3 +17,11 @@ pip install -r requirements.txt
 cd mealie-planner
 cp .env.example .env   # fill in your values
 uvicorn main:app --port 3000 --reload
+```
+
+## Tests
+
+```bash
+# Run locale tests from the mealie-planner directory
+python3 -m pytest tests/
+```
