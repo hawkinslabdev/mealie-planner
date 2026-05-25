@@ -1,0 +1,158 @@
+{
+    "nav": {
+        "settings": "Nastavení",
+        "logout": "Odhlásit se",
+        "unreachable": "Nedostupné"
+    },
+    "theme": {
+        "system": "Systém",
+        "light": "Světlý",
+        "dark": "Tmavý"
+    },
+    "onboard": {
+        "title": "Co je tento týden v menu?",
+        "desc": "Připojte své prostředí Mealie, abyste mohli vyhledávat ve své knihovně receptů a plánovat jídla na týden přímo v Home Assistant."
+    },
+    "settings": {
+        "title": "Nastavení",
+        "connectionLabel": "Připojení k Mealie",
+        "dockerNotice": "Vše je připraveno! Toto je nakonfigurováno pomocí proměnných prostředí <code>MEALIE_API_URL</code> a <code>MEALIE_API_KEY</code>.",
+        "connected": "Připojeno k Mealie",
+        "unreachable": "Nakonfigurováno, ale Mealie je momentálně nedostupné",
+        "urlLabel": "URL adresa Mealie",
+        "tokenLabel": "API token",
+        "tokenPlaceholderUpdate": "Ponechte prázdné pro zachování aktuálního tokenu",
+        "tokenPlaceholderNew": "Váš Mealie API token",
+        "btnUpdate": "Aktualizovat",
+        "btnSave": "Uložit a ověřit",
+        "btnValidating": "Ověřování…",
+        "dayRangeLabel": "Rozsah dní",
+        "pastDays": "Zobrazit minulé dny · {n} dní",
+        "futureDays": "Zobrazit budoucí dny · {n} dní",
+        "tipKeyboard": "Tip! Použijte ← → pro posouvání po jednom týdnu.",
+        "mealSlotsLabel": "Zobrazit jídla",
+        "cacheLabel": "Knihovna receptů",
+        "cacheRefresh": "Obnovit",
+        "cacheRefreshing": "Obnovování…",
+        "recipesCount": "{n} uložených receptů",
+        "optionsLabel": "Možnosti",
+        "showQuickAdd": "Zobrazit tlačítko pro vytvoření a import",
+        "sourceLabel": "Zdroj",
+        "github": "Zobrazit na GitHubu",
+        "accentLabel": "Barva zvýraznění",
+        "languageLabel": "Jazyk"
+    },
+    "meal": {
+        "breakfast": "Snídaně",
+        "lunch": "Oběd",
+        "dinner": "Večeře",
+        "side": "Příloha"
+    },
+    "empty": {
+        "title": "Naplánujte si týden",
+        "desc": "Připojte svou sbírku receptů Mealie pro plánování jídel na týden.",
+        "btn": "Otevřít nastavení"
+    },
+    "planner": {
+        "retry": "Zkusit znovu",
+        "updatingPlan": "Aktualizace plánu jídel",
+        "today": "Dnes",
+        "remove": "Odstranit",
+        "openInMealie": "Otevřít v Mealie",
+        "open": "otevřít",
+        "openInMealieMobile": "otevřít v Mealie ↗",
+        "sparkleTitle": "Přidat náhodný recept",
+        "sparkle": "náhodně",
+        "addRecipe": "Přidat recept",
+        "changeRecipe": "změnit",
+        "addShort": "+ přidat",
+        "goToToday": "Dnes",
+        "noSlotsEnabled": "Nejsou aktivní žádné sloty pro jídla. Otevřete nastavení a přidejte je!",
+        "nothingPlanned": "Nic není naplánováno.",
+        "endOfRange": "60 dní dopředu",
+        "undo": "Zpět",
+        "prevPeriod": "Předchozí období",
+        "nextPeriod": "Další období"
+    },
+    "modal": {
+        "titleReplace": "Změnit recept",
+        "titleAdd": "Přidat recept",
+        "searchPlaceholder": "Hledat recepty…",
+        "refreshingRecipes": "Obnovování receptů",
+        "noMatch": "Nenalezeny žádné recepty pro \"{q}\"",
+        "loadingRecipes": "Načítání receptů…",
+        "feelingLucky": "Zkusím štěstí?",
+        "feelingLuckySub": "Vyberte mi náhodný recept",
+        "recentlyUsed": "Nedávno přidáno",
+        "badgeNew": "nové",
+        "badgeRecent": "nedávné",
+        "loadingMore": "načíst další…",
+        "close": "Zavřít"
+    },
+    "actions": {
+        "title": "Akce"
+    },
+    "logout": {
+        "title": "Odhlásit se?",
+        "desc": "Poté bude znovu vyžadován váš PIN.",
+        "cancel": "Zrušit",
+        "confirm": "Odhlásit se"
+    },
+    "toast": {
+        "removed": "{name} odstraněno",
+        "cacheRefreshed": "Knihovna synchronizována — {n} receptů.",
+        "actionSent": "Akce odeslána.",
+        "dismiss": "Zavřít"
+    },
+    "error": {
+        "backend": "Backend není dostupný. Běží server?",
+        "recipeCache": "Knihovnu receptů se nepodařilo načíst — obnovte ji v nastavení.",
+        "saveFailed": "Uložení selhalo — {detail}",
+        "removeFailed": "Odstranění selhalo — {detail}",
+        "sparkleFailed": "Přidání náhodného receptu selhalo — {detail}",
+        "undoFailed": "Akci zpět se nepodařilo provést.",
+        "cacheRefreshFailed": "Synchronizace knihovny selhala.",
+        "actionFailed": "Akce selhala — {detail}",
+        "loadMoreDays": "Další dny se nepodařilo načíst.",
+        "loadPlan": "Plán jídel se nepodařilo načíst.",
+        "moveFailed": "Přesun receptu selhal — {detail}",
+        "saveFallback": "Zkuste to prosím znovu.",
+        "sparkleFallback": "Žádné recepty v knihovně?",
+        "actionFallback": "Neznámá chyba",
+        "networkOffline": "Server není dostupný — zkontrolujte připojení a zkuste to znovu."
+    },
+    "quickAdd": {
+        "title": "Přidat do Mealie",
+        "tabUrl": "Importovat z webu",
+        "tabNew": "Nový recept",
+        "urlLabel": "URL adresa receptu",
+        "urlPlaceholder": "https://...",
+        "urlHint": "Vložte URL stránky s receptem. Mealie automaticky získá ingredience a postup — obvykle to trvá 10–20 sekund.",
+        "nameLabel": "Název receptu",
+        "namePlaceholder": "např. Babiččiny lasagne",
+        "imageLabel": "Fotografie (volitelné)",
+        "imagePlaceholder": "Vyberte obrázek…",
+        "btnImport": "Importovat",
+        "btnCreate": "Vytvořit recept",
+        "importing": "Načítání receptu… (obvykle 10–20 sekund)",
+        "creating": "Vytváření receptu…",
+        "btnCellShort": "+ nový recept",
+        "btnCellCreate": "nový recept",
+        "addedToSlot": "✦ {name} přidáno do plánu",
+        "errorUrlRequired": "Nejprve vložte URL stránky s receptem.",
+        "errorNameRequired": "Název receptu nesmí být prázdný.",
+        "errorAddedNotPlanned": "{name} bylo vytvořeno v Mealie, ale nebylo možné jej přidat do tohoto slotu — najděte jej přes + přidat.",
+        "openInMealie": "Otevřete v Mealie pro přidání ingrediencí a postupu ↗",
+        "proxyPrompt": "Webová stránka možná blokuje automatický přístup. Chcete stránku načíst přes tento server?",
+        "btnRetryProxy": "Zkusit znovu přes Mealie Planner"
+    },
+    "auth": {
+        "pageTitle": "Mealie Planner · Odemknout",
+        "title": "Zadejte PIN",
+        "subtitle": "Zadejte svůj PIN k odemčení Mealie Planneru.",
+        "btn": "Odemknout",
+        "errorShort": "Zadejte všech 6 znaků.",
+        "errorIncorrect": "Nesprávný PIN.",
+        "errorNetwork": "Chyba sítě. Zkuste to prosím znovu."
+    }
+}

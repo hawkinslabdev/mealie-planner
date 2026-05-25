@@ -1,0 +1,158 @@
+{
+    "nav": {
+        "settings": "Indstillinger",
+        "logout": "Log ud",
+        "unreachable": "Ikke tilgængelig"
+    },
+    "theme": {
+        "system": "System",
+        "light": "Lyst",
+        "dark": "Mørkt"
+    },
+    "onboard": {
+        "title": "Hvad spiser vi i denne uge?",
+        "desc": "Forbind din Mealie-instans for at gennemse dit opskriftsbibliotek og planlæg måltider for ugen, direkte i Home Assistant."
+    },
+    "settings": {
+        "title": "Indstillinger",
+        "connectionLabel": "Mealie-forbindelse",
+        "dockerNotice": "Alt er klar! Disse konfigureres via miljøvariablerne <code>MEALIE_API_URL</code> og <code>MEALIE_API_KEY</code>.",
+        "connected": "Forbundet til Mealie",
+        "unreachable": "Konfigureret, men Mealie er ikke tilgængelig i øjeblikket",
+        "urlLabel": "Instans-URL",
+        "tokenLabel": "API-token",
+        "tokenPlaceholderUpdate": "Lad være tomt for at beholde nuværende token",
+        "tokenPlaceholderNew": "Din Mealie API-token",
+        "btnUpdate": "Opdater",
+        "btnSave": "Gem & valider",
+        "btnValidating": "Validerer…",
+        "dayRangeLabel": "Dagsinterval",
+        "pastDays": "Vis dage bagud · {n} dag(e)",
+        "futureDays": "Vis dage fremad · {n} dag(e)",
+        "tipKeyboard": "Tip! Brug ← → til at rulle én uge ad gangen.",
+        "mealSlotsLabel": "Synlige måltidspladser",
+        "cacheLabel": "Opskriftsbibliotek",
+        "cacheRefresh": "Opdater",
+        "cacheRefreshing": "Opdaterer…",
+        "recipesCount": "{n} opskrifter gemt",
+        "optionsLabel": "Indstillinger",
+        "showQuickAdd": "Vis knap til opret & importer",
+        "sourceLabel": "Kilde",
+        "github": "Besøg på GitHub",
+        "accentLabel": "Accentfarve",
+        "languageLabel": "Sprog"
+    },
+    "meal": {
+        "breakfast": "Morgenmad",
+        "lunch": "Frokost",
+        "dinner": "Aftensmad",
+        "side": "Tilbehør"
+    },
+    "empty": {
+        "title": "Planlæg din uge",
+        "desc": "Forbind din Mealie-opskriftssamling for at begynde at planlægge måltider for ugen.",
+        "btn": "Åbn indstillinger"
+    },
+    "planner": {
+        "retry": "Prøv igen",
+        "updatingPlan": "Opdaterer måltidsplan",
+        "today": "I dag",
+        "remove": "Fjern",
+        "openInMealie": "Åbn i Mealie",
+        "open": "åbn",
+        "openInMealieMobile": "åbn i Mealie ↗",
+        "sparkleTitle": "Tilføj tilfældig opskrift",
+        "sparkle": "tilfældig",
+        "addRecipe": "Tilføj opskrift",
+        "changeRecipe": "skift",
+        "addShort": "+ tilføj",
+        "goToToday": "I dag",
+        "noSlotsEnabled": "Ingen måltidspladser aktiveret. Åbn indstillinger for at tilføje!",
+        "nothingPlanned": "Intet planlagt.",
+        "endOfRange": "60 dage frem",
+        "undo": "Fortryd",
+        "prevPeriod": "Forrige periode",
+        "nextPeriod": "Næste periode"
+    },
+    "modal": {
+        "titleReplace": "Skift opskrift",
+        "titleAdd": "Tilføj opskrift",
+        "close": "Luk",
+        "searchPlaceholder": "Søg opskrifter…",
+        "refreshingRecipes": "Opdaterer opskrifter",
+        "noMatch": "Ingen opskrifter matcher \"{q}\"",
+        "loadingRecipes": "Indlæser opskrifter…",
+        "feelingLucky": "Føler du dig heldig?",
+        "feelingLuckySub": "Vælg en tilfældig opskrift til mig",
+        "recentlyUsed": "Nyligt tilføjet",
+        "badgeNew": "ny",
+        "badgeRecent": "nylig",
+        "loadingMore": "indlæser mere…"
+    },
+    "actions": {
+        "title": "Handlinger"
+    },
+    "logout": {
+        "title": "Log ud?",
+        "desc": "Din PIN-kode kræves igen.",
+        "cancel": "Annuller",
+        "confirm": "Log ud"
+    },
+    "toast": {
+        "removed": "Fjernede {name}",
+        "cacheRefreshed": "Bibliotek synkroniseret — {n} opskrifter.",
+        "actionSent": "Handling sendt.",
+        "dismiss": "Afvis"
+    },
+    "error": {
+        "backend": "Kunne ikke nå backend. Kører serveren?",
+        "recipeCache": "Kunne ikke indlæse opskriftsbiblioteket — prøv at opdatere det i indstillinger.",
+        "saveFailed": "Kunne ikke gemme — {detail}",
+        "removeFailed": "Kunne ikke fjerne — {detail}",
+        "sparkleFailed": "Tilfældig valg fejlede — {detail}",
+        "undoFailed": "Kunne ikke fortryde.",
+        "cacheRefreshFailed": "Bibliotekssynkronisering fejlede.",
+        "actionFailed": "Handling fejlede — {detail}",
+        "loadMoreDays": "Kunne ikke indlæse flere dage.",
+        "loadPlan": "Kunne ikke indlæse måltidsplan.",
+        "moveFailed": "Kunne ikke flytte opskrift — {detail}",
+        "saveFallback": "prøv igen.",
+        "sparkleFallback": "ingen opskrifter i biblioteket?",
+        "actionFallback": "ukendt fejl",
+        "networkOffline": "Kunne ikke nå serveren — tjek din forbindelse og prøv igen."
+    },
+    "quickAdd": {
+        "title": "Tilføj til Mealie",
+        "tabUrl": "Importer fra hjemmeside",
+        "tabNew": "Ny opskrift",
+        "urlLabel": "Opskrift-URL",
+        "urlPlaceholder": "https://...",
+        "urlHint": "Indsæt URL til en opskriftsside. Mealie henter ingredienser og trin automatisk — tager normalt 10–20 sekunder.",
+        "nameLabel": "Opskriftsnavn",
+        "namePlaceholder": "f.eks. Mormors lasagne",
+        "imageLabel": "Foto (valgfrit)",
+        "imagePlaceholder": "Vælg et billede…",
+        "btnImport": "Importer",
+        "btnCreate": "Opret opskrift",
+        "importing": "Henter opskrift… (normalt 10–20 sekunder)",
+        "creating": "Opretter opskrift…",
+        "btnCellShort": "+ ny opskrift",
+        "btnCellCreate": "ny opskrift",
+        "addedToSlot": "✦ {name} tilføjet til plan",
+        "errorUrlRequired": "Indsæt URL til en opskriftsside først.",
+        "errorNameRequired": "Opskriftsnavnet må ikke være tomt.",
+        "errorAddedNotPlanned": "{name} blev oprettet i Mealie, men kunne ikke tilføjes til denne plads — søg efter den med + tilføj.",
+        "openInMealie": "Åbn i Mealie for at tilføje ingredienser & trin ↗",
+        "proxyPrompt": "Hjemmesiden blokerer muligvis automatisk adgang. Vil du prøve at hente siden via denne server i stedet?",
+        "btnRetryProxy": "Prøv via Mealie Planner"
+    },
+    "auth": {
+        "pageTitle": "Mealie Planner · Lås op",
+        "title": "Indtast PIN",
+        "subtitle": "Indtast din PIN-kode for at låse Mealie Planner op.",
+        "btn": "Lås op",
+        "errorShort": "Indtast alle 6 tegn.",
+        "errorIncorrect": "Forkert PIN.",
+        "errorNetwork": "Netværksfejl. Prøv igen."
+    }
+}

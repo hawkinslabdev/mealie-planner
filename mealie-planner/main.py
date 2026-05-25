@@ -244,7 +244,7 @@ _PIN_CODE = os.environ.get("PIN_CODE", "")
 _REQUIRE_AUTH = bool(_PIN_CODE)
 _SESSION_COOKIE = "mp_session"
 _SESSION_TTL = 86400 * 30
-_SUPPORTED_LOCALES = {"en", "de", "nl", "es", "fr", "it", "pl"}
+_SUPPORTED_LOCALES = {"en", "de", "nl", "es", "fr", "it", "pl", "ru", "cs", "sv", "da", "no", "pt_BR"}
 _LOCALE_OVERRIDE = os.environ.get("LOCALE", "").strip().lower()
 if _LOCALE_OVERRIDE not in _SUPPORTED_LOCALES:
     _LOCALE_OVERRIDE = ""
