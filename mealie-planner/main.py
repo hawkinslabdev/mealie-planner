@@ -30,6 +30,28 @@ logger = logging.getLogger("mealie_planner")
 logger.setLevel(logging.DEBUG if os.environ.get("DEV_MODE") else logging.INFO)
 
 
+def _configure_logging() -> None:
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter(
+        "%(asctime)s %(levelname)s %(name)s %(message)s",
+        datefmt="%Y-%m-%dT%H:%M:%S",
+    ))
+    logger.addHandler(handler)
+    logger.propagate = False
+
+    class _SuppressNoisyAccess(logging.Filter):
+        _QUIET = re.compile(r"GET /api/media/|GET /api/status|GET /api/recipes/poll|GET /assets/")
+
+        def filter(self, record: logging.LogRecord) -> bool:
+            if isinstance(record.args, tuple) and len(record.args) >= 5:
+                status = record.args[4]
+                if isinstance(status, int) and status >= 400:
+                    return True
+            return not self._QUIET.search(record.getMessage())
+
+    logging.getLogger("uvicorn.access").addFilter(_SuppressNoisyAccess())
+
+
 # Task manager
 class _TaskManager:
     def __init__(self) -> None:
@@ -453,7 +475,7 @@ _STATUS_TTL: int = 30
 async def refresh_recipe_cache() -> int:
     global _refresh_in_progress
     if _refresh_in_progress:
-        logger.info("Cache refresh already in progress, skipping")
+        logger.debug("Cache refresh already in progress, skipping")
         return 0
 
     _refresh_in_progress = True
@@ -479,7 +501,8 @@ async def refresh_recipe_cache() -> int:
                     )
                     resp.raise_for_status()
                     data = resp.json()
-                except httpx.HTTPError:
+                except httpx.HTTPError as e:
+                    logger.warning("cache.refresh_error page=%d: %s", page, e)
                     break
 
                 items = data.get("items", [])
@@ -623,6 +646,8 @@ async def mealie_delete(path: str) -> None:
 # App
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    _configure_logging()
+    logger.info("startup mode=%s data=%s", get_mode(), DATA_PATH)
     os.makedirs(DATA_PATH, exist_ok=True)
     _get_or_create_key()
     await init_db()
