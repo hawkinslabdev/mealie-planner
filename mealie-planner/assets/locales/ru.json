@@ -1,0 +1,158 @@
+{
+    "nav": {
+        "settings": "Настройки",
+        "logout": "Выйти",
+        "unreachable": "Недоступно"
+    },
+    "theme": {
+        "system": "Системная",
+        "light": "Светлая",
+        "dark": "Темная"
+    },
+    "onboard": {
+        "title": "Что в меню на этой неделе?",
+        "desc": "Подключите вашу среду Mealie, чтобы искать рецепты и планировать питание на неделю прямо в Home Assistant."
+    },
+    "settings": {
+        "title": "Настройки",
+        "connectionLabel": "Подключение к Mealie",
+        "dockerNotice": "Все готово! Это настраивается через переменные окружения <code>MEALIE_API_URL</code> и <code>MEALIE_API_KEY</code>.",
+        "connected": "Подключено к Mealie",
+        "unreachable": "Настроено, но Mealie в данный момент недоступен",
+        "urlLabel": "URL-адрес Mealie",
+        "tokenLabel": "API-токен",
+        "tokenPlaceholderUpdate": "Оставьте пустым, чтобы сохранить текущий токен",
+        "tokenPlaceholderNew": "Ваш API-токен Mealie",
+        "btnUpdate": "Обновить",
+        "btnSave": "Сохранить и проверить",
+        "btnValidating": "Проверка…",
+        "dayRangeLabel": "Диапазон дней",
+        "pastDays": "Показывать прошедшие дни · {n} дн.",
+        "futureDays": "Показывать будущие дни · {n} дн.",
+        "tipKeyboard": "Подсказка! Используйте ← → для прокрутки по одной неделе.",
+        "mealSlotsLabel": "Показывать приемы пищи",
+        "cacheLabel": "Библиотека рецептов",
+        "cacheRefresh": "Обновить",
+        "cacheRefreshing": "Обновление…",
+        "recipesCount": "Сохранено рецептов: {n}",
+        "optionsLabel": "Опции",
+        "showQuickAdd": "Показывать кнопку создания и импорта",
+        "sourceLabel": "Источник",
+        "github": "Посмотреть на GitHub",
+        "accentLabel": "Цвет акцента",
+        "languageLabel": "Язык"
+    },
+    "meal": {
+        "breakfast": "Завтрак",
+        "lunch": "Обед",
+        "dinner": "Ужин",
+        "side": "Гарнир"
+    },
+    "empty": {
+        "title": "Спланируйте свою неделю",
+        "desc": "Подключите свою коллекцию рецептов Mealie, чтобы планировать приемы пищи на неделю.",
+        "btn": "Открыть настройки"
+    },
+    "planner": {
+        "retry": "Повторить попытку",
+        "updatingPlan": "Обновление плана питания",
+        "today": "Сегодня",
+        "remove": "Удалить",
+        "openInMealie": "Открыть в Mealie",
+        "open": "открыть",
+        "openInMealieMobile": "открыть в Mealie ↗",
+        "sparkleTitle": "Добавить случайный рецепт",
+        "sparkle": "случайно",
+        "addRecipe": "Добавить рецепт",
+        "changeRecipe": "изменить",
+        "addShort": "+ добавить",
+        "goToToday": "Сегодня",
+        "noSlotsEnabled": "Нет активных слотов для приемов пищи. Откройте настройки, чтобы добавить их!",
+        "nothingPlanned": "Ничего не запланировано.",
+        "endOfRange": "На 60 дней вперед",
+        "undo": "Отменить",
+        "prevPeriod": "Предыдущий период",
+        "nextPeriod": "Следующий период"
+    },
+    "modal": {
+        "titleReplace": "Изменить рецепт",
+        "titleAdd": "Добавить рецепт",
+        "searchPlaceholder": "Поиск рецептов…",
+        "refreshingRecipes": "Обновление рецептов",
+        "noMatch": "Рецепты по запросу \"{q}\" не найдены",
+        "loadingRecipes": "Загрузка рецептов…",
+        "feelingLucky": "Мне повезет?",
+        "feelingLuckySub": "Выбрать случайный рецепт для меня",
+        "recentlyUsed": "Недавно добавленные",
+        "badgeNew": "новое",
+        "badgeRecent": "недавнее",
+        "loadingMore": "загрузить еще…",
+        "close": "Закрыть"
+    },
+    "actions": {
+        "title": "Действия"
+    },
+    "logout": {
+        "title": "Выйти?",
+        "desc": "После этого потребуется снова ввести PIN-код.",
+        "cancel": "Отмена",
+        "confirm": "Выйти"
+    },
+    "toast": {
+        "removed": "{name} удален",
+        "cacheRefreshed": "Библиотека синхронизирована — {n} рецептов.",
+        "actionSent": "Действие отправлено.",
+        "dismiss": "Скрыть"
+    },
+    "error": {
+        "backend": "Бэкенд недоступен. Сервер запущен?",
+        "recipeCache": "Не удалось загрузить библиотеку рецептов — обновите в настройках.",
+        "saveFailed": "Ошибка сохранения — {detail}",
+        "removeFailed": "Ошибка удаления — {detail}",
+        "sparkleFailed": "Ошибка добавления случайного рецепта — {detail}",
+        "undoFailed": "Ошибка отмены.",
+        "cacheRefreshFailed": "Ошибка синхронизации библиотеки.",
+        "actionFailed": "Ошибка действия — {detail}",
+        "loadMoreDays": "Не удалось загрузить больше дней.",
+        "loadPlan": "Не удалось загрузить план питания.",
+        "moveFailed": "Ошибка перемещения рецепта — {detail}",
+        "saveFallback": "Попробуйте еще раз.",
+        "sparkleFallback": "В библиотеке нет рецептов?",
+        "actionFallback": "Неизвестная ошибка",
+        "networkOffline": "Сервер недоступен — проверьте подключение и повторите попытку."
+    },
+    "quickAdd": {
+        "title": "Добавить в Mealie",
+        "tabUrl": "Импорт с веб-сайта",
+        "tabNew": "Новый рецепт",
+        "urlLabel": "URL-адрес рецепта",
+        "urlPlaceholder": "https://...",
+        "urlHint": "Вставьте URL страницы с рецептом. Mealie автоматически извлечет ингредиенты и шаги — обычно это занимает 10–20 секунд.",
+        "nameLabel": "Название рецепта",
+        "namePlaceholder": "напр. Бабушкина лазанья",
+        "imageLabel": "Фото (необязательно)",
+        "imagePlaceholder": "Выберите изображение…",
+        "btnImport": "Импортировать",
+        "btnCreate": "Создать рецепт",
+        "importing": "Загрузка рецепта… (обычно 10–20 секунд)",
+        "creating": "Создание рецепта…",
+        "btnCellShort": "+ новый рецепт",
+        "btnCellCreate": "новый рецепт",
+        "addedToSlot": "✦ {name} добавлено в план",
+        "errorUrlRequired": "Сначала вставьте URL страницы с рецептом.",
+        "errorNameRequired": "Название рецепта не может быть пустым.",
+        "errorAddedNotPlanned": "{name} создано в Mealie, но не может быть добавлено в этот слот — найдите его через + добавить.",
+        "openInMealie": "Открыть в Mealie, чтобы добавить ингредиенты и шаги ↗",
+        "proxyPrompt": "Возможно, веб-сайт блокирует автоматический доступ. Хотите загрузить страницу через этот сервер?",
+        "btnRetryProxy": "Повторить попытку через Mealie Planner"
+    },
+    "auth": {
+        "pageTitle": "Mealie Planner · Разблокировать",
+        "title": "Введите PIN-код",
+        "subtitle": "Введите свой PIN-код, чтобы разблокировать Mealie Planner.",
+        "btn": "Разблокировать",
+        "errorShort": "Введите все 6 символов.",
+        "errorIncorrect": "Неверный PIN-код.",
+        "errorNetwork": "Ошибка сети. Попробуйте еще раз."
+    }
+}

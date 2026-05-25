@@ -1,0 +1,158 @@
+{
+    "nav": {
+        "settings": "Inställningar",
+        "logout": "Logga ut",
+        "unreachable": "Ej nåbar"
+    },
+    "theme": {
+        "system": "System",
+        "light": "Ljust",
+        "dark": "Mörkt"
+    },
+    "onboard": {
+        "title": "Vad ska vi äta den här veckan?",
+        "desc": "Anslut din Mealie-instans för att bläddra i ditt receptbibliotek och planera måltider för veckan, direkt i Home Assistant."
+    },
+    "settings": {
+        "title": "Inställningar",
+        "connectionLabel": "Mealie-anslutning",
+        "dockerNotice": "Allt är klart! Dessa konfigureras via miljövariablerna <code>MEALIE_API_URL</code> och <code>MEALIE_API_KEY</code>.",
+        "connected": "Ansluten till Mealie",
+        "unreachable": "Konfigurerad men Mealie är för tillfället ej nåbar",
+        "urlLabel": "Instans-URL",
+        "tokenLabel": "API-token",
+        "tokenPlaceholderUpdate": "Lämna tomt för att behålla befintlig token",
+        "tokenPlaceholderNew": "Din Mealie API-token",
+        "btnUpdate": "Uppdatera",
+        "btnSave": "Spara & validera",
+        "btnValidating": "Validerar…",
+        "dayRangeLabel": "Dagintervall",
+        "pastDays": "Visa dagar bakåt · {n} dag(ar)",
+        "futureDays": "Visa dagar framåt · {n} dag(ar)",
+        "tipKeyboard": "Tips! Använd ← → för att bläddra en vecka i taget.",
+        "mealSlotsLabel": "Synliga måltidsplatser",
+        "cacheLabel": "Receptbibliotek",
+        "cacheRefresh": "Uppdatera",
+        "cacheRefreshing": "Uppdaterar…",
+        "recipesCount": "{n} recept sparade",
+        "optionsLabel": "Alternativ",
+        "showQuickAdd": "Visa knapp för skapa & importera",
+        "sourceLabel": "Källa",
+        "github": "Besök på GitHub",
+        "accentLabel": "Accentfärg",
+        "languageLabel": "Språk"
+    },
+    "meal": {
+        "breakfast": "Frukost",
+        "lunch": "Lunch",
+        "dinner": "Middag",
+        "side": "Tillbehör"
+    },
+    "empty": {
+        "title": "Planera veckan",
+        "desc": "Anslut din Mealie-receptsamling för att börja planera måltider för veckan.",
+        "btn": "Öppna inställningar"
+    },
+    "planner": {
+        "retry": "Försök igen",
+        "updatingPlan": "Uppdaterar måltidsplan",
+        "today": "Idag",
+        "remove": "Ta bort",
+        "openInMealie": "Öppna i Mealie",
+        "open": "öppna",
+        "openInMealieMobile": "öppna i Mealie ↗",
+        "sparkleTitle": "Lägg till slumpmässigt recept",
+        "sparkle": "slumpa",
+        "addRecipe": "Lägg till recept",
+        "changeRecipe": "ändra",
+        "addShort": "+ lägg till",
+        "goToToday": "Idag",
+        "noSlotsEnabled": "Inga måltidsplatser aktiverade. Öppna inställningar för att lägga till!",
+        "nothingPlanned": "Inget planerat.",
+        "endOfRange": "60 dagar framåt",
+        "undo": "Ångra",
+        "prevPeriod": "Föregående period",
+        "nextPeriod": "Nästa period"
+    },
+    "modal": {
+        "titleReplace": "Byt recept",
+        "titleAdd": "Lägg till recept",
+        "close": "Stäng",
+        "searchPlaceholder": "Sök recept…",
+        "refreshingRecipes": "Uppdaterar recept",
+        "noMatch": "Inga recept matchar \"{q}\"",
+        "loadingRecipes": "Laddar recept…",
+        "feelingLucky": "Känner du dig lyckosam?",
+        "feelingLuckySub": "Välj ett slumpmässigt recept åt mig",
+        "recentlyUsed": "Nyligen tillagda",
+        "badgeNew": "nytt",
+        "badgeRecent": "nyligen",
+        "loadingMore": "laddar mer…"
+    },
+    "actions": {
+        "title": "Åtgärder"
+    },
+    "logout": {
+        "title": "Logga ut?",
+        "desc": "Din PIN-kod krävs igen.",
+        "cancel": "Avbryt",
+        "confirm": "Logga ut"
+    },
+    "toast": {
+        "removed": "Tog bort {name}",
+        "cacheRefreshed": "Bibliotek synkroniserat — {n} recept.",
+        "actionSent": "Åtgärd skickad.",
+        "dismiss": "Stäng"
+    },
+    "error": {
+        "backend": "Kunde inte nå backend. Körs servern?",
+        "recipeCache": "Kunde inte ladda receptbiblioteket — försök uppdatera det i inställningar.",
+        "saveFailed": "Kunde inte spara — {detail}",
+        "removeFailed": "Kunde inte ta bort — {detail}",
+        "sparkleFailed": "Slumpen misslyckades — {detail}",
+        "undoFailed": "Kunde inte ångra.",
+        "cacheRefreshFailed": "Bibliotekssynkronisering misslyckades.",
+        "actionFailed": "Åtgärd misslyckades — {detail}",
+        "loadMoreDays": "Kunde inte ladda fler dagar.",
+        "loadPlan": "Kunde inte ladda måltidsplan.",
+        "moveFailed": "Kunde inte flytta recept — {detail}",
+        "saveFallback": "försök igen.",
+        "sparkleFallback": "inga recept i biblioteket?",
+        "actionFallback": "okänt fel",
+        "networkOffline": "Kunde inte nå servern — kontrollera anslutningen och försök igen."
+    },
+    "quickAdd": {
+        "title": "Lägg till i Mealie",
+        "tabUrl": "Importera från webbplats",
+        "tabNew": "Nytt recept",
+        "urlLabel": "Recept-URL",
+        "urlPlaceholder": "https://...",
+        "urlHint": "Klistra in URL till en receptsida. Mealie hämtar ingredienser och steg automatiskt — tar vanligtvis 10–20 sekunder.",
+        "nameLabel": "Receptnamn",
+        "namePlaceholder": "t.ex. Mormors lasagne",
+        "imageLabel": "Foto (valfritt)",
+        "imagePlaceholder": "Välj en bild…",
+        "btnImport": "Importera",
+        "btnCreate": "Skapa recept",
+        "importing": "Hämtar recept… (vanligtvis 10–20 sekunder)",
+        "creating": "Skapar recept…",
+        "btnCellShort": "+ nytt recept",
+        "btnCellCreate": "nytt recept",
+        "addedToSlot": "✦ {name} lagt till i plan",
+        "errorUrlRequired": "Klistra in URL:en till en receptsida först.",
+        "errorNameRequired": "Receptnamnet kan inte vara tomt.",
+        "errorAddedNotPlanned": "{name} skapades i Mealie men kunde inte läggas till i denna plats — sök efter det med + lägg till.",
+        "openInMealie": "Öppna i Mealie för att lägga till ingredienser & steg ↗",
+        "proxyPrompt": "Webbplatsen kan blockera automatisk åtkomst. Vill du försöka hämta sidan via den här servern istället?",
+        "btnRetryProxy": "Försök via Mealie Planner"
+    },
+    "auth": {
+        "pageTitle": "Mealie Planner · Lås upp",
+        "title": "Ange PIN",
+        "subtitle": "Ange din PIN-kod för att låsa upp Mealie Planner.",
+        "btn": "Lås upp",
+        "errorShort": "Ange alla 6 tecken.",
+        "errorIncorrect": "Felaktig PIN.",
+        "errorNetwork": "Nätverksfel. Försök igen."
+    }
+}
