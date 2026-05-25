@@ -77,3 +77,59 @@ jobs:
           git diff --staged --quiet || git commit -m "chore: bump version to ${{ steps.get_tag.outputs.version }}"
           git tag -a ${{ steps.get_tag.outputs.version }} -m "Release ${{ steps.get_tag.outputs.version }}"
           git push origin HEAD:main ${{ steps.get_tag.outputs.version }}
+
+      - name: Extract changelog entry
+        run: |
+          VERSION_BARE="${{ steps.get_tag.outputs.version }}"
+          VERSION_BARE="${VERSION_BARE#v}"
+          awk "/^## ${VERSION_BARE}\$/{found=1; next} found && /^## /{exit} found{print}" mealie-planner/CHANGELOG.md \
+            | sed '/^[[:space:]]*$/d' > /tmp/changelog_entry.md
+          if [ ! -s /tmp/changelog_entry.md ]; then
+            echo "_No changelog entry found for ${VERSION_BARE}._" > /tmp/changelog_entry.md
+          fi
+
+      - name: Build release notes
+        run: |
+          VERSION="${{ steps.get_tag.outputs.version }}"
+          {
+            echo "## What's new?"
+            echo ""
+            cat /tmp/changelog_entry.md
+            echo ""
+            echo "---"
+            echo ""
+            echo "## Install"
+            echo ""
+            echo "**Home Assistant (new install):**"
+            echo "1. Go to **Settings → Apps → App Store** in Home Assistant"
+            echo "2. Add this repository: \`https://github.com/${{ github.repository }}\`"
+            echo "3. Install **Mealie Planner** and enter your Mealie URL and API token in the app configuration"
+            echo ""
+            echo "**Home Assistant (already installed):** tap **Update** on the app page — or wait for Home Assistant to pick it up automatically."
+            echo ""
+            echo "**Docker:**"
+            echo '```yaml'
+            echo "services:"
+            echo "  mealie-planner:"
+            echo "    image: ghcr.io/${{ github.repository }}:${VERSION}"
+            echo "    ports:"
+            echo "      - \"3000:3000\""
+            echo "    environment:"
+            echo "      - MEALIE_API_URL=http://your-mealie-instance:9000"
+            echo "      - MEALIE_API_KEY=your-api-token"
+            echo "    restart: unless-stopped"
+            echo '```'
+            echo ""
+            echo "---"
+            echo ""
+            echo "Full history: [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/${VERSION}/mealie-planner/CHANGELOG.md)"
+          } > /tmp/release_body.md
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.get_tag.outputs.version }}" \
+            --title "${{ steps.get_tag.outputs.version }}" \
+            --notes-file /tmp/release_body.md \
+            --target "${{ github.sha }}"
