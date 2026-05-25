@@ -16,7 +16,7 @@
     "settings": {
         "title": "Instellingen",
         "connectionLabel": "Mealie-verbinding",
-        "dockerNotice": "Alles klaar! Deze worden geconfigureerd via de omgevingsvariabelen <code>MEALIE_API_URL</code> en <code>MEALIE_API_KEY</code>.",
+        "dockerNotice": "Helemaal gereed! Dit wordt geconfigureerd via de omgevingsvariabelen <code>MEALIE_API_URL</code> en <code>MEALIE_API_KEY</code>.",
         "connected": "Verbonden met Mealie",
         "unreachable": "Geconfigureerd, maar Mealie is momenteel onbereikbaar",
         "urlLabel": "Mealie-URL",
@@ -70,7 +70,7 @@
         "noSlotsEnabled": "Geen maaltijdslots actief. Open instellingen om er een toe te voegen!",
         "nothingPlanned": "Niets gepland.",
         "endOfRange": "60 dagen vooruit",
-        "undo": "Ongedaan",
+        "undo": "Ongedaan maken",
         "prevPeriod": "Vorige periode",
         "nextPeriod": "Volgende periode"
     },
@@ -92,7 +92,7 @@
     },
     "logout": {
         "title": "Uitloggen?",
-        "desc": "Je PIN is daarna opnieuw vereist.",
+        "desc": "Je pincode is daarna opnieuw vereist.",
         "cancel": "Annuleren",
         "confirm": "Uitloggen"
     },
@@ -107,7 +107,7 @@
         "recipeCache": "Receptenbibliotheek kon niet worden geladen — vernieuw via instellingen.",
         "saveFailed": "Opslaan mislukt — {detail}",
         "removeFailed": "Verwijderen mislukt — {detail}",
-        "sparkleFailed": "Willekeurig recept mislukt — {detail}",
+        "sparkleFailed": "Willekeurig recept toevoegen mislukt — {detail}",
         "undoFailed": "Ongedaan maken mislukt.",
         "cacheRefreshFailed": "Bibliotheek synchroniseren mislukt.",
         "actionFailed": "Actie mislukt — {detail}",
@@ -138,17 +138,17 @@
         "btnCellCreate": "nieuw recept",
         "addedToSlot": "✦ {name} aan plan toegevoegd",
         "errorUrlRequired": "Plak eerst de URL van een receptpagina.",
-        "errorNameRequired": "Receptnaam mag niet leeg zijn.",
+        "errorNameRequired": "De receptnaam mag niet leeg zijn.",
         "errorAddedNotPlanned": "{name} is aangemaakt in Mealie maar kon niet aan dit slot worden toegevoegd — zoek het via + toevoegen.",
         "openInMealie": "Open in Mealie om ingrediënten & stappen toe te voegen ↗"
     },
     "auth": {
         "pageTitle": "Mealie Planner · Ontgrendelen",
-        "title": "PIN invoeren",
-        "subtitle": "Voer je PIN in om Mealie Planner te ontgrendelen.",
+        "title": "Pincode invoeren",
+        "subtitle": "Voer je pincode in om Mealie Planner te ontgrendelen.",
         "btn": "Ontgrendelen",
         "errorShort": "Voer alle 6 tekens in.",
-        "errorIncorrect": "Onjuiste PIN.",
+        "errorIncorrect": "Onjuiste pincode.",
         "errorNetwork": "Netwerkfout. Probeer het opnieuw."
     }
 }
