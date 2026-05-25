@@ -1334,7 +1334,7 @@
      padding: var(--space-5);
      border-bottom: 1px solid var(--border);
      display: flex;
-     align-items: flex-start;
+     align-items: center;
      justify-content: space-between;
 }
  .modal-title {
