@@ -18,10 +18,10 @@ We want to make it incredibly simple to plan your meals for the week ahead. Mana
 
 [![Open your Home Assistant instance and show the add app repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fhawkinslabdev%2Fmealie-planner%2F)
 
-1. Go to **Settings → Apps → Install An App**
+1. In Home Assistant, go to **Settings → Apps** and select **Install app**
 2. Click **⋮ → Repositories**
 3. Paste `https://github.com/hawkinslabdev/mealie-planner` and click **Add**
-4. Search for **Mealie Planner** and click **Install**
+4. Search for **Mealie Planner**, select it, and click **Install**
 
 When that's done then start the app, and enter your Mealie instance and [API key](https://docs.mealie.io/documentation/getting-started/api-usage/#getting-a-token).
 
