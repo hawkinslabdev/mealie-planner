@@ -131,7 +131,7 @@
         "imageLabel": "Photo (optionnelle)",
         "imagePlaceholder": "Choisir une image…",
         "btnImport": "Importer",
-        "btnCreate": "Créer et ajouter au plan",
+        "btnCreate": "Créer la recette",
         "importing": "Récupération de la recette… (généralement 10–20 secondes)",
         "creating": "Création de la recette…",
         "btnCellShort": "+ nouvelle recette",

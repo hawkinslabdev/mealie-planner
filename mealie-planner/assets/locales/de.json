@@ -131,7 +131,7 @@
         "imageLabel": "Foto (optional)",
         "imagePlaceholder": "Bild auswählen…",
         "btnImport": "Importieren",
-        "btnCreate": "Erstellen & zum Plan hinzufügen",
+        "btnCreate": "Erstellen",
         "importing": "Rezept wird abgerufen… (meist 10–20 Sekunden)",
         "creating": "Rezept wird erstellt…",
         "btnCellShort": "+ neues Rezept",

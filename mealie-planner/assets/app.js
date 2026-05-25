@@ -878,7 +878,11 @@ function planner() {
             await fetch(api(`/api/recipes/${recipe.slug}/image`), { method: 'POST', body: fd });
           } catch (_) {}
         }
-        await this._addCreatedRecipeToSlot(recipe, this.quickAddDate, this.quickAddMt);
+        const prefixed = this._prefixImg(recipe);
+        if (!this.allRecipes.find(r => r.id === prefixed.id)) {
+          this.allRecipes = [prefixed, ...this.allRecipes];
+        }
+        this.pushRecentRecipe(prefixed.id);
         this.quickAddDone = { name: recipe.name, slug: recipe.slug };
       } catch (e) {
         this.quickAddError = this._friendlyError(e);
@@ -892,29 +896,6 @@ function planner() {
         return this.t('error.networkOffline');
       }
       return e.message || this.t('error.saveFallback');
-    },
-
-    async _addCreatedRecipeToSlot(recipe, date, mt) {
-      const prefixed = this._prefixImg(recipe);
-      if (!this.allRecipes.find(r => r.id === prefixed.id)) {
-        this.allRecipes = [prefixed, ...this.allRecipes];
-      }
-      const optimistic = { recipe_id: prefixed.id, recipe_name: prefixed.name, image_url: prefixed.image_url, recipe_slug: prefixed.slug, id: null, _optimistic: true };
-      this.setSlot(date, mt, [...this.getSlot(date, mt), optimistic]);
-      try {
-        const entry = await this._post('/api/mealplan', { date, meal_type: mt, recipe_id: prefixed.id });
-        const arr = this.getSlot(date, mt);
-        const idx = arr.findIndex(e => e._optimistic && e.recipe_id === prefixed.id);
-        if (idx !== -1) {
-          const updated = [...arr];
-          updated[idx] = this._prefixImg(entry);
-          this.setSlot(date, mt, updated);
-        }
-        this.pushRecentRecipe(prefixed.id);
-      } catch (e) {
-        this.setSlot(date, mt, this.getSlot(date, mt).filter(e => !(e._optimistic && e.recipe_id === prefixed.id)));
-        this.toast(this.t('quickAdd.errorAddedNotPlanned', { name: prefixed.name }));
-      }
     },
 
     /* http */

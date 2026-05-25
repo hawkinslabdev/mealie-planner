@@ -131,7 +131,7 @@
         "imageLabel": "Photo (optional)",
         "imagePlaceholder": "Choose an image…",
         "btnImport": "Import",
-        "btnCreate": "Create & add to plan",
+        "btnCreate": "Create recipe",
         "importing": "Fetching recipe… (usually 10–20 seconds)",
         "creating": "Creating recipe…",
         "btnCellShort": "+ new recipe",
