@@ -528,8 +528,8 @@ function planner() {
       else if (event.key === 'ArrowRight') { event.preventDefault(); if (!this.modalOpen) this.shiftPage(1); }
       else if (event.key === 'r' || event.key === 'R') { if (!this.modalOpen) this.sparkleActive(); }
       else if (event.key === 'Escape') { this.modalOpen = false; if (this.quickAddOpen) this.closeQuickAdd(); this.themeMenuOpen = false; this.settingsOpen = false; this.actionMenuOpen = false; }
-      else if (event.key === 'Tab' && this.modalOpen) {
-        const modal = document.querySelector('.modal');
+      else if (event.key === 'Tab' && (this.modalOpen || this.quickAddOpen)) {
+        const modal = document.querySelector(this.quickAddOpen ? '.modal--compact' : '.modal:not(.modal--compact)');
         if (!modal) return;
         const focusable = [...modal.querySelectorAll('button:not([disabled]), input, a, [tabindex]:not([tabindex="-1"])')];
         if (focusable.length < 2) return;

@@ -20,6 +20,7 @@
 </head>
 <body>
 
+<h1 class="sr-only">Mealie Planner</h1>
 <div x-data="planner()" x-init="init(); $watch('modalOpen', v => v ? $data._lockBodyScroll() : $data._unlockBodyScroll()); $watch('quickAddOpen', v => v ? $data._lockBodyScroll() : $data._unlockBodyScroll()); $watch('settingsOpen', v => $data._onSettingsToggle(v))" x-cloak @keydown.window="onKeydown($event)">
 
   <!-- navbar -->
@@ -39,7 +40,7 @@
         </div>
       </div>
       <div style="position:relative">
-        <button @click="themeMenuOpen = !themeMenuOpen" class="icon-btn" :class="themeMenuOpen && 'active'" :title="'Theme: ' + colorTheme">
+        <button @click="themeMenuOpen = !themeMenuOpen" class="icon-btn" :class="themeMenuOpen && 'active'" :title="'Theme: ' + colorTheme" :aria-expanded="themeMenuOpen" aria-haspopup="true">
           <svg x-show="colorTheme === 'light'" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
           </svg>
@@ -71,13 +72,13 @@
           </button>
         </div>
       </div>
-      <button @click="settingsOpen = !settingsOpen" class="icon-btn" :class="settingsOpen && 'active'" :title="t('nav.settings')">
+      <button @click="settingsOpen = !settingsOpen" class="icon-btn" :class="settingsOpen && 'active'" :aria-label="t('nav.settings')" :aria-expanded="settingsOpen">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="3"/>
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
       </button>
-      <button id="logout-btn" class="icon-btn" :title="t('nav.logout')" x-show="mode !== 'haos'">
+      <button id="logout-btn" class="icon-btn" :aria-label="t('nav.logout')" x-show="mode !== 'haos'">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
           <polyline points="16 17 21 12 16 7"/>
@@ -303,10 +304,10 @@
 
     <!-- week bar -->
     <div class="week-bar">
-      <button class="week-nav-btn" @click="shiftPeriod(-1)" :title="t('planner.prevPeriod')">
+      <button class="week-nav-btn" @click="shiftPeriod(-1)" :aria-label="t('planner.prevPeriod')">
         <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
       </button>
-      <button class="week-nav-btn" @click="shiftPeriod(1)" :title="t('planner.nextPeriod')">
+      <button class="week-nav-btn" @click="shiftPeriod(1)" :aria-label="t('planner.nextPeriod')">
         <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
       </button>
       <span class="week-range" x-text="weekRangeLabel"></span>
@@ -348,9 +349,9 @@
                              @mouseenter="showTooltip(entry, $event)"
                              @mouseleave="hideTooltip()"
                              @dblclick="openModalReplace(item.date, item.mt, entry)">
-                          <img class="chip__thumb" :src="entry.image_url" :alt="entry.recipe_name" @error="_imgError($event, entry.recipe_name)">
+                          <img class="chip__thumb" :src="entry.image_url" :alt="entry.recipe_name" loading="lazy" decoding="async" @error="_imgError($event, entry.recipe_name)">
                           <span class="chip__name" x-text="entry.recipe_name"></span>
-                          <button class="chip__rm" @click.stop="removeRecipe(item.date, item.mt, entry.id)" :title="t('planner.remove')">
+                          <button class="chip__rm" @click.stop="removeRecipe(item.date, item.mt, entry.id)" :aria-label="t('planner.remove')">
                             <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                           </button>
                         </div>

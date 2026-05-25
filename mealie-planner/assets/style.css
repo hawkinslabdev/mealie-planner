@@ -323,8 +323,8 @@
      display: flex;
      align-items: center;
      justify-content: center;
-     width: 36px;
-     height: 36px;
+     width: 40px;
+     height: 40px;
      border-radius: 8px;
      border: 1px solid transparent;
      color: var(--text-muted);
@@ -778,7 +778,7 @@
      background: color-mix(in oklch, var(--accent) 13%, var(--bg-muted));
 }
  .g-day-hdr__wd {
-     font-size: 0.5625rem;
+     font-size: 0.625rem;
      font-weight: 600;
      text-transform: uppercase;
      letter-spacing: .1em;
@@ -813,7 +813,7 @@
      writing-mode: vertical-lr;
      text-orientation: mixed;
      transform: rotate(180deg);
-     font-size: 0.5625rem;
+     font-size: 0.625rem;
      font-weight: 600;
      text-transform: uppercase;
      letter-spacing: .1em;
@@ -855,6 +855,7 @@
      background-size: 200% 100%;
      animation: skel-wave 1.4s ease-in-out infinite;
      border-radius: 6px;
+     will-change: background-position;
 }
  .skel--chip {
      height: 32px;
@@ -1206,7 +1207,7 @@
      border-bottom: 1px solid var(--border-faint);
 }
  .mobile-slot__type {
-     font-size: 0.5625rem;
+     font-size: 0.625rem;
      font-weight: 600;
      text-transform: uppercase;
      letter-spacing: .1em;
@@ -1908,7 +1909,7 @@
      position: fixed;
      inset: 0;
      z-index: 50;
-     background: rgba(0,0,0,.65);
+     background: light-dark(rgba(0,0,0,.35), rgba(0,0,0,.65));
      display: flex;
      align-items: center;
      justify-content: center;
@@ -1916,6 +1917,17 @@
 }
  .logout-backdrop[hidden] {
      display: none;
+}
+ .sr-only {
+     position: absolute;
+     width: 1px;
+     height: 1px;
+     padding: 0;
+     margin: -1px;
+     overflow: hidden;
+     clip: rect(0,0,0,0);
+     white-space: nowrap;
+     border: 0;
 }
  .opacity-0 {
      opacity: 0 !important;
@@ -2246,7 +2258,7 @@
      gap: var(--space-2);
 }
  .qa-done__icon {
-     color: oklch(62% 0.17 145);
+     color: var(--ok);
      flex-shrink: 0;
 }
  .qa-done__name {
@@ -2306,7 +2318,7 @@
      height: 56px;
      border-radius: 50%;
      background: var(--accent);
-     color: #fff;
+     color: var(--on-accent);
      border: none;
      cursor: pointer;
      display: flex;
