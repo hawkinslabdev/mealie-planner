@@ -8,14 +8,14 @@ A running Mealie instance accessible from your network, and a [Mealie API](https
 
 ## Configuration
 
-After starting the add-on, open the web UI. Enter your Mealie instance URL and API token in the settings panel. The add-on connects to Mealie over your local network and caches your recipe library for fast browsing. You can also configure the following variables from the Add-on settings instead:
+After starting the app, open the web UI. Enter your Mealie instance URL and API token in the settings panel. The app connects to Mealie over your local network and caches your recipe library for fast browsing. You can also configure the following variables from the app settings instead:
 
 | Option | Description |
 |---|---|
 | `mealie_url` | Base URL of your Mealie instance, e.g. `http://192.168.1.x:9000` |
 | `api_token` | Your Mealie API token (generated in Mealie under user settings) |
 
-After configuring your instance, your entire household can use the add-on. 
+After configuring your instance, your entire household can use the app using your preferred language.
 
 ## License
 
