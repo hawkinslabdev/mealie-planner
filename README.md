@@ -10,7 +10,7 @@ Mealie Planner is a self-hosted week-view meal planner for [Mealie](https://meal
 
 <img width="100%" alt="Screenshot of the Planner" src=".github/images/example.webp" />
 
-We want to make it incredibly simple to plan your meals for the week ahead. Manage your weekly meal plans with Mealie Planner. Share access and use the week-at-a-glance view.
+We want to make it incredibly simple to plan your meals for the week ahead. Manage your weekly meal plans with Mealie Planner. Share access and use the week-at-a-glance view. All in your native language.
 
 ## Installation
 
