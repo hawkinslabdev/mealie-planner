@@ -124,7 +124,7 @@ class TestLocaleRegistration:
 
     @pytest.fixture(scope="class")
     def main_py(self) -> str:
-        return (ROOT / "main.py").read_text(encoding="utf-8")
+        return (ROOT / "config.py").read_text(encoding="utf-8")
 
     @pytest.fixture(scope="class")
     def index_html(self) -> str:
@@ -144,9 +144,9 @@ class TestLocaleRegistration:
 
     def test_main_py_supported_locales(self, main_py: str):
         disk = _locale_codes_on_disk()
-        registered = _parse_py_set("_SUPPORTED_LOCALES", main_py) - {"en"}
+        registered = _parse_py_set("SUPPORTED_LOCALES", main_py) - {"en"}
         missing = disk - registered
-        assert not missing, f"main.py _SUPPORTED_LOCALES missing: {sorted(missing)}"
+        assert not missing, f"config.py SUPPORTED_LOCALES missing: {sorted(missing)}"
 
     def test_no_hardcoded_locale_options_in_template(self, index_html: str):
         """Template must use x-for, not hardcoded <option> tags per locale."""

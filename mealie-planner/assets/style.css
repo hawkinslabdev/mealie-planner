@@ -463,6 +463,14 @@
      gap: var(--space-5);
 }
  @media (max-width: 719px) {
+     .lang-menu {
+         position: relative;
+         top: 0;
+         left: 0;
+         right: 0;
+         margin-top: var(--space-1);
+         margin-bottom: var(--space-3);
+    }
      @keyframes settings-sheet-in {
          from {
              transform: translateY(100%);
@@ -501,6 +509,7 @@
          flex: 1;
          max-width: none;
          margin: 0;
+         scroll-padding-bottom: var(--space-5);
     }
      .settings-sheet-hdr {
          display: flex;
@@ -632,6 +641,14 @@
      border-color: var(--border-strong);
      color: var(--text);
      background: var(--bg-subtle);
+}
+ .btn-accent-outline {
+     background: transparent;
+     border-color: var(--accent);
+     color: var(--accent);
+}
+ .btn-accent-outline:hover:not(:disabled) {
+     background: var(--accent-muted);
 }
  .pill {
      font-family: inherit;
@@ -1678,6 +1695,20 @@
      background: color-mix(in oklch, var(--chip-si) 12%, var(--bg-muted));
      border-color: color-mix(in oklch, var(--chip-si) 25%, var(--border));
 }
+.chip--orphaned {
+    opacity: 0.5;
+    cursor: default;
+    border-style: dashed;
+}
+.chip--orphaned .chip__name {
+    font-style: italic;
+}
+.mobile-recipe-row--orphaned {
+    opacity: 0.5;
+}
+.mobile-recipe-row--orphaned .mobile-recipe-name {
+    font-style: italic;
+}
  .tooltip-floating {
      position: fixed;
      z-index: 60;
@@ -1791,8 +1822,7 @@
  .recipe-card--recent {
      position: relative;
 }
- .recipe-card--recent::before {
-     content: 'recent';
+ .recipe-card__badge {
      position: absolute;
      top: 4px;
      right: 4px;
@@ -1805,6 +1835,7 @@
      border-radius: 4px;
      padding: 1px 5px;
      line-height: 1.4;
+     pointer-events: none;
 }
  .action-menu {
      position: fixed;
@@ -1904,6 +1935,53 @@
  .theme-opt--on:hover {
      background: var(--accent-muted);
      color: var(--accent);
+}
+.lang-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    text-align: left;
+    user-select: none;
+    width: 100%;
+}
+.lang-trigger svg {
+    flex-shrink: 0;
+    color: var(--text-subtle);
+    transition: transform .15s;
+}
+.lang-menu {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 4px);
+    z-index: 50;
+    background: var(--bg-muted);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    padding: var(--space-1);
+    box-shadow: 0 4px 16px oklch(0% 0 0 / 0.25);
+    transform-origin: top center;
+}
+.lang-search {
+    font-family: inherit;
+    font-size: var(--text-sm);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: var(--space-2) var(--space-3);
+    color: var(--text);
+    width: 100%;
+    outline: none;
+    margin-bottom: var(--space-1);
+    box-sizing: border-box;
+}
+.lang-search:focus { border-color: var(--accent); }
+.lang-opts {
+    max-height: 180px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
  .logout-backdrop {
      position: fixed;
@@ -2194,6 +2272,9 @@
      color: var(--text-subtle);
      line-height: 1.55;
 }
+ .qa-hint--warn {
+     color: var(--warn);
+}
  .qa-file-label {
      display: flex;
      align-items: center;
@@ -2246,6 +2327,13 @@
      flex-direction: column;
      gap: var(--space-2);
 }
+ .qa-proxy-prompt {
+     display: flex;
+     flex-direction: column;
+     gap: var(--space-2);
+     padding-top: var(--space-2);
+     border-top: 1px solid var(--border);
+}
  .qa-done {
      display: flex;
      flex-direction: column;
@@ -2268,6 +2356,23 @@
      overflow: hidden;
      text-overflow: ellipsis;
      white-space: nowrap;
+}
+
+.qa-slow-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-xs);
+    color: var(--warn);
+    animation: fade-in .4s ease both;
+}
+.qa-slow-icon {
+    flex-shrink: 0;
+    color: var(--warn);
+}
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 /* compact modal */
