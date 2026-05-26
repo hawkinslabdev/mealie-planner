@@ -17,7 +17,8 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 COPY --from=builder /install /usr/local
-COPY main.py .
+COPY main.py config.py mealie.py middleware.py utils.py database.py i18n.py ./
+COPY routers/ routers/
 COPY templates/ templates/
 COPY assets/ assets/
 
