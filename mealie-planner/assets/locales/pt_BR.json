@@ -40,7 +40,9 @@
         "sourceLabel": "Fonte",
         "github": "Ver no GitHub",
         "accentLabel": "Cor de destaque",
-        "languageLabel": "Idioma"
+        "languageLabel": "Idioma",
+        "translateRecipe": "Traduzir para o idioma nativo",
+        "languageSearch": "Pesquisar…"
     },
     "meal": {
         "breakfast": "Café da manhã",
@@ -72,7 +74,8 @@
         "endOfRange": "60 dias à frente",
         "undo": "Desfazer",
         "prevPeriod": "Período anterior",
-        "nextPeriod": "Próximo período"
+        "nextPeriod": "Próximo período",
+        "recipeDeleted": "Receita excluída"
     },
     "modal": {
         "titleReplace": "Trocar receita",
@@ -123,7 +126,7 @@
     },
     "quickAdd": {
         "title": "Adicionar ao Mealie",
-        "tabUrl": "Importar de site",
+        "tabUrl": "Do site",
         "tabNew": "Nova receita",
         "urlLabel": "URL da receita",
         "urlPlaceholder": "https://...",
@@ -132,7 +135,7 @@
         "namePlaceholder": "ex.: Lasanha da vovó",
         "imageLabel": "Foto (opcional)",
         "imagePlaceholder": "Escolha uma imagem…",
-        "btnImport": "Importar",
+        "btnImport": "Importar receita",
         "btnCreate": "Criar receita",
         "importing": "Buscando receita… (geralmente 10–20 segundos)",
         "creating": "Criando receita…",
@@ -144,7 +147,17 @@
         "errorAddedNotPlanned": "{name} foi criada no Mealie, mas não pôde ser adicionada a este slot — pesquise com + adicionar.",
         "openInMealie": "Abrir no Mealie para adicionar ingredientes & passos ↗",
         "proxyPrompt": "O site pode estar bloqueando acesso automatizado. Deseja tentar buscar a página por este servidor?",
-        "btnRetryProxy": "Tentar via Mealie Planner"
+        "btnRetryProxy": "Tentar via Mealie Planner",
+        "tabImage": "Importar de foto",
+        "imageScanLabel": "Foto da receita",
+        "imageScanPlaceholder": "Escolher uma foto…",
+        "imageScanHint": "Envie uma foto de um cartão de receita ou página de livro de culinária. O Mealie usa IA para extrair os ingredientes e etapas.",
+        "btnImportImage": "Importar de foto",
+        "importingImage": "Reconhecendo receita… (pode levar 15–30 segundos)",
+        "errorImageRequired": "Escolha uma foto primeiro.",
+        "slowGeneric": "Isso está demorando mais que o habitual…",
+        "slowVideo": "Receitas de vídeo demoram mais para processar…",
+        "videoNoAudioWarn": "Nenhum provedor de IA de áudio está configurado no Mealie. Ingredientes e instruções podem não ser detectados em receitas de vídeo."
     },
     "auth": {
         "pageTitle": "Mealie Planner · Desbloquear",

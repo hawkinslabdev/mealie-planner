@@ -29,7 +29,7 @@
         "dayRangeLabel": "Dagbereik",
         "pastDays": "Toon vorige dagen · {n} dag(en)",
         "futureDays": "Toon volgende dagen · {n} dag(en)",
-        "tipKeyboard": "Tip! Gebruik ← → om één dag per keer te scrollen.",
+        "tipKeyboard": "Tip! Gebruik ← → om één week per keer te scrollen.",
         "mealSlotsLabel": "Toon maaltijden",
         "cacheLabel": "Receptenbibliotheek",
         "cacheRefresh": "Vernieuwen",
@@ -40,7 +40,9 @@
         "sourceLabel": "Bron",
         "github": "Bekijk op GitHub",
         "accentLabel": "Accentkleur",
-        "languageLabel": "Taal"
+        "languageLabel": "Taal",
+        "translateRecipe": "Vertaal naar eigen taal",
+        "languageSearch": "Zoeken…"
     },
     "meal": {
         "breakfast": "Ontbijt",
@@ -72,7 +74,8 @@
         "endOfRange": "60 dagen vooruit",
         "undo": "Ongedaan maken",
         "prevPeriod": "Vorige periode",
-        "nextPeriod": "Volgende periode"
+        "nextPeriod": "Volgende periode",
+        "recipeDeleted": "Recept verwijderd"
     },
     "modal": {
         "titleReplace": "Recept wijzigen",
@@ -83,7 +86,9 @@
         "loadingRecipes": "Recepten laden…",
         "feelingLucky": "Op goed geluk?",
         "feelingLuckySub": "Kies een willekeurig recept voor mij",
-        "recentlyUsed": "Recent gebruikt",
+        "recentlyUsed": "Recent toegevoegd",
+        "badgeNew": "nieuw",
+        "badgeRecent": "recent",
         "loadingMore": "meer laden…",
         "close": "Sluiten"
     },
@@ -121,7 +126,7 @@
     },
     "quickAdd": {
         "title": "Toevoegen aan Mealie",
-        "tabUrl": "Van website importeren",
+        "tabUrl": "Van website",
         "tabNew": "Nieuw recept",
         "urlLabel": "Recept-URL",
         "urlPlaceholder": "https://...",
@@ -130,7 +135,7 @@
         "namePlaceholder": "bijv. Oma's lasagne",
         "imageLabel": "Foto (optioneel)",
         "imagePlaceholder": "Kies een afbeelding…",
-        "btnImport": "Importeren",
+        "btnImport": "Recept importeren",
         "btnCreate": "Recept aanmaken",
         "importing": "Recept ophalen… (meestal 10–20 seconden)",
         "creating": "Recept aanmaken…",
@@ -140,7 +145,19 @@
         "errorUrlRequired": "Plak eerst de URL van een receptpagina.",
         "errorNameRequired": "De receptnaam mag niet leeg zijn.",
         "errorAddedNotPlanned": "{name} is aangemaakt in Mealie maar kon niet aan dit slot worden toegevoegd — zoek het via + toevoegen.",
-        "openInMealie": "Open in Mealie om ingrediënten & stappen toe te voegen ↗"
+        "openInMealie": "Open in Mealie om ingrediënten & stappen toe te voegen ↗",
+        "proxyPrompt": "De website blokkeert mogelijk automatische toegang. Wil je de pagina ophalen via deze server?",
+        "btnRetryProxy": "Opnieuw proberen via Mealie Planner",
+        "tabImage": "Importeer via foto",
+        "imageScanLabel": "Receptfoto",
+        "imageScanPlaceholder": "Kies een foto…",
+        "imageScanHint": "Upload een foto van een receptkaart of kookboekpagina. Mealie gebruikt AI om ingrediënten en stappen te herkennen.",
+        "btnImportImage": "Importeer via foto",
+        "importingImage": "Recept herkennen… (kan 15–30 seconden duren)",
+        "errorImageRequired": "Kies eerst een foto.",
+        "slowGeneric": "Dit duurt langer dan normaal…",
+        "slowVideo": "Videorecepten hebben wat meer tijd nodig…",
+        "videoNoAudioWarn": "Er is geen audio-AI-provider geconfigureerd in Mealie. Ingrediënten en instructies worden mogelijk niet herkend bij videorecepten."
     },
     "auth": {
         "pageTitle": "Mealie Planner · Ontgrendelen",

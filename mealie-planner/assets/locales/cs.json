@@ -40,7 +40,9 @@
         "sourceLabel": "Zdroj",
         "github": "Zobrazit na GitHubu",
         "accentLabel": "Barva zvýraznění",
-        "languageLabel": "Jazyk"
+        "languageLabel": "Jazyk",
+        "translateRecipe": "Přeložit do rodného jazyka",
+        "languageSearch": "Hledat…"
     },
     "meal": {
         "breakfast": "Snídaně",
@@ -72,7 +74,8 @@
         "endOfRange": "60 dní dopředu",
         "undo": "Zpět",
         "prevPeriod": "Předchozí období",
-        "nextPeriod": "Další období"
+        "nextPeriod": "Další období",
+        "recipeDeleted": "Recept smazán"
     },
     "modal": {
         "titleReplace": "Změnit recept",
@@ -123,7 +126,7 @@
     },
     "quickAdd": {
         "title": "Přidat do Mealie",
-        "tabUrl": "Importovat z webu",
+        "tabUrl": "Z webu",
         "tabNew": "Nový recept",
         "urlLabel": "URL adresa receptu",
         "urlPlaceholder": "https://...",
@@ -132,7 +135,7 @@
         "namePlaceholder": "např. Babiččiny lasagne",
         "imageLabel": "Fotografie (volitelné)",
         "imagePlaceholder": "Vyberte obrázek…",
-        "btnImport": "Importovat",
+        "btnImport": "Importovat recept",
         "btnCreate": "Vytvořit recept",
         "importing": "Načítání receptu… (obvykle 10–20 sekund)",
         "creating": "Vytváření receptu…",
@@ -144,7 +147,17 @@
         "errorAddedNotPlanned": "{name} bylo vytvořeno v Mealie, ale nebylo možné jej přidat do tohoto slotu — najděte jej přes + přidat.",
         "openInMealie": "Otevřete v Mealie pro přidání ingrediencí a postupu ↗",
         "proxyPrompt": "Webová stránka možná blokuje automatický přístup. Chcete stránku načíst přes tento server?",
-        "btnRetryProxy": "Zkusit znovu přes Mealie Planner"
+        "btnRetryProxy": "Zkusit znovu přes Mealie Planner",
+        "tabImage": "Importovat z fotky",
+        "imageScanLabel": "Fotka receptu",
+        "imageScanPlaceholder": "Vyberte fotku…",
+        "imageScanHint": "Nahrajte fotku receptové karty nebo stránky kuchařky. Mealie používá AI k extrakci ingrediencí a kroků.",
+        "btnImportImage": "Importovat z fotky",
+        "importingImage": "Rozpoznávání receptu… (může trvat 15–30 sekund)",
+        "errorImageRequired": "Nejprve vyberte fotku.",
+        "slowGeneric": "Trvá to déle než obvykle…",
+        "slowVideo": "Videorecepty trvají déle…",
+        "videoNoAudioWarn": "V Mealie není nakonfigurován žádný audio AI poskytovatel. U videorecetů nemusí být rozpoznány ingredience a postup."
     },
     "auth": {
         "pageTitle": "Mealie Planner · Odemknout",

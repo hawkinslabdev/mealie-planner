@@ -29,7 +29,7 @@
         "dayRangeLabel": "Day range",
         "pastDays": "Show days before · {n} day(s)",
         "futureDays": "Show days after · {n} day(s)",
-        "tipKeyboard": "Tip! Use ← → to scroll one day at a time.",
+        "tipKeyboard": "Tip! Use ← → to scroll one week at a time.",
         "mealSlotsLabel": "Visible meal slots",
         "cacheLabel": "Recipe library",
         "cacheRefresh": "Refresh",
@@ -40,7 +40,9 @@
         "sourceLabel": "Source",
         "github": "Visit on GitHub",
         "accentLabel": "Accent color",
-        "languageLabel": "Language"
+        "languageLabel": "Language",
+        "languageSearch": "Search…",
+        "translateRecipe": "Translate to native language"
     },
     "meal": {
         "breakfast": "Breakfast",
@@ -72,7 +74,8 @@
         "endOfRange": "60 days ahead",
         "undo": "Undo",
         "prevPeriod": "Previous period",
-        "nextPeriod": "Next period"
+        "nextPeriod": "Next period",
+        "recipeDeleted": "Recipe deleted"
     },
     "modal": {
         "titleReplace": "Change recipe",
@@ -84,7 +87,9 @@
         "loadingRecipes": "Loading recipes…",
         "feelingLucky": "Feeling lucky?",
         "feelingLuckySub": "Pick a random recipe for me",
-        "recentlyUsed": "Recently used",
+        "recentlyUsed": "Recently added",
+        "badgeNew": "new",
+        "badgeRecent": "recent",
         "loadingMore": "loading more…"
     },
     "actions": {
@@ -121,7 +126,7 @@
     },
     "quickAdd": {
         "title": "Add to Mealie",
-        "tabUrl": "Import from website",
+        "tabUrl": "From website",
         "tabNew": "New recipe",
         "urlLabel": "Recipe URL",
         "urlPlaceholder": "https://...",
@@ -130,9 +135,12 @@
         "namePlaceholder": "e.g. Grandma's lasagna",
         "imageLabel": "Photo (optional)",
         "imagePlaceholder": "Choose an image…",
-        "btnImport": "Import",
+        "btnImport": "Import recipe",
         "btnCreate": "Create recipe",
         "importing": "Fetching recipe… (usually 10–20 seconds)",
+        "slowGeneric": "This is taking longer than usual…",
+        "slowVideo": "Video recipes take longer to process…",
+        "videoNoAudioWarn": "No audio AI provider is configured in Mealie. Ingredients and instructions may not be detected for video recipes.",
         "creating": "Creating recipe…",
         "btnCellShort": "+ new recipe",
         "btnCellCreate": "new recipe",
@@ -140,7 +148,16 @@
         "errorUrlRequired": "Paste the URL of a recipe page first.",
         "errorNameRequired": "Recipe name can't be empty.",
         "errorAddedNotPlanned": "{name} was created in Mealie but couldn't be added to this slot — search for it with + add.",
-        "openInMealie": "Open in Mealie to add ingredients & steps ↗"
+        "openInMealie": "Open in Mealie to add ingredients & steps ↗",
+        "proxyPrompt": "The website may be blocking automated access. Would you like to try fetching the page through this server instead?",
+        "btnRetryProxy": "Retry via Mealie Planner",
+        "tabImage": "Import from photo",
+        "imageScanLabel": "Recipe photo",
+        "imageScanPlaceholder": "Choose a photo…",
+        "imageScanHint": "Upload a photo of a recipe card or cookbook page. Mealie will use AI to extract the ingredients and steps.",
+        "btnImportImage": "Import from photo",
+        "importingImage": "Recognising recipe… (may take 15–30 seconds)",
+        "errorImageRequired": "Choose a photo first."
     },
     "auth": {
         "pageTitle": "Mealie Planner · Unlock",

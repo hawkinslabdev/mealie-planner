@@ -40,7 +40,9 @@
         "sourceLabel": "Kilde",
         "github": "Besøk på GitHub",
         "accentLabel": "Aksentfarge",
-        "languageLabel": "Språk"
+        "languageLabel": "Språk",
+        "translateRecipe": "Oversett til morsmål",
+        "languageSearch": "Søk…"
     },
     "meal": {
         "breakfast": "Frokost",
@@ -72,7 +74,8 @@
         "endOfRange": "60 dager frem",
         "undo": "Angre",
         "prevPeriod": "Forrige periode",
-        "nextPeriod": "Neste periode"
+        "nextPeriod": "Neste periode",
+        "recipeDeleted": "Oppskrift slettet"
     },
     "modal": {
         "titleReplace": "Bytt oppskrift",
@@ -123,7 +126,7 @@
     },
     "quickAdd": {
         "title": "Legg til i Mealie",
-        "tabUrl": "Importer fra nettside",
+        "tabUrl": "Fra nettside",
         "tabNew": "Ny oppskrift",
         "urlLabel": "Oppskrift-URL",
         "urlPlaceholder": "https://...",
@@ -132,7 +135,7 @@
         "namePlaceholder": "f.eks. Bestemors lasagne",
         "imageLabel": "Foto (valgfritt)",
         "imagePlaceholder": "Velg et bilde…",
-        "btnImport": "Importer",
+        "btnImport": "Importer oppskrift",
         "btnCreate": "Opprett oppskrift",
         "importing": "Henter oppskrift… (vanligvis 10–20 sekunder)",
         "creating": "Oppretter oppskrift…",
@@ -144,7 +147,17 @@
         "errorAddedNotPlanned": "{name} ble opprettet i Mealie, men kunne ikke legges til i denne plassen — søk etter den med + legg til.",
         "openInMealie": "Åpne i Mealie for å legge til ingredienser & trinn ↗",
         "proxyPrompt": "Nettsiden kan blokkere automatisk tilgang. Vil du prøve å hente siden via denne serveren i stedet?",
-        "btnRetryProxy": "Prøv via Mealie Planner"
+        "btnRetryProxy": "Prøv via Mealie Planner",
+        "tabImage": "Importer fra bilde",
+        "imageScanLabel": "Oppskriftsbilde",
+        "imageScanPlaceholder": "Velg et bilde…",
+        "imageScanHint": "Last opp et bilde av et oppskriftskort eller kokebokside. Mealie bruker AI til å hente ut ingredienser og fremgangsmåte.",
+        "btnImportImage": "Importer fra bilde",
+        "importingImage": "Gjenkjenner oppskrift… (kan ta 15–30 sekunder)",
+        "errorImageRequired": "Velg et bilde først.",
+        "slowGeneric": "Dette tar lengre tid enn vanlig…",
+        "slowVideo": "Videooppskrifter tar litt lenger tid…",
+        "videoNoAudioWarn": "Ingen lyd-AI-leverandør er konfigurert i Mealie. Ingredienser og instruksjoner registreres kanskje ikke for videooppskrifter."
     },
     "auth": {
         "pageTitle": "Mealie Planner · Lås opp",
