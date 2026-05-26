@@ -233,12 +233,31 @@
 
         <div>
           <p class="section-label" x-text="t('settings.languageLabel')"></p>
-          <div class="form-field">
-            <select :value="locale" @change="setLocale($event.target.value)" class="form-input">
-              <template x-for="code in SUPPORTED_LOCALES" :key="code">
-                <option :value="code" :selected="code === locale" x-text="LOCALE_NAMES[code]"></option>
-              </template>
-            </select>
+          <div class="form-field" style="position:relative" x-ref="langFieldWrap">
+            <button class="form-input lang-trigger"
+                    @click="langMenuOpen = !langMenuOpen; if (langMenuOpen) { langSearch = ''; $nextTick(() => { $refs.langSearchInput?.focus(); _scrollLangMenuIntoView(); }); }"
+                    :aria-expanded="langMenuOpen" aria-haspopup="listbox">
+              <span x-text="LOCALE_NAMES[locale]"></span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" :style="langMenuOpen && 'transform:rotate(180deg)'"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div x-show="langMenuOpen" @click.outside="langMenuOpen = false" class="lang-menu" x-ref="langMenu"
+                 x-transition:enter="transition ease-out duration-100"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-75"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-95">
+              <input type="text" x-model="langSearch" x-ref="langSearchInput"
+                     class="lang-search" :placeholder="t('settings.languageSearch')" @click.stop>
+              <div class="lang-opts" role="listbox">
+                <template x-for="code in SUPPORTED_LOCALES.filter(c => !langSearch || LOCALE_NAMES[c].toLowerCase().includes(langSearch.toLowerCase()))" :key="code">
+                  <button class="theme-opt" :class="code === locale && 'theme-opt--on'"
+                          role="option" :aria-selected="code === locale"
+                          @click="setLocale(code); langMenuOpen = false"
+                          x-text="LOCALE_NAMES[code]"></button>
+                </template>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -343,19 +362,20 @@
                   <div class="g-cell__body">
                     <template x-for="(entry, idx) in getSlot(item.date, item.mt)" :key="entry.id || idx">
                       <div class="chip-wrap">
-                        <div class="chip" :class="'chip--' + item.mt" draggable="true"
-                             @dragstart="onDragStart(item.date, item.mt, entry, $event)"
-                             @dragend="onDragEnd()"
-                             @mouseenter="showTooltip(entry, $event)"
-                             @mouseleave="hideTooltip()"
-                             @dblclick="openModalReplace(item.date, item.mt, entry)">
-                          <img class="chip__thumb" :src="entry.image_url" :alt="entry.recipe_name" loading="lazy" decoding="async" @error="_imgError($event, entry.recipe_name)">
-                          <span class="chip__name" x-text="entry.recipe_name"></span>
+                        <div class="chip" :class="['chip--' + item.mt, entry.orphaned && 'chip--orphaned']"
+                             :draggable="!entry.orphaned"
+                             @dragstart="!entry.orphaned && onDragStart(item.date, item.mt, entry, $event)"
+                             @dragend="!entry.orphaned && onDragEnd()"
+                             @mouseenter="!entry.orphaned && showTooltip(entry, $event)"
+                             @mouseleave="!entry.orphaned && hideTooltip()"
+                             @dblclick="!entry.orphaned && openModalReplace(item.date, item.mt, entry)">
+                          <img x-show="!entry.orphaned" class="chip__thumb" :src="entry.image_url" :alt="entry.recipe_name" loading="lazy" decoding="async" @error="_imgError($event, entry.recipe_name)">
+                          <span class="chip__name" x-text="entry.orphaned ? t('planner.recipeDeleted') : entry.recipe_name"></span>
                           <button class="chip__rm" @click.stop="removeRecipe(item.date, item.mt, entry.id)" :aria-label="t('planner.remove')">
                             <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                           </button>
                         </div>
-                        <div class="chip-acts">
+                        <div x-show="!entry.orphaned" class="chip-acts">
                           <a class="ca" :href="getMealieLink(entry.recipe_slug)" target="_blank" :title="t('planner.openInMealie')">↗ <span x-text="t('planner.open')"></span></a>
                           <button class="ca ca--sm" @click.stop="openModalReplace(item.date, item.mt, entry)" x-text="t('planner.changeRecipe')"></button>
                           <button class="ca ca--sm" x-show="recipeActions.length > 0" @click.stop="openActionMenu(entry, $event)">···</button>
@@ -417,19 +437,20 @@
               <template x-if="!planLoading">
                 <div>
                   <template x-for="(entry, idx) in getSlot(day.date, mt)" :key="entry.id || idx">
-                    <div class="mobile-recipe-row" draggable="true"
-                         @dragstart="onDragStart(day.date, mt, entry, $event)"
-                         @dragend="onDragEnd()"
-                         @mouseenter="showTooltip(entry, $event)"
-                         @mouseleave="hideTooltip()"
-                         @dblclick="openModalReplace(day.date, mt, entry)">
-                      <img class="mobile-thumb"
+                    <div class="mobile-recipe-row" :class="entry.orphaned && 'mobile-recipe-row--orphaned'"
+                         :draggable="!entry.orphaned"
+                         @dragstart="!entry.orphaned && onDragStart(day.date, mt, entry, $event)"
+                         @dragend="!entry.orphaned && onDragEnd()"
+                         @mouseenter="!entry.orphaned && showTooltip(entry, $event)"
+                         @mouseleave="!entry.orphaned && hideTooltip()"
+                         @dblclick="!entry.orphaned && openModalReplace(day.date, mt, entry)">
+                      <img x-show="!entry.orphaned" class="mobile-thumb"
                         :src="entry.image_url"
                         :alt="entry.recipe_name"
                         @error="_imgError($event, entry.recipe_name)">
                       <div class="mobile-recipe-info">
-                        <p class="mobile-recipe-name" x-text="entry.recipe_name"></p>
-                        <div style="display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap">
+                        <p class="mobile-recipe-name" x-text="entry.orphaned ? t('planner.recipeDeleted') : entry.recipe_name"></p>
+                        <div x-show="!entry.orphaned" style="display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap">
                           <a class="mobile-recipe-link" :href="getMealieLink(entry.recipe_slug)" target="_blank" x-text="t('planner.openInMealieMobile')"></a>
                           <button class="ca" style="font-size:0.7rem;padding:1px 6px" @click.stop="openModalReplace(day.date, mt, entry)" x-text="t('planner.changeRecipe')"></button>
                           <button class="ca" x-show="recipeActions.length > 0" style="font-size:0.7rem;padding:1px 6px" @click.stop="openActionMenu(entry, $event)">···</button>
@@ -509,6 +530,10 @@
 
       <div class="modal-body" @scroll="onModalScroll($event)">
         <div x-show="recipesLoadedAt === null" class="center-msg" x-text="t('modal.loadingRecipes')"></div>
+        <div x-show="recipesError" class="banner banner--error" style="margin-bottom:var(--space-4);border-bottom:none;border-radius:var(--radius-md)">
+          <span x-text="t('error.recipeCache')" style="flex:1"></span>
+          <button @click="loadRecipes()" class="banner__retry" x-text="t('planner.retry')"></button>
+        </div>
 
         <!-- sparkle prompt: empty slot, add mode, no search active -->
         <template x-if="recipesLoadedAt !== null && modalMode === 'add' && !hasSlot(modalDate, modalMt) && !modalSearch">
@@ -526,10 +551,11 @@
           <div>
             <p class="modal-section-label" x-text="t('modal.recentlyUsed')"></p>
             <div class="recipe-grid">
-              <template x-for="r in recentRecipeObjects" :key="'recent-' + r.id">
+              <template x-for="(r, i) in recentRecipeObjects" :key="'recent-' + r.id">
                 <button @click="selectRecipe(r)" class="recipe-card recipe-card--recent">
                   <img :src="r.image_url" :alt="r.name" loading="lazy" decoding="async" @error="_imgError($event, r.name)">
                   <span class="recipe-card__name" x-text="r.name"></span>
+                  <span class="recipe-card__badge" x-text="i === 0 ? t('modal.badgeNew') : t('modal.badgeRecent')"></span>
                 </button>
               </template>
             </div>
@@ -660,11 +686,14 @@
 
       <div class="qa-tabs">
         <button class="qa-tab" :class="quickAddTab === 'url' && 'qa-tab--on'"
-                @click="quickAddTab = 'url'; quickAddError = null; $nextTick(() => $refs.quickAddUrlInput?.focus())"
+                @click="_switchQuickAddTab('url'); $nextTick(() => $refs.quickAddUrlInput?.focus())"
                 x-text="t('quickAdd.tabUrl')"></button>
         <button class="qa-tab" :class="quickAddTab === 'recipe' && 'qa-tab--on'"
-                @click="quickAddTab = 'recipe'; quickAddError = null; $nextTick(() => $refs.quickAddNameInput?.focus())"
+                @click="_switchQuickAddTab('recipe'); $nextTick(() => $refs.quickAddNameInput?.focus())"
                 x-text="t('quickAdd.tabNew')"></button>
+        <button x-show="imageImportEnabled" class="qa-tab" :class="quickAddTab === 'image' && 'qa-tab--on'"
+                @click="_switchQuickAddTab('image')"
+                x-text="t('quickAdd.tabImage')"></button>
       </div>
 
       <!-- Tab: Import URL -->
@@ -682,6 +711,7 @@
                    @keydown.enter="!quickAddLoading && importRecipeFromUrl()">
           </div>
           <p class="qa-hint" x-text="t('quickAdd.urlHint')"></p>
+          <p x-show="!videoInstructionsEnabled && _isVideoUrl(quickAddUrl)" class="qa-hint qa-hint--warn" x-text="t('quickAdd.videoNoAudioWarn')"></p>
         </div>
       </div>
 
@@ -712,6 +742,32 @@
         </div>
       </div>
 
+      <!-- Tab: Image import -->
+      <div x-show="quickAddTab === 'image'" class="qa-body"
+           x-transition:enter="transition ease-out duration-100"
+           x-transition:enter-start="opacity-0"
+           x-transition:enter-end="opacity-100">
+        <div class="form-stack">
+          <div class="form-field">
+            <label class="form-label" x-text="t('quickAdd.imageScanLabel')"></label>
+            <label class="qa-file-label" :class="quickAddScanFile && 'qa-file-label--has-file'">
+              <svg x-show="!quickAddScanPreview" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <img x-show="quickAddScanPreview" :src="quickAddScanPreview" class="qa-preview" alt="">
+              <span class="qa-file-name" x-text="quickAddScanFile ? quickAddScanFile.name : t('quickAdd.imageScanPlaceholder')"></span>
+              <input type="file" class="qa-file-input" accept="image/*" x-ref="quickAddScanInput" @change="onQuickAddScanFileChange($event)">
+            </label>
+          </div>
+          <p class="qa-hint" x-text="t('quickAdd.imageScanHint')"></p>
+          <div class="opt-row">
+            <span class="opt-label" x-text="t('settings.translateRecipe')"></span>
+            <button role="switch" :aria-checked="translateRecipe"
+                    class="opt-toggle" :class="translateRecipe && 'opt-toggle--on'"
+                    @click="translateRecipe = !translateRecipe; _saveSettings({translate_recipe: translateRecipe})"
+                    :title="t('settings.translateRecipe')"></button>
+          </div>
+        </div>
+      </div>
+
       <div class="qa-footer">
         <!-- success state -->
         <template x-if="quickAddDone">
@@ -729,6 +785,20 @@
         <template x-if="!quickAddDone">
           <div class="qa-footer-actions">
             <p x-show="quickAddError" class="error-msg" x-text="quickAddError"></p>
+
+            <div x-show="quickAddLoading && quickAddSlow" class="qa-slow-row">
+              <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="qa-slow-icon" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span x-text="quickAddIsVideo ? t('quickAdd.slowVideo') : t('quickAdd.slowGeneric')"></span>
+            </div>
+
+            <!-- proxy consent prompt -->
+            <template x-if="quickAddProxyAvailable && quickAddTab === 'url'">
+              <div class="qa-proxy-prompt">
+                <p class="qa-hint" x-text="t('quickAdd.proxyPrompt')"></p>
+                <button @click="importRecipeViaProxy()" :disabled="quickAddLoading"
+                        class="btn btn-accent-outline btn-full" x-text="t('quickAdd.btnRetryProxy')"></button>
+              </div>
+            </template>
 
             <!-- URL import button -->
             <button x-show="quickAddTab === 'url'"
@@ -748,6 +818,16 @@
               <svg x-show="quickAddLoading" class="btn-spinner" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
               <span x-show="!quickAddLoading" x-text="t('quickAdd.btnCreate')"></span>
               <span x-show="quickAddLoading" x-text="t('quickAdd.creating')"></span>
+            </button>
+
+            <!-- Image import button -->
+            <button x-show="quickAddTab === 'image'"
+                    @click="importRecipeFromImage()"
+                    :disabled="quickAddLoading || !quickAddScanFile"
+                    class="btn btn-primary btn-full">
+              <svg x-show="quickAddLoading" class="btn-spinner" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span x-show="!quickAddLoading" x-text="t('quickAdd.btnImportImage')"></span>
+              <span x-show="quickAddLoading" x-text="t('quickAdd.importingImage')"></span>
             </button>
 
             <button @click="closeQuickAdd()" :disabled="quickAddLoading" class="btn btn-ghost btn-full" x-text="t('modal.close')"></button>

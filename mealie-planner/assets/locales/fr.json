@@ -29,7 +29,7 @@
         "dayRangeLabel": "Plage de jours",
         "pastDays": "Jours précédents · {n} jour(s)",
         "futureDays": "Jours suivants · {n} jour(s)",
-        "tipKeyboard": "Astuce ! Utilisez ← → pour faire défiler jour par jour.",
+        "tipKeyboard": "Astuce ! Utilisez ← → pour faire défiler semaine par semaine.",
         "mealSlotsLabel": "Créneaux repas visibles",
         "cacheLabel": "Bibliothèque de recettes",
         "cacheRefresh": "Actualiser",
@@ -40,7 +40,9 @@
         "sourceLabel": "Source",
         "github": "Voir sur GitHub",
         "accentLabel": "Couleur d'accent",
-        "languageLabel": "Langue"
+        "languageLabel": "Langue",
+        "translateRecipe": "Traduire en langue maternelle",
+        "languageSearch": "Rechercher…"
     },
     "meal": {
         "breakfast": "Petit-déjeuner",
@@ -72,7 +74,8 @@
         "endOfRange": "60 jours à venir",
         "undo": "Annuler",
         "prevPeriod": "Période précédente",
-        "nextPeriod": "Période suivante"
+        "nextPeriod": "Période suivante",
+        "recipeDeleted": "Recette supprimée"
     },
     "modal": {
         "titleReplace": "Changer la recette",
@@ -83,7 +86,9 @@
         "loadingRecipes": "Chargement des recettes…",
         "feelingLucky": "Vous vous sentez chanceux ?",
         "feelingLuckySub": "Choisissez une recette aléatoire pour moi",
-        "recentlyUsed": "Utilisées récemment",
+        "recentlyUsed": "Récemment ajoutées",
+        "badgeNew": "nouveau",
+        "badgeRecent": "récent",
         "loadingMore": "chargement…",
         "close": "Fermer"
     },
@@ -121,7 +126,7 @@
     },
     "quickAdd": {
         "title": "Ajouter à Mealie",
-        "tabUrl": "Importer depuis un site",
+        "tabUrl": "Depuis un site web",
         "tabNew": "Nouvelle recette",
         "urlLabel": "URL de la recette",
         "urlPlaceholder": "https://...",
@@ -130,7 +135,7 @@
         "namePlaceholder": "ex. Lasagnes de grand-mère",
         "imageLabel": "Photo (optionnelle)",
         "imagePlaceholder": "Choisir une image…",
-        "btnImport": "Importer",
+        "btnImport": "Importer une recette",
         "btnCreate": "Créer la recette",
         "importing": "Récupération de la recette… (généralement 10–20 secondes)",
         "creating": "Création de la recette…",
@@ -140,7 +145,19 @@
         "errorUrlRequired": "Collez d'abord l'URL d'une page de recette.",
         "errorNameRequired": "Le nom de la recette ne peut pas être vide.",
         "errorAddedNotPlanned": "{name} a été créé dans Mealie mais n'a pas pu être ajouté à ce créneau — cherchez-le avec + ajouter.",
-        "openInMealie": "Ouvrir dans Mealie pour ajouter ingrédients & étapes ↗"
+        "openInMealie": "Ouvrir dans Mealie pour ajouter ingrédients & étapes ↗",
+        "proxyPrompt": "Le site web bloque peut-être l'accès automatique. Voulez-vous récupérer la page via ce serveur ?",
+        "btnRetryProxy": "Réessayer via Mealie Planner",
+        "tabImage": "Importer depuis photo",
+        "imageScanLabel": "Photo de recette",
+        "imageScanPlaceholder": "Choisir une photo…",
+        "imageScanHint": "Téléchargez une photo d'une fiche recette ou d'une page de livre de cuisine. Mealie utilise l'IA pour extraire les ingrédients et les étapes.",
+        "btnImportImage": "Importer depuis photo",
+        "importingImage": "Reconnaissance de la recette… (peut prendre 15–30 secondes)",
+        "errorImageRequired": "Choisissez d'abord une photo.",
+        "slowGeneric": "Cela prend plus de temps que d'habitude…",
+        "slowVideo": "Les recettes vidéo prennent plus de temps…",
+        "videoNoAudioWarn": "Aucun fournisseur IA audio n'est configuré dans Mealie. Les ingrédients et les instructions peuvent ne pas être détectés pour les recettes vidéo."
     },
     "auth": {
         "pageTitle": "Mealie Planner · Déverrouiller",

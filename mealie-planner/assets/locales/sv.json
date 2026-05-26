@@ -40,7 +40,9 @@
         "sourceLabel": "Källa",
         "github": "Besök på GitHub",
         "accentLabel": "Accentfärg",
-        "languageLabel": "Språk"
+        "languageLabel": "Språk",
+        "translateRecipe": "Översätt till modersmål",
+        "languageSearch": "Sök…"
     },
     "meal": {
         "breakfast": "Frukost",
@@ -72,7 +74,8 @@
         "endOfRange": "60 dagar framåt",
         "undo": "Ångra",
         "prevPeriod": "Föregående period",
-        "nextPeriod": "Nästa period"
+        "nextPeriod": "Nästa period",
+        "recipeDeleted": "Recept raderat"
     },
     "modal": {
         "titleReplace": "Byt recept",
@@ -123,7 +126,7 @@
     },
     "quickAdd": {
         "title": "Lägg till i Mealie",
-        "tabUrl": "Importera från webbplats",
+        "tabUrl": "Från webbplats",
         "tabNew": "Nytt recept",
         "urlLabel": "Recept-URL",
         "urlPlaceholder": "https://...",
@@ -132,7 +135,7 @@
         "namePlaceholder": "t.ex. Mormors lasagne",
         "imageLabel": "Foto (valfritt)",
         "imagePlaceholder": "Välj en bild…",
-        "btnImport": "Importera",
+        "btnImport": "Importera recept",
         "btnCreate": "Skapa recept",
         "importing": "Hämtar recept… (vanligtvis 10–20 sekunder)",
         "creating": "Skapar recept…",
@@ -144,7 +147,17 @@
         "errorAddedNotPlanned": "{name} skapades i Mealie men kunde inte läggas till i denna plats — sök efter det med + lägg till.",
         "openInMealie": "Öppna i Mealie för att lägga till ingredienser & steg ↗",
         "proxyPrompt": "Webbplatsen kan blockera automatisk åtkomst. Vill du försöka hämta sidan via den här servern istället?",
-        "btnRetryProxy": "Försök via Mealie Planner"
+        "btnRetryProxy": "Försök via Mealie Planner",
+        "tabImage": "Importera från foto",
+        "imageScanLabel": "Receptfoto",
+        "imageScanPlaceholder": "Välj ett foto…",
+        "imageScanHint": "Ladda upp ett foto av ett receptkort eller kokbokssida. Mealie använder AI för att extrahera ingredienser och steg.",
+        "btnImportImage": "Importera från foto",
+        "importingImage": "Känner igen recept… (kan ta 15–30 sekunder)",
+        "errorImageRequired": "Välj ett foto först.",
+        "slowGeneric": "Det tar längre tid än vanligt…",
+        "slowVideo": "Videorecept tar lite längre tid…",
+        "videoNoAudioWarn": "Ingen ljud-AI-leverantör är konfigurerad i Mealie. Ingredienser och instruktioner kanske inte identifieras för videorecept."
     },
     "auth": {
         "pageTitle": "Mealie Planner · Lås upp",

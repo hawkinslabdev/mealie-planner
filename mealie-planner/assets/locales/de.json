@@ -29,7 +29,7 @@
         "dayRangeLabel": "Tageszeitraum",
         "pastDays": "Vergangene Tage · {n} Tag(e)",
         "futureDays": "Zukünftige Tage · {n} Tag(e)",
-        "tipKeyboard": "Tipp! Mit ← → einen Tag weiter scrollen.",
+        "tipKeyboard": "Tipp! Mit ← → eine Woche weiter scrollen.",
         "mealSlotsLabel": "Sichtbare Mahlzeiten",
         "cacheLabel": "Rezeptbibliothek",
         "cacheRefresh": "Aktualisieren",
@@ -40,7 +40,9 @@
         "sourceLabel": "Quelle",
         "github": "Auf GitHub ansehen",
         "accentLabel": "Akzentfarbe",
-        "languageLabel": "Sprache"
+        "languageLabel": "Sprache",
+        "translateRecipe": "In Muttersprache übersetzen",
+        "languageSearch": "Suchen…"
     },
     "meal": {
         "breakfast": "Frühstück",
@@ -72,7 +74,8 @@
         "endOfRange": "60 Tage voraus",
         "undo": "Rückgängig",
         "prevPeriod": "Vorheriger Zeitraum",
-        "nextPeriod": "Nächster Zeitraum"
+        "nextPeriod": "Nächster Zeitraum",
+        "recipeDeleted": "Rezept gelöscht"
     },
     "modal": {
         "titleReplace": "Rezept ändern",
@@ -83,7 +86,9 @@
         "loadingRecipes": "Rezepte werden geladen…",
         "feelingLucky": "Glück auf?",
         "feelingLuckySub": "Wähle ein zufälliges Rezept für mich",
-        "recentlyUsed": "Zuletzt verwendet",
+        "recentlyUsed": "Zuletzt hinzugefügt",
+        "badgeNew": "neu",
+        "badgeRecent": "kürzlich",
         "loadingMore": "Mehr laden…",
         "close": "Schließen"
     },
@@ -121,7 +126,7 @@
     },
     "quickAdd": {
         "title": "Zu Mealie hinzufügen",
-        "tabUrl": "Von Website importieren",
+        "tabUrl": "Von Webseite",
         "tabNew": "Neues Rezept",
         "urlLabel": "Rezept-URL",
         "urlPlaceholder": "https://...",
@@ -130,7 +135,7 @@
         "namePlaceholder": "z. B. Omas Lasagne",
         "imageLabel": "Foto (optional)",
         "imagePlaceholder": "Bild auswählen…",
-        "btnImport": "Importieren",
+        "btnImport": "Rezept importieren",
         "btnCreate": "Erstellen",
         "importing": "Rezept wird abgerufen… (meist 10–20 Sekunden)",
         "creating": "Rezept wird erstellt…",
@@ -140,7 +145,19 @@
         "errorUrlRequired": "Bitte zuerst die URL einer Rezeptseite einfügen.",
         "errorNameRequired": "Rezeptname darf nicht leer sein.",
         "errorAddedNotPlanned": "{name} wurde in Mealie erstellt, konnte aber nicht zum Slot hinzugefügt werden – suche es mit + hinzu.",
-        "openInMealie": "In Mealie öffnen, um Zutaten & Schritte hinzuzufügen ↗"
+        "openInMealie": "In Mealie öffnen, um Zutaten & Schritte hinzuzufügen ↗",
+        "proxyPrompt": "Die Website blockiert möglicherweise den automatischen Zugriff. Soll die Seite stattdessen über diesen Server abgerufen werden?",
+        "btnRetryProxy": "Erneut über Mealie Planner versuchen",
+        "tabImage": "Aus Foto importieren",
+        "imageScanLabel": "Rezeptfoto",
+        "imageScanPlaceholder": "Bild auswählen…",
+        "imageScanHint": "Lade ein Foto einer Rezeptkarte oder Kochbuchseite hoch. Mealie nutzt KI, um Zutaten und Schritte zu extrahieren.",
+        "btnImportImage": "Aus Foto importieren",
+        "importingImage": "Rezept wird erkannt… (kann 15–30 Sekunden dauern)",
+        "errorImageRequired": "Wähle zuerst ein Foto aus.",
+        "slowGeneric": "Dies dauert länger als gewöhnlich…",
+        "slowVideo": "Videorezepte brauchen etwas länger…",
+        "videoNoAudioWarn": "In Mealie ist kein Audio-KI-Anbieter konfiguriert. Zutaten und Anweisungen werden bei Videorezepten möglicherweise nicht erkannt."
     },
     "auth": {
         "pageTitle": "Mealie Planner · Entsperren",

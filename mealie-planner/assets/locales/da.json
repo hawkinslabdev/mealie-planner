@@ -40,7 +40,9 @@
         "sourceLabel": "Kilde",
         "github": "Besøg på GitHub",
         "accentLabel": "Accentfarve",
-        "languageLabel": "Sprog"
+        "languageLabel": "Sprog",
+        "translateRecipe": "Oversæt til modersmål",
+        "languageSearch": "Søg…"
     },
     "meal": {
         "breakfast": "Morgenmad",
@@ -72,7 +74,8 @@
         "endOfRange": "60 dage frem",
         "undo": "Fortryd",
         "prevPeriod": "Forrige periode",
-        "nextPeriod": "Næste periode"
+        "nextPeriod": "Næste periode",
+        "recipeDeleted": "Opskrift slettet"
     },
     "modal": {
         "titleReplace": "Skift opskrift",
@@ -123,7 +126,7 @@
     },
     "quickAdd": {
         "title": "Tilføj til Mealie",
-        "tabUrl": "Importer fra hjemmeside",
+        "tabUrl": "Fra hjemmeside",
         "tabNew": "Ny opskrift",
         "urlLabel": "Opskrift-URL",
         "urlPlaceholder": "https://...",
@@ -132,7 +135,7 @@
         "namePlaceholder": "f.eks. Mormors lasagne",
         "imageLabel": "Foto (valgfrit)",
         "imagePlaceholder": "Vælg et billede…",
-        "btnImport": "Importer",
+        "btnImport": "Importer opskrift",
         "btnCreate": "Opret opskrift",
         "importing": "Henter opskrift… (normalt 10–20 sekunder)",
         "creating": "Opretter opskrift…",
@@ -144,7 +147,17 @@
         "errorAddedNotPlanned": "{name} blev oprettet i Mealie, men kunne ikke tilføjes til denne plads — søg efter den med + tilføj.",
         "openInMealie": "Åbn i Mealie for at tilføje ingredienser & trin ↗",
         "proxyPrompt": "Hjemmesiden blokerer muligvis automatisk adgang. Vil du prøve at hente siden via denne server i stedet?",
-        "btnRetryProxy": "Prøv via Mealie Planner"
+        "btnRetryProxy": "Prøv via Mealie Planner",
+        "tabImage": "Importer fra foto",
+        "imageScanLabel": "Opskriftsfoto",
+        "imageScanPlaceholder": "Vælg et foto…",
+        "imageScanHint": "Upload et foto af et opskriftskort eller kogebogside. Mealie bruger AI til at udtrække ingredienser og trin.",
+        "btnImportImage": "Importer fra foto",
+        "importingImage": "Genkender opskrift… (kan tage 15–30 sekunder)",
+        "errorImageRequired": "Vælg et foto først.",
+        "slowGeneric": "Dette tager længere end normalt…",
+        "slowVideo": "Videoopskrifter tager lidt længere tid…",
+        "videoNoAudioWarn": "Ingen lyd-AI-udbyder er konfigureret i Mealie. Ingredienser og instruktioner registreres muligvis ikke for videoopskrifter."
     },
     "auth": {
         "pageTitle": "Mealie Planner · Lås op",

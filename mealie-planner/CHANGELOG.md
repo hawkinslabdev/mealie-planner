@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.5.0
+
+- Add support for AI providers! Use your configured Mealie AI providers natively
+- Add built-in proxy that can be used optionally when Mealie is restricted from accessing a recipe during the import process
+- Add image recognition support for instances that have setup a connection to an OpenAI-compatible API (#10)
+- Added Swedish, Danish, Norwegian, Brazilian Portuguese, Czechia and Russian using DeepL translations (#8)
+- Refactored the application to use a proper monolithic structure (#7)
+- Fix: most recently added recipe will show in the meal picker (#6)
+- Fix: change week view pagination button hint from day to week (#5)
+- Fix: handle orphaned recipe when recipe is deleted in Mealie
+- Fix: handle unique constraint errors on recipe.slug
+
 ## 0.4.3
 
 - Added color palette picker with 5 accent themes (amber, lavender, sage, terracotta, slate)

@@ -29,7 +29,7 @@
         "dayRangeLabel": "Zakres dni",
         "pastDays": "Poprzednie dni · {n} dzień/dni",
         "futureDays": "Następne dni · {n} dzień/dni",
-        "tipKeyboard": "Wskazówka! Użyj ← → aby przewijać po jednym dniu.",
+        "tipKeyboard": "Wskazówka! Użyj ← → aby przewijać po jednym tygodniu.",
         "mealSlotsLabel": "Widoczne sloty posiłków",
         "cacheLabel": "Biblioteka przepisów",
         "cacheRefresh": "Odśwież",
@@ -40,7 +40,9 @@
         "sourceLabel": "Źródło",
         "github": "Zobacz na GitHub",
         "accentLabel": "Kolor akcentu",
-        "languageLabel": "Język"
+        "languageLabel": "Język",
+        "translateRecipe": "Przetłumacz na język ojczysty",
+        "languageSearch": "Szukaj…"
     },
     "meal": {
         "breakfast": "Śniadanie",
@@ -72,7 +74,8 @@
         "endOfRange": "60 dni do przodu",
         "undo": "Cofnij",
         "prevPeriod": "Poprzedni okres",
-        "nextPeriod": "Następny okres"
+        "nextPeriod": "Następny okres",
+        "recipeDeleted": "Przepis usunięty"
     },
     "modal": {
         "titleReplace": "Zmień przepis",
@@ -83,7 +86,9 @@
         "loadingRecipes": "Ładowanie przepisów…",
         "feelingLucky": "Masz ochotę na niespodziankę?",
         "feelingLuckySub": "Wybierz dla mnie losowy przepis",
-        "recentlyUsed": "Ostatnio używane",
+        "recentlyUsed": "Ostatnio dodane",
+        "badgeNew": "nowe",
+        "badgeRecent": "ostatnie",
         "loadingMore": "ładowanie…",
         "close": "Zamknij"
     },
@@ -121,7 +126,7 @@
     },
     "quickAdd": {
         "title": "Dodaj do Mealie",
-        "tabUrl": "Importuj ze strony",
+        "tabUrl": "Ze strony",
         "tabNew": "Nowy przepis",
         "urlLabel": "URL przepisu",
         "urlPlaceholder": "https://...",
@@ -130,7 +135,7 @@
         "namePlaceholder": "np. Lasagne babci",
         "imageLabel": "Zdjęcie (opcjonalne)",
         "imagePlaceholder": "Wybierz obraz…",
-        "btnImport": "Importuj",
+        "btnImport": "Importuj przepis",
         "btnCreate": "Utwórz przepis",
         "importing": "Pobieranie przepisu… (zwykle 10–20 sekund)",
         "creating": "Tworzenie przepisu…",
@@ -140,7 +145,19 @@
         "errorUrlRequired": "Najpierw wklej adres strony z przepisem.",
         "errorNameRequired": "Nazwa przepisu nie może być pusta.",
         "errorAddedNotPlanned": "{name} został utworzony w Mealie, ale nie udało się dodać do tego slotu — wyszukaj go przez + dodaj.",
-        "openInMealie": "Otwórz w Mealie, aby dodać składniki i kroki ↗"
+        "openInMealie": "Otwórz w Mealie, aby dodać składniki i kroki ↗",
+        "proxyPrompt": "Strona może blokować automatyczny dostęp. Czy chcesz pobrać stronę przez ten serwer?",
+        "btnRetryProxy": "Spróbuj ponownie przez Mealie Planner",
+        "tabImage": "Importuj ze zdjęcia",
+        "imageScanLabel": "Zdjęcie przepisu",
+        "imageScanPlaceholder": "Wybierz zdjęcie…",
+        "imageScanHint": "Prześlij zdjęcie karty przepisu lub strony książki kucharskiej. Mealie używa AI do wyodrębnienia składników i kroków.",
+        "btnImportImage": "Importuj ze zdjęcia",
+        "importingImage": "Rozpoznawanie przepisu… (może potrwać 15–30 sekund)",
+        "errorImageRequired": "Najpierw wybierz zdjęcie.",
+        "slowGeneric": "To trwa dłużej niż zwykle…",
+        "slowVideo": "Przepisy wideo wymagają więcej czasu…",
+        "videoNoAudioWarn": "W Mealie nie skonfigurowano dostawcy audio AI. Składniki i instrukcje mogą nie zostać wykryte w przepisach wideo."
     },
     "auth": {
         "pageTitle": "Mealie Planner · Odblokuj",

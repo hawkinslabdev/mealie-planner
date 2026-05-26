@@ -29,7 +29,7 @@
         "dayRangeLabel": "Intervallo di giorni",
         "pastDays": "Mostra i giorni precedenti · {n} giorn* (i)",
         "futureDays": "Mostra i giorni successivi · {n} giorn* (i)",
-        "tipKeyboard": "Suggerimento! Usa ← → per scorrere un giorno alla volta.",
+        "tipKeyboard": "Suggerimento! Usa ← → per scorrere una settimana alla volta.",
         "mealSlotsLabel": "Fasce orarie pasti visibili",
         "cacheLabel": "Raccolta di ricette",
         "cacheRefresh": "Aggiorna",
@@ -40,7 +40,9 @@
         "sourceLabel": "Sorgente",
         "github": "Visita su GitHub",
         "accentLabel": "Colore accento",
-        "languageLabel": "Lingua"
+        "languageLabel": "Lingua",
+        "translateRecipe": "Traduci nella lingua nativa",
+        "languageSearch": "Cerca…"
     },
     "meal": {
         "breakfast": "Colazione",
@@ -72,7 +74,8 @@
         "endOfRange": "60 giorni in avanti",
         "undo": "Annulla",
         "prevPeriod": "Periodo precedente",
-        "nextPeriod": "Periodo successivo"
+        "nextPeriod": "Periodo successivo",
+        "recipeDeleted": "Ricetta eliminata"
     },
     "modal": {
         "titleReplace": "Cambia ricetta",
@@ -84,7 +87,9 @@
         "loadingRecipes": "Caricamento ricette…",
         "feelingLucky": "Ti senti fortunato?",
         "feelingLuckySub": "Scegli una ricetta casuale per me",
-        "recentlyUsed": "Usate di recente",
+        "recentlyUsed": "Aggiunte di recente",
+        "badgeNew": "nuovo",
+        "badgeRecent": "recente",
         "loadingMore": "caricamento altri elementi…"
     },
     "actions": {
@@ -121,7 +126,7 @@
     },
     "quickAdd": {
         "title": "Aggiungi a Mealie",
-        "tabUrl": "Importa da sito web",
+        "tabUrl": "Da sito web",
         "tabNew": "Nuova ricetta",
         "urlLabel": "URL della ricetta",
         "urlPlaceholder": "https://...",
@@ -130,7 +135,7 @@
         "namePlaceholder": "es. Lasagne della nonna",
         "imageLabel": "Foto (opzionale)",
         "imagePlaceholder": "Scegli un'immagine…",
-        "btnImport": "Importa",
+        "btnImport": "Importa ricetta",
         "btnCreate": "Crea ricetta",
         "importing": "Recupero ricetta in corso… (di solito 10-20 secondi)",
         "creating": "Creazione ricetta in corso…",
@@ -140,7 +145,19 @@
         "errorUrlRequired": "Prima incolla l'URL della pagina di una ricetta.",
         "errorNameRequired": "Il nome della ricetta non può essere vuoto.",
         "errorAddedNotPlanned": "{name} è stata creata su Mealie ma non è stato possibile aggiungerla a questa fascia oraria — cercala tramite + aggiungi.",
-        "openInMealie": "Apri in Mealie per aggiungere ingredienti e passaggi ↗"
+        "openInMealie": "Apri in Mealie per aggiungere ingredienti e passaggi ↗",
+        "proxyPrompt": "Il sito potrebbe bloccare l'accesso automatico. Vuoi recuperare la pagina tramite questo server?",
+        "btnRetryProxy": "Riprova tramite Mealie Planner",
+        "tabImage": "Importa da foto",
+        "imageScanLabel": "Foto ricetta",
+        "imageScanPlaceholder": "Scegli una foto…",
+        "imageScanHint": "Carica una foto di una scheda ricetta o pagina di libro di cucina. Mealie usa l'IA per estrarre ingredienti e passaggi.",
+        "btnImportImage": "Importa da foto",
+        "importingImage": "Riconoscimento ricetta… (potrebbe richiedere 15–30 secondi)",
+        "errorImageRequired": "Prima scegli una foto.",
+        "slowGeneric": "Ci vuole più tempo del solito…",
+        "slowVideo": "Le ricette video richiedono più tempo…",
+        "videoNoAudioWarn": "Nessun fornitore AI audio è configurato in Mealie. Gli ingredienti e le istruzioni potrebbero non essere rilevati per le ricette video."
     },
     "auth": {
         "pageTitle": "Mealie Planner · Sblocca",

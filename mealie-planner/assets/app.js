@@ -1,7 +1,7 @@
 const RECIPES_STALE_MS = 5 * 60 * 1000;
 const PLAN_CACHE_TTL_MS = 5 * 60 * 1000;
 
-/* For adding a new locale: add the translation (/assets/locales/<locale>.json) and add it to SUPPORTED_LOCALES and LOCALE_NAMES in `app.js` and update _SUPPORTED_LOCALES in `main.py` */
+/* For adding a new locale: add the translation (/assets/locales/<locale>.json) and add it to SUPPORTED_LOCALES and LOCALE_NAMES in `app.js` and update SUPPORTED_LOCALES in `main.py` */
 const SUPPORTED_LOCALES = ['en', 'de', 'nl', 'es', 'fr', 'it', 'pl', 'ru', 'cs', 'sv', 'da', 'no', 'pt_BR'];
 const LOCALE_NAMES = { en: 'English', de: 'Deutsch', nl: 'Nederlands', es: 'Español', fr: 'Français', it: 'Italiano', pl: 'Polski', ru: 'Русский', cs: 'Čeština', sv: 'Svenska', da: 'Dansk', no: 'Norsk', pt_BR: 'Português (Brasil)' };
 
@@ -23,6 +23,7 @@ function planner() {
     allRecipes: [],
     recipesLoadedAt: null,
     recipesRefreshing: false,
+    recipesError: false,
 
     modalOpen: false,
     modalDate: null,
@@ -60,6 +61,9 @@ function planner() {
     _scrollY: 0,
 
     showQuickAdd: localStorage.getItem('showQuickAdd') !== 'false',  // pill in Settings → Options
+    imageImportEnabled: false,
+    videoInstructionsEnabled: true,
+    translateRecipe: false,
     quickAddOpen: false,
     quickAddDate: null,
     quickAddMt: null,
@@ -68,11 +72,20 @@ function planner() {
     quickAddName: '',
     quickAddImageFile: null,
     quickAddImagePreview: null,
+    quickAddScanFile: null,
+    quickAddScanPreview: null,
     quickAddLoading: false,
+    quickAddSlow: false,
+    quickAddIsVideo: false,
+    _quickAddSlowTimer: null,
     quickAddError: null,
     quickAddDone: null,
+    quickAddProxyAvailable: false,
 
-    activeCell: null,  // { date, mt } last clicked cell
+    activeCell: null,
+
+    langMenuOpen: false,
+    langSearch: '',
 
     recipeActions: [],
     actionMenuOpen: false,
@@ -123,7 +136,10 @@ function planner() {
     },
 
     get recentRecipeObjects() {
-      return this._recentRecipes.map(r => this.allRecipes.find(rec => rec.id === r.id)).filter(Boolean).slice(0, 4);
+      return this._recentRecipes
+        .map(r => this.allRecipes.find(rec => rec.id === r.id) ?? null)
+        .filter(Boolean)
+        .slice(0, 4);
     },
 
 
@@ -205,14 +221,21 @@ function planner() {
         if (!this.configured) { this.settingsOpen = true; return; }
         const cfg = await this._fetch('/api/config');
         this.settingsForm.mealie_url = cfg.mealie_url;
-        // Load data first so mobile skeleton (mobileDays.length === 0) persists until ready
-        const [, , , settings] = await Promise.all([
+        // Load data first so mobile skeleton (mobileDays.length === 0) persists uuintil ready
+        const [, , , settings, capabilities] = await Promise.all([
           this.loadMealPlan(),
           this.loadRecipes(),
           this.loadRecipeActions(),
           this._fetch('/api/settings').catch(() => ({})),
+          this._fetch('/api/capabilities').catch(() => ({})),
         ]);
         if (typeof settings.show_quick_add === 'boolean') this.showQuickAdd = settings.show_quick_add;
+        if (typeof settings.translate_recipe === 'boolean') this.translateRecipe = settings.translate_recipe;
+        if (typeof settings.quick_add_tab === 'string') this.quickAddTab = settings.quick_add_tab;
+        this.imageImportEnabled = capabilities.image_import_enabled === true;
+        this.videoInstructionsEnabled = capabilities.video_instructions_enabled !== false;
+        // If image tab was saved but AI is now disabled, fall back to urll
+        if (!this.imageImportEnabled && this.quickAddTab === 'image') this.quickAddTab = 'url';
         await this.initMobileScroll();
         document.addEventListener('visibilitychange', () => {
           if (document.visibilityState !== 'visible' || !this.days.length) return;
@@ -308,13 +331,14 @@ function planner() {
     async loadRecipes() {
       if (this.recipesRefreshing) return;
       this.recipesRefreshing = true;
+      this.recipesError = false;
       try {
         this.allRecipes    = (await this._fetch('/api/recipes')).map(r => this._prefixImg(r));
         this.cacheCount    = this.allRecipes.length;
         this.recipesLoadedAt = Date.now();
       } catch (e) {
-        this.toast(this.t('error.recipeCache'));
-        this.recipesLoadedAt = Date.now();
+        this.recipesError = true;
+        if (this.recipesLoadedAt === null) this.recipesLoadedAt = Date.now();
       } finally {
         this.recipesRefreshing = false;
       }
@@ -350,6 +374,11 @@ function planner() {
       if (window.matchMedia('(max-width: 719px)').matches) {
         open ? this._lockBodyScroll() : this._unlockBodyScroll();
       }
+    },
+
+    _scrollLangMenuIntoView() {
+      if (!window.matchMedia('(max-width: 719px)').matches) return;
+      this.$refs.langMenu?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
     },
 
     _lockBodyScroll() {
@@ -435,7 +464,7 @@ function planner() {
           if (oldEntry.id) await this._delete(`/api/mealplan/${oldEntry.id}`);
           const entry = await this._post('/api/mealplan', { date, meal_type: mt, recipe_id: recipe.id });
           this.setSlot(date, mt, this.getSlot(date, mt).map(e => e._optimistic && e.recipe_id === recipe.id ? this._prefixImg(entry) : e));
-          this.pushRecentRecipe(recipe.id);
+          this.pushRecentRecipe(recipe);
         } catch (e) {
           this.setSlot(date, mt, prev);
           this.toast(this.t('error.saveFailed', {detail: e.message || this.t('error.saveFallback')}));
@@ -456,7 +485,7 @@ function planner() {
           updated[idx] = this._prefixImg(entry);
           this.setSlot(date, mt, updated);
         }
-        this.pushRecentRecipe(recipe.id);
+        this.pushRecentRecipe(recipe);
       } catch (e) {
         this.setSlot(date, mt, this.getSlot(date, mt).filter(e => !(e._optimistic && e.recipe_id === recipe.id)));
         this.toast(this.t('error.saveFailed', {detail: e.message || this.t('error.saveFallback')}));
@@ -471,9 +500,10 @@ function planner() {
       this.setSlot(date, mt, prev.filter(e => e.id !== entryId));
 
       const id = Date.now() + Math.random();
-      this.pendingActions.push({ id, date, mt, prev: entry, message: this.t('toast.removed', {name: entry.recipe_name}) });
+      const toastName = entry.orphaned ? this.t('planner.recipeDeleted') : entry.recipe_name;
+      this.pendingActions.push({ id, date, mt, prev: entry, message: this.t('toast.removed', {name: toastName}) });
       this.undoBar = true;
-      this.undoMessage = this.t('toast.removed', {name: entry.recipe_name});
+      this.undoMessage = this.t('toast.removed', {name: toastName});
 
       setTimeout(() => {
         const idx = this.pendingActions.findIndex(a => a.id === id);
@@ -529,7 +559,7 @@ function planner() {
       if (event.key === 'ArrowLeft') { event.preventDefault(); if (!this.modalOpen) this.shiftPage(-1); }
       else if (event.key === 'ArrowRight') { event.preventDefault(); if (!this.modalOpen) this.shiftPage(1); }
       else if (event.key === 'r' || event.key === 'R') { if (!this.modalOpen) this.sparkleActive(); }
-      else if (event.key === 'Escape') { this.modalOpen = false; if (this.quickAddOpen) this.closeQuickAdd(); this.themeMenuOpen = false; this.settingsOpen = false; this.actionMenuOpen = false; }
+      else if (event.key === 'Escape') { this.modalOpen = false; if (this.quickAddOpen) this.closeQuickAdd(); this.themeMenuOpen = false; this.settingsOpen = false; this.actionMenuOpen = false; this.langMenuOpen = false; }
       else if (event.key === 'Tab' && (this.modalOpen || this.quickAddOpen)) {
         const modal = document.querySelector(this.quickAddOpen ? '.modal--compact' : '.modal:not(.modal--compact)');
         if (!modal) return;
@@ -568,9 +598,12 @@ function planner() {
     },
 
     /* recent */
-    pushRecentRecipe(recipeId) {
-      const entry = {id: recipeId, addedAt: Date.now()};
-      this._recentRecipes = [entry, ...this._recentRecipes.filter(r => r.id !== recipeId)].slice(0, 12);
+    pushRecentRecipe(recipe) {
+      const id = typeof recipe === 'string' ? recipe : recipe.id;
+      const snap = typeof recipe === 'object'
+        ? { id, name: recipe.name, slug: recipe.slug, image_url: recipe.image_url, addedAt: Date.now() }
+        : { id, addedAt: Date.now() };
+      this._recentRecipes = [snap, ...this._recentRecipes.filter(r => r.id !== id)].slice(0, 12);
       localStorage.setItem('recentRecipes', JSON.stringify(this._recentRecipes));
     },
 
@@ -817,17 +850,28 @@ function planner() {
     },
 
     /* quick-add */
+    _switchQuickAddTab(tab) {
+      this.quickAddTab = tab;
+      this.quickAddError = null;
+      this.quickAddProxyAvailable = false;
+      this._saveSettings({ quick_add_tab: tab });
+    },
+
     openQuickAdd(date, mt) {
       this.quickAddDate = date;
       this.quickAddMt = mt;
-      this.quickAddTab = 'url';
       this.quickAddUrl = '';
       this.quickAddName = '';
       this.quickAddImageFile = null;
       if (this.quickAddImagePreview) { URL.revokeObjectURL(this.quickAddImagePreview); this.quickAddImagePreview = null; }
+      this.quickAddScanFile = null;
+      if (this.quickAddScanPreview) { URL.revokeObjectURL(this.quickAddScanPreview); this.quickAddScanPreview = null; }
       this.quickAddLoading = false;
+      this.quickAddSlow = false;
+      this.quickAddIsVideo = false;
       this.quickAddError = null;
       this.quickAddDone = null;
+      this.quickAddProxyAvailable = false;
       this.quickAddOpen = true;
       this.$nextTick(() => setTimeout(() => this.$refs.quickAddUrlInput?.focus(), 120));
     },
@@ -835,7 +879,10 @@ function planner() {
     closeQuickAdd() {
       this.quickAddOpen = false;
       this.quickAddDone = null;
+      this.quickAddProxyAvailable = false;
       if (this.quickAddImagePreview) { URL.revokeObjectURL(this.quickAddImagePreview); this.quickAddImagePreview = null; }
+      if (this.quickAddScanPreview) { URL.revokeObjectURL(this.quickAddScanPreview); this.quickAddScanPreview = null; }
+      this.quickAddScanFile = null;
     },
 
     onQuickAddFileChange(event) {
@@ -846,24 +893,106 @@ function planner() {
       this.quickAddImagePreview = URL.createObjectURL(file);
     },
 
-    async importRecipeFromUrl() {
-      const url = this.quickAddUrl.trim();
-      if (!url) { this.quickAddError = this.t('quickAdd.errorUrlRequired'); return; }
+    onQuickAddScanFileChange(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      this.quickAddScanFile = file;
+      if (this.quickAddScanPreview) URL.revokeObjectURL(this.quickAddScanPreview);
+      this.quickAddScanPreview = URL.createObjectURL(file);
+    },
+
+    async importRecipeFromImage() {
+      if (!this.quickAddScanFile) { this.quickAddError = this.t('quickAdd.errorImageRequired'); return; }
       this.quickAddLoading = true;
       this.quickAddError = null;
       try {
-        const recipe = await this._post('/api/recipes/import-url', { url });
-        const prefixed = this._prefixImg(recipe);
-        if (!this.allRecipes.find(r => r.id === prefixed.id)) {
-          this.allRecipes = [prefixed, ...this.allRecipes];
+        const fd = new FormData();
+        fd.append('file', this.quickAddScanFile, this.quickAddScanFile.name);
+        if (this.translateRecipe) fd.append('translate', 'true');
+        const resp = await fetch(api('/api/recipes/import-image'), { method: 'POST', body: fd });
+        if (!resp.ok) {
+          const body = await resp.json().catch(() => ({}));
+          this.quickAddError = this._extractError(body, resp.status);
+          return;
         }
-        this.pushRecentRecipe(prefixed.id);
-        this.quickAddDone = { name: recipe.name, slug: recipe.slug, fromUrl: true };
+        this._onRecipeImported(await resp.json());
       } catch (e) {
         this.quickAddError = this._friendlyError(e);
       } finally {
         this.quickAddLoading = false;
       }
+    },
+
+    _isVideoUrl(url) {
+      /* not exact but good heuristic to determine if url points to video */
+      return /youtube\.com|youtu\.be|tiktok\.com|instagram\.com\/reel|vimeo\.com|twitch\.tv/i.test(url);
+    },
+
+    _startSlowTimer() {
+      clearTimeout(this._quickAddSlowTimer);
+      this.quickAddSlow = false;
+      this._quickAddSlowTimer = setTimeout(() => { this.quickAddSlow = true; }, 15000);
+    },
+
+    _clearSlowTimer() {
+      clearTimeout(this._quickAddSlowTimer);
+      this.quickAddSlow = false;
+    },
+
+    async importRecipeFromUrl() {
+      const url = this.quickAddUrl.trim();
+      if (!url) { this.quickAddError = this.t('quickAdd.errorUrlRequired'); return; }
+      this.quickAddLoading = true;
+      this.quickAddError = null;
+      this.quickAddProxyAvailable = false;
+      this.quickAddIsVideo = this._isVideoUrl(url);
+      this._startSlowTimer();
+      try {
+        const resp = await fetch(api('/api/recipes/import-url'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url }),
+        });
+        if (!resp.ok) {
+          const body = await resp.json().catch(() => ({}));
+          if (body.proxy_available) { this.quickAddProxyAvailable = true; }
+          this.quickAddError = this._extractError(body, resp.status);
+          return;
+        }
+        this._onRecipeImported(await resp.json());
+      } catch (e) {
+        this.quickAddError = this._friendlyError(e);
+      } finally {
+        this._clearSlowTimer();
+        this.quickAddLoading = false;
+      }
+    },
+
+    async importRecipeViaProxy() {
+      const url = this.quickAddUrl.trim();
+      this.quickAddLoading = true;
+      this.quickAddError = null;
+      this.quickAddProxyAvailable = false;
+      this.quickAddIsVideo = this._isVideoUrl(url);
+      this._startSlowTimer();
+      try {
+        const recipe = await this._post('/api/recipes/import-url-proxy', { url });
+        this._onRecipeImported(recipe);
+      } catch (e) {
+        this.quickAddError = this._friendlyError(e);
+      } finally {
+        this._clearSlowTimer();
+        this.quickAddLoading = false;
+      }
+    },
+
+    _onRecipeImported(recipe) {
+      const prefixed = this._prefixImg(recipe);
+      if (!this.allRecipes.find(r => r.id === prefixed.id)) {
+        this.allRecipes = [prefixed, ...this.allRecipes];
+      }
+      this.pushRecentRecipe(prefixed);
+      this.quickAddDone = { name: recipe.name, slug: recipe.slug, fromUrl: true };
     },
 
     async quickCreateRecipe() {
@@ -884,7 +1013,7 @@ function planner() {
         if (!this.allRecipes.find(r => r.id === prefixed.id)) {
           this.allRecipes = [prefixed, ...this.allRecipes];
         }
-        this.pushRecentRecipe(prefixed.id);
+        this.pushRecentRecipe(prefixed);
         this.quickAddDone = { name: recipe.name, slug: recipe.slug };
       } catch (e) {
         this.quickAddError = this._friendlyError(e);

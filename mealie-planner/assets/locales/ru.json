@@ -40,7 +40,9 @@
         "sourceLabel": "Источник",
         "github": "Посмотреть на GitHub",
         "accentLabel": "Цвет акцента",
-        "languageLabel": "Язык"
+        "languageLabel": "Язык",
+        "translateRecipe": "Перевести на родной язык",
+        "languageSearch": "Поиск…"
     },
     "meal": {
         "breakfast": "Завтрак",
@@ -72,7 +74,8 @@
         "endOfRange": "На 60 дней вперед",
         "undo": "Отменить",
         "prevPeriod": "Предыдущий период",
-        "nextPeriod": "Следующий период"
+        "nextPeriod": "Следующий период",
+        "recipeDeleted": "Рецепт удалён"
     },
     "modal": {
         "titleReplace": "Изменить рецепт",
@@ -123,7 +126,7 @@
     },
     "quickAdd": {
         "title": "Добавить в Mealie",
-        "tabUrl": "Импорт с веб-сайта",
+        "tabUrl": "С веб-сайта",
         "tabNew": "Новый рецепт",
         "urlLabel": "URL-адрес рецепта",
         "urlPlaceholder": "https://...",
@@ -132,7 +135,7 @@
         "namePlaceholder": "напр. Бабушкина лазанья",
         "imageLabel": "Фото (необязательно)",
         "imagePlaceholder": "Выберите изображение…",
-        "btnImport": "Импортировать",
+        "btnImport": "Импортировать рецепт",
         "btnCreate": "Создать рецепт",
         "importing": "Загрузка рецепта… (обычно 10–20 секунд)",
         "creating": "Создание рецепта…",
@@ -144,7 +147,17 @@
         "errorAddedNotPlanned": "{name} создано в Mealie, но не может быть добавлено в этот слот — найдите его через + добавить.",
         "openInMealie": "Открыть в Mealie, чтобы добавить ингредиенты и шаги ↗",
         "proxyPrompt": "Возможно, веб-сайт блокирует автоматический доступ. Хотите загрузить страницу через этот сервер?",
-        "btnRetryProxy": "Повторить попытку через Mealie Planner"
+        "btnRetryProxy": "Повторить попытку через Mealie Planner",
+        "tabImage": "Импорт из фото",
+        "imageScanLabel": "Фото рецепта",
+        "imageScanPlaceholder": "Выберите фото…",
+        "imageScanHint": "Загрузите фото карточки рецепта или страницы кулинарной книги. Mealie использует ИИ для извлечения ингредиентов и шагов.",
+        "btnImportImage": "Импортировать из фото",
+        "importingImage": "Распознавание рецепта… (может занять 15–30 секунд)",
+        "errorImageRequired": "Сначала выберите фото.",
+        "slowGeneric": "Это занимает дольше обычного…",
+        "slowVideo": "Видеорецепты обрабатываются дольше…",
+        "videoNoAudioWarn": "В Mealie не настроен аудио ИИ-провайдер. Ингредиенты и инструкции могут не определяться для видеорецептов."
     },
     "auth": {
         "pageTitle": "Mealie Planner · Разблокировать",
