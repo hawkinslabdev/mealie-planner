@@ -6,7 +6,7 @@
 [![Add to Home Assistant](https://img.shields.io/badge/Home%20Assistant-Install%20App-03a9f4?logo=homeassistant)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fhawkinslabdev%2Fmealie-planner%2F)
 [![Support](https://img.shields.io/badge/Support-Buy%20me%20a%20coffee-fdd734?logo=buy-me-a-coffee)](https://coff.ee/hawkinslabdev)
 
-Mealie Planner is a self-hosted week-view meal planner for [Mealie](https://mealie.io). Browse your recipe library, drag meals onto your week grid, and let the sparkle feature suggest random dishes. 
+Mealie Planner is a self-hosted week-view meal planner for [Mealie](https://mealie.io). Browse your recipe library, drag meals onto your week grid, and let the sparkle feature suggest random dishes. Enable the quick-add feature to import recipes from video, web page or image.
 
 <img width="100%" alt="Screenshot of the Planner" src=".github/images/example.webp" />
 
