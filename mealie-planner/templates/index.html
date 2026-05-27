@@ -98,7 +98,10 @@
        x-transition:leave-start="opacity-100"
        x-transition:leave-end="opacity-0"
        @click.self="settingsOpen = false">
-    <div class="settings-panel">
+    <div class="settings-panel" x-ref="settingsPanel">
+      <div class="drag-handle" @touchstart.passive="_onSheetTouchStart($event, $refs.settingsPanel, () => { settingsOpen = false }, 719)">
+        <div class="drag-pill"></div>
+      </div>
       <div class="onboard-welcome" x-show="!configured">
         <svg class="onboard-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <line x1="8" y1="2" x2="8" y2="22"/>
@@ -263,10 +266,14 @@
 
         <div>
           <p class="section-label" x-text="t('settings.sourceLabel')"></p>
-          <div class="form-field">
+          <div class="form-field" style="flex-direction:row;align-items:center;gap:16px;flex-wrap:wrap;">
             <a href="https://github.com/hawkinslabdev/mealie-planner" target="_blank" rel="noopener noreferrer" class="form-label" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
               <span x-text="t('settings.github')"></span>
+            </a>
+            <a href="https://github.com/hawkinslabdev/mealie-planner/issues/new" target="_blank" rel="noopener noreferrer" class="form-label" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span x-text="t('settings.reportIssue')"></span>
             </a>
           </div>
         </div>
@@ -673,7 +680,11 @@
     x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
     x-transition:leave="transition ease-in duration-100"
     x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
-    <div class="modal modal--compact">
+    <div class="modal modal--compact" x-ref="quickAddModal" :style="{ 'min-height': quickAddMinHeight ? quickAddMinHeight + 'px' : null }">
+
+      <div class="drag-handle" @touchstart.passive="_onSheetTouchStart($event, $refs.quickAddModal, () => closeQuickAdd(), 579)">
+        <div class="drag-pill"></div>
+      </div>
 
       <div class="modal-header">
         <div>
@@ -688,12 +699,12 @@
         <button class="qa-tab" :class="quickAddTab === 'url' && 'qa-tab--on'"
                 @click="_switchQuickAddTab('url'); $nextTick(() => $refs.quickAddUrlInput?.focus())"
                 x-text="t('quickAdd.tabUrl')"></button>
-        <button class="qa-tab" :class="quickAddTab === 'recipe' && 'qa-tab--on'"
-                @click="_switchQuickAddTab('recipe'); $nextTick(() => $refs.quickAddNameInput?.focus())"
-                x-text="t('quickAdd.tabNew')"></button>
         <button x-show="imageImportEnabled" class="qa-tab" :class="quickAddTab === 'image' && 'qa-tab--on'"
                 @click="_switchQuickAddTab('image')"
                 x-text="t('quickAdd.tabImage')"></button>
+        <button class="qa-tab" :class="quickAddTab === 'recipe' && 'qa-tab--on'"
+                @click="_switchQuickAddTab('recipe'); $nextTick(() => $refs.quickAddNameInput?.focus())"
+                x-text="t('quickAdd.tabNew')"></button>
       </div>
 
       <!-- Tab: Import URL -->
@@ -800,7 +811,7 @@
               </div>
             </template>
 
-            <!-- URL import button -->
+            <!-- URL import button: Mealie: POST /api/recipes/create/url (fallback: POST /api/recipes/create/html-or-json/stream via proxy) -->
             <button x-show="quickAddTab === 'url'"
                     @click="importRecipeFromUrl()"
                     :disabled="quickAddLoading || !quickAddUrl.trim()"
@@ -810,7 +821,7 @@
               <span x-show="quickAddLoading" x-text="t('quickAdd.importing')"></span>
             </button>
 
-            <!-- New recipe button -->
+            <!-- New recipe button: Mealie: POST /api/recipes (create by name), then POST /api/recipes/{slug}/image if image attached -->
             <button x-show="quickAddTab === 'recipe'"
                     @click="quickCreateRecipe()"
                     :disabled="quickAddLoading || !quickAddName.trim()"
@@ -820,7 +831,7 @@
               <span x-show="quickAddLoading" x-text="t('quickAdd.creating')"></span>
             </button>
 
-            <!-- Image import button -->
+            <!-- Image import button: Mealie: POST /api/recipes/create/image (OCR photo → recipe) -->
             <button x-show="quickAddTab === 'image'"
                     @click="importRecipeFromImage()"
                     :disabled="quickAddLoading || !quickAddScanFile"

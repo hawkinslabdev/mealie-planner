@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.1
+
+- Add swipe gestures for quick add and settings modal
+- Fix: meal import type descriptions have been shortened
+- Fix: numeric keypad layout for pin code is now enforced (standalone mode only)
+- Fix: use pip-tools for package management instead of pinning manually
+
 ## 0.5.0
 
 - Add support for AI providers! Use your configured Mealie AI providers natively

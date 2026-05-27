@@ -339,7 +339,7 @@ async def import_recipe_url_proxy(payload: ImportUrlPayload, request: Request):
     except Exception:
         logger.debug("proxy.patch_orgurl_failed slug=%s", slug)
 
-    # Upload og:image — ensures the recipe card shows an image in the planner
+    # Upload og:image > ensures the recipe card shows an image in the planner
     if og_image_url:
         try:
             async with _CurlSession() as session:

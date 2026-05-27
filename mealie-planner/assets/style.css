@@ -2223,13 +2223,43 @@
 }
 
 /* Quick-add modal */
+ .drag-handle {
+     display: none;
+     justify-content: center;
+     align-items: center;
+     min-height: 44px;
+     flex-shrink: 0;
+     cursor: grab;
+     touch-action: none;
+     -webkit-user-select: none;
+     user-select: none;
+}
+ .drag-pill {
+     width: 36px;
+     height: 4px;
+     border-radius: 2px;
+     background: var(--border);
+     pointer-events: none;
+}
+ @media (max-width: 579px) {
+     .modal--compact .drag-handle { display: flex; }
+}
+ @media (max-width: 719px) {
+     .settings-panel .drag-handle { display: flex; }
+}
  .qa-tabs {
      display: flex;
      gap: var(--space-1);
      padding: var(--space-3) var(--space-5);
      border-bottom: 1px solid var(--border);
      flex-shrink: 0;
+     flex-wrap: nowrap;
+     overflow-x: auto;
+     -webkit-overflow-scrolling: touch;
+     touch-action: pan-x;
+     scrollbar-width: none;
 }
+ .qa-tabs::-webkit-scrollbar { display: none; }
  .qa-tab {
      font-family: inherit;
      font-size: var(--text-sm);
@@ -2241,10 +2271,16 @@
      color: var(--text-subtle);
      cursor: pointer;
      transition: color .15s, background .15s, border-color .15s;
+     white-space: nowrap;
+     flex-shrink: 0;
 }
  .qa-tab:hover:not(.qa-tab--on) {
      color: var(--text-muted);
      background: var(--bg-subtle);
+}
+ .qa-tab:active:not(.qa-tab--on) {
+     background: var(--bg-subtle);
+     transform: scale(.97);
 }
  .qa-tab--on {
      background: var(--accent-muted);
@@ -2358,21 +2394,21 @@
      white-space: nowrap;
 }
 
-.qa-slow-row {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    font-size: var(--text-xs);
-    color: var(--warn);
-    animation: fade-in .4s ease both;
+ .qa-slow-row {
+     display: flex;
+     align-items: center;
+     gap: var(--space-2);
+     font-size: var(--text-xs);
+     color: var(--warn);
+     animation: fade-in .4s ease both;
 }
-.qa-slow-icon {
-    flex-shrink: 0;
-    color: var(--warn);
+ .qa-slow-icon {
+     flex-shrink: 0;
+     color: var(--warn);
 }
-@keyframes fade-in {
-    from { opacity: 0; transform: translateY(4px); }
-    to   { opacity: 1; transform: translateY(0); }
+ @keyframes fade-in {
+     from { opacity: 0; transform: translateY(4px); }
+     to   { opacity: 1; transform: translateY(0); }
 }
 
 /* compact modal */

@@ -67,7 +67,7 @@ function planner() {
     quickAddOpen: false,
     quickAddDate: null,
     quickAddMt: null,
-    quickAddTab: 'url',
+    quickAddTab: localStorage.getItem('quickAddTab') || 'url',
     quickAddUrl: '',
     quickAddName: '',
     quickAddImageFile: null,
@@ -81,6 +81,7 @@ function planner() {
     quickAddError: null,
     quickAddDone: null,
     quickAddProxyAvailable: false,
+    quickAddMinHeight: null,
 
     activeCell: null,
 
@@ -374,11 +375,104 @@ function planner() {
       if (window.matchMedia('(max-width: 719px)').matches) {
         open ? this._lockBodyScroll() : this._unlockBodyScroll();
       }
+      if (open) {
+        const el = this.$refs.settingsPanel;
+        if (el) { el.style.transform = ''; el.style.transition = ''; el.style.animation = ''; }
+      }
+    },
+
+    _onSheetTouchStart(e, el, closeFn, breakpoint) {
+      if (!window.matchMedia(`(max-width: ${breakpoint}px)`).matches) return;
+      if (!el) return;
+      // reset residue from previous gesture — safe even if element is display:none
+      el.style.transition = 'none';
+      el.style.transform = '';
+      el.style.animation = 'none'; // suppress CSS animation fill (settings panel)
+      el.style.willChange = 'transform';
+
+      const startY = e.touches[0].clientY;
+      let lastDy = 0, rafId = null;
+      let recentY = startY, recentT = Date.now();
+      let handled = false; // guard: touchcancel must not race touchend
+
+      const onMove = (ev) => {
+        const now = Date.now(), y = ev.touches[0].clientY;
+        if (now - recentT > 100) { recentY = y; recentT = now; }
+        lastDy = y - startY;
+        if (rafId) return;
+        rafId = requestAnimationFrame(() => {
+          rafId = null;
+          el.style.transform = `translateY(${lastDy > 0 ? lastDy : lastDy * 0.12}px)`;
+        });
+      };
+      const cleanup = () => {
+        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('touchend', onEnd);
+        document.removeEventListener('touchcancel', onCancel);
+        el.style.willChange = '';
+      };
+      const dismiss = (reduced) => {
+        if (reduced) { el.style.transform = ''; el.style.animation = ''; closeFn(); return; }
+        el.style.transition = 'transform 0.26s cubic-bezier(0.4, 0, 1, 1)';
+        el.style.transform = 'translateY(110%)';
+        // styles cleaned at next open — avoids race with Alpine leave transition
+        setTimeout(closeFn, 260);
+      };
+      const springBack = (reduced) => {
+        if (reduced) { el.style.transform = ''; el.style.animation = ''; return; }
+        el.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+        el.style.transform = '';
+        setTimeout(() => { el.style.transition = ''; el.style.animation = ''; }, 400);
+      };
+      const onEnd = (ev) => {
+        if (handled) return; handled = true;
+        cleanup();
+        const velocity = (ev.changedTouches[0]?.clientY - recentY) / Math.max(1, Date.now() - recentT);
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (lastDy > 80 || velocity > 0.5) dismiss(reduced); else springBack(reduced);
+      };
+      const onCancel = () => { if (handled) return; handled = true; cleanup(); springBack(false); };
+      document.addEventListener('touchmove', onMove, { passive: true });
+      document.addEventListener('touchend', onEnd);
+      document.addEventListener('touchcancel', onCancel);
+    },
+
+    _measureQuickAddHeight() {
+      if (!window.matchMedia('(max-width: 579px)').matches) return;
+      const modal = this.$refs.quickAddModal;
+      if (!modal) return;
+      const bodies = [...modal.querySelectorAll('.qa-body')];
+      const modalW = modal.offsetWidth; // read once before writes
+      // batch writes: all out-of-flow at once → single reflow deferred
+      const origs = bodies.map(el => ({ d: el.style.display, p: el.style.position, v: el.style.visibility, w: el.style.width }));
+      bodies.forEach(el => { el.style.display = 'flex'; el.style.position = 'absolute'; el.style.visibility = 'hidden'; el.style.width = modalW + 'px'; });
+      // batch reads: one forced reflow total
+      const maxBodyH = Math.max(...bodies.map(el => el.scrollHeight));
+      // batch restores
+      bodies.forEach((el, i) => { el.style.display = origs[i].d; el.style.position = origs[i].p; el.style.visibility = origs[i].v; el.style.width = origs[i].w; });
+      const fixed =
+        (modal.querySelector('.drag-handle')?.offsetHeight || 0) +
+        (modal.querySelector('.modal-header')?.offsetHeight || 0) +
+        (modal.querySelector('.qa-tabs')?.offsetHeight    || 0) +
+        (modal.querySelector('.qa-footer')?.offsetHeight  || 0);
+      this.quickAddMinHeight = fixed + maxBodyH;
     },
 
     _scrollLangMenuIntoView() {
       if (!window.matchMedia('(max-width: 719px)').matches) return;
-      this.$refs.langMenu?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+      const menu = this.$refs.langMenu;
+      if (!menu) return;
+      const scrollEl = menu.closest('.settings-inner');
+      if (!scrollEl) return;
+      // Use rAF so iOS WKWebView has painted the expanded menu before measuring
+      requestAnimationFrame(() => {
+        const menuRect = menu.getBoundingClientRect();
+        const containerRect = scrollEl.getBoundingClientRect();
+        const menuBottom = menuRect.bottom - containerRect.top + scrollEl.scrollTop;
+        const target = menuBottom - scrollEl.clientHeight + 16;
+        if (target > scrollEl.scrollTop) scrollEl.scrollTop = target;
+      });
     },
 
     _lockBodyScroll() {
@@ -854,6 +948,7 @@ function planner() {
       this.quickAddTab = tab;
       this.quickAddError = null;
       this.quickAddProxyAvailable = false;
+      localStorage.setItem('quickAddTab', tab);
       this._saveSettings({ quick_add_tab: tab });
     },
 
@@ -872,14 +967,22 @@ function planner() {
       this.quickAddError = null;
       this.quickAddDone = null;
       this.quickAddProxyAvailable = false;
+      this.quickAddMinHeight = null;
+      // reset any drag gesture residue before showing
+      const qm = this.$refs.quickAddModal;
+      if (qm) { qm.style.transform = ''; qm.style.transition = ''; qm.style.animation = ''; }
       this.quickAddOpen = true;
-      this.$nextTick(() => setTimeout(() => this.$refs.quickAddUrlInput?.focus(), 120));
+      this.$nextTick(() => {
+        requestAnimationFrame(() => this._measureQuickAddHeight());
+        setTimeout(() => this.$refs.quickAddUrlInput?.focus(), 120);
+      });
     },
 
     closeQuickAdd() {
       this.quickAddOpen = false;
       this.quickAddDone = null;
       this.quickAddProxyAvailable = false;
+      this.quickAddMinHeight = null;
       if (this.quickAddImagePreview) { URL.revokeObjectURL(this.quickAddImagePreview); this.quickAddImagePreview = null; }
       if (this.quickAddScanPreview) { URL.revokeObjectURL(this.quickAddScanPreview); this.quickAddScanPreview = null; }
       this.quickAddScanFile = null;
