@@ -25,3 +25,10 @@ uvicorn main:app --port 3000 --reload
 # Run locale tests from the mealie-planner directory
 python3 -m pytest tests/
 ```
+
+## Packages
+
+```bash
+# Fetch latest compatible versions using pip-tools, e.g. for updating
+pip-compile requirements.in
+```

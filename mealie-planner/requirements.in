@@ -1,0 +1,11 @@
+curl_cffi
+fastapi
+uvicorn[standard]
+httpx
+cryptography
+jinja2
+aiosqlite
+python-dotenv
+python-multipart
+pytest
+pytest-asyncio
