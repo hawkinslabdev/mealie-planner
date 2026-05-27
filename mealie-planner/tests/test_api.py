@@ -1,5 +1,5 @@
 """
-API integration tests — mocked Mealie backend and database.
+API integration tests, mocked Mealie backend and database.
 
 All Mealie HTTP calls and database I/O are replaced with lightweight fakes
 so tests run offline, without a real Mealie instance or SQLite file.
@@ -17,7 +17,7 @@ import routers.settings as _settings_mod
 from main import app
 from utils import rate_limiter
 
-# ── Test constants ─────────────────────────────────────────────────────────────
+# Test constants 
 
 RECIPE_UUID = "11111111-1111-1111-1111-111111111111"
 ACTION_UUID = "22222222-2222-2222-2222-222222222222"
@@ -37,7 +37,7 @@ SAMPLE_ENTRY = {
     "recipe": {"id": RECIPE_UUID, "slug": "pasta-bake", "name": "Pasta Bake"},
 }
 
-# ── Fake database helpers ──────────────────────────────────────────────────────
+# Fake database helpers
 
 
 class _FakeCursor:
@@ -77,16 +77,13 @@ class _FakeDB:
         self.committed = False
 
     def execute(self, sql="", params=()):
+        # cache_refresh endpoint calls COUNT(*) to report how many recipes are cached
         if "COUNT(*)" in str(sql):
             return _FakeExecute([(self._count,)])
         return _FakeExecute(self._rows)
 
     async def commit(self):
         self.committed = True
-
-
-# ── Fixtures ───────────────────────────────────────────────────────────────────
-
 
 @pytest.fixture(autouse=True)
 def _reset_state():
@@ -126,7 +123,6 @@ def _creds_ctx(url=MEALIE_URL, token=API_TOKEN):
     return stack
 
 
-# ── /api/status ────────────────────────────────────────────────────────────────
 
 
 class TestStatus:
@@ -164,7 +160,6 @@ class TestStatus:
         assert data["mealie_reachable"] is False
 
 
-# ── /api/config ────────────────────────────────────────────────────────────────
 
 
 class TestConfig:
@@ -229,10 +224,6 @@ class TestConfig:
         assert r.status_code == 422
         assert "token" in r.json()["detail"].lower()
 
-
-# ── /api/settings ──────────────────────────────────────────────────────────────
-
-
 class TestSettings:
     async def test_get_defaults(self, client):
         db = _FakeDB()
@@ -260,13 +251,12 @@ class TestSettings:
     async def test_patch_rate_limit(self, client):
         db = _FakeDB()
         with patch("routers.settings.get_db", new=AsyncMock(return_value=db)):
-            for _ in range(30):
+            for _ in range(30):  # 30 is the burst ceiling for the settings rate limiter
                 await client.patch("/api/settings", json={"show_quick_add": True})
             r = await client.patch("/api/settings", json={"show_quick_add": True})
         assert r.status_code == 429
 
 
-# ── /api/mealplan ──────────────────────────────────────────────────────────────
 
 
 class TestMealplan:
@@ -327,7 +317,6 @@ class TestMealplan:
         assert r.status_code == 400
 
 
-# ── /api/recipes ───────────────────────────────────────────────────────────────
 
 
 class TestRecipes:
@@ -362,6 +351,8 @@ class TestRecipes:
         assert r.json()["count"] == 15
 
     async def test_recipe_link_redirect(self, client):
+        # follow_redirects=False: let httpx stop at the 3xx so we can inspect it;
+        # following it would chase the URL to a real Mealie host and fail.
         with _creds_ctx():
             r = await client.get("/api/recipe-link/pasta-bake", follow_redirects=False)
         assert r.status_code in (301, 302, 307)
@@ -382,6 +373,7 @@ class TestRecipes:
 
         cached = [{"id": RECIPE_UUID, "name": "Pasta", "slug": "pasta"}]
         with (
+            # 400 from Mealie means no plan exists for the date; sparkle falls back to a random cached recipe
             patch("routers.recipes.mealie_get", side_effect=HTTPException(400, "no plans")),
             patch("routers.recipes.get_cached_recipes", new=AsyncMock(return_value=cached)),
         ):
@@ -407,14 +399,14 @@ class TestRecipes:
         mock_resp = MagicMock()
         mock_resp.status_code = 200
         mock_resp.raise_for_status = MagicMock()
-        mock_resp.json = MagicMock(return_value="pasta-bake")
+        mock_resp.json = MagicMock(return_value="pasta-bake")  # Mealie returns a bare slug string on create
         mock_http = MagicMock()
         mock_http.post = AsyncMock(return_value=mock_resp)
 
         with (
             _creds_ctx(),
             patch("routers.recipes.get_http_client", new=AsyncMock(return_value=mock_http)),
-            patch("routers.recipes.mealie_get", new=AsyncMock(return_value=SAMPLE_RECIPE)),
+            patch("routers.recipes.mealie_get", new=AsyncMock(return_value=SAMPLE_RECIPE)),  # router fetches full recipe by slug
             patch("routers.recipes.upsert_recipe_cache", new=AsyncMock()),
         ):
             r = await client.post("/api/recipes/quick-create", json={"name": "Pasta Bake"})
@@ -442,7 +434,6 @@ class TestRecipes:
         assert r.status_code == 422
 
 
-# ── /api/auth ──────────────────────────────────────────────────────────────────
 
 
 class TestAuth:
@@ -473,7 +464,7 @@ class TestAuth:
             patch("routers.auth.REQUIRE_AUTH", True),
             patch("routers.auth.PIN_CODE", "123456"),
         ):
-            for _ in range(5):
+            for _ in range(5):  # 5 failed attempts is the auth lockout threshold
                 await client.post("/api/auth/verify", json={"pin": "000000"})
             r = await client.post("/api/auth/verify", json={"pin": "000000"})
         assert r.status_code == 429
@@ -484,7 +475,6 @@ class TestAuth:
         assert r.json()["ok"] is True
 
 
-# ── /api/recipe-actions ────────────────────────────────────────────────────────
 
 
 class TestActions:
@@ -526,15 +516,15 @@ class TestActions:
         assert r.status_code == 422
 
 
-# ── Body size limit ────────────────────────────────────────────────────────────
 
 
 class TestBodySizeLimit:
     async def test_oversized_body_rejected(self, client):
-        big = b'{"name":"' + b"x" * (65 * 1024) + b'"}'
+        big = b'{"name":"' + b"x" * (65 * 1024) + b'"}'  # 65 KB intentionally exceeds the 64 KB limit
         r = await client.post(
             "/api/recipes/quick-create",
             content=big,
+            # Content-Length must be set explicitly; httpx won't add it for raw content by default
             headers={"Content-Type": "application/json", "Content-Length": str(len(big))},
         )
         assert r.status_code == 413
