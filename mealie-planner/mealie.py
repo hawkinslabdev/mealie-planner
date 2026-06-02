@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 import httpx
@@ -8,6 +9,7 @@ from config import get_credentials
 logger = logging.getLogger("mealie_planner")
 
 _http_client: httpx.AsyncClient | None = None
+_outbound_sem = asyncio.Semaphore(4)  # lets set to max 4 concurrent outbound Mealie API calls
 
 
 async def get_http_client() -> httpx.AsyncClient:
@@ -41,26 +43,27 @@ async def _mealie_request(
     full_url = f"{url.rstrip('/')}{path}"
 
     _client = client or await get_http_client()
-    try:
-        if method == "GET":
-            resp = await _client.get(full_url, headers=headers)
-        elif method == "POST":
-            resp = await _client.post(full_url, json=body, headers=headers)
-        elif method == "PATCH":
-            resp = await _client.patch(full_url, json=body, headers=headers)
-        elif method == "DELETE":
-            resp = await _client.delete(full_url, headers=headers)
-        else:
-            raise ValueError(f"Unsupported method: {method}")
+    async with _outbound_sem:
+        try:
+            if method == "GET":
+                resp = await _client.get(full_url, headers=headers)
+            elif method == "POST":
+                resp = await _client.post(full_url, json=body, headers=headers)
+            elif method == "PATCH":
+                resp = await _client.patch(full_url, json=body, headers=headers)
+            elif method == "DELETE":
+                resp = await _client.delete(full_url, headers=headers)
+            else:
+                raise ValueError(f"Unsupported method: {method}")
 
-        if resp.status_code == 204:
-            return None
-        resp.raise_for_status()
-        return resp.json()
-    except httpx.HTTPStatusError as e:
-        raise HTTPException(status_code=e.response.status_code, detail=str(e))
-    except httpx.HTTPError as e:
-        raise HTTPException(status_code=502, detail=str(e))
+            if resp.status_code == 204:
+                return None
+            resp.raise_for_status()
+            return resp.json()
+        except httpx.HTTPStatusError as e:
+            raise HTTPException(status_code=e.response.status_code, detail=str(e))
+        except httpx.HTTPError as e:
+            raise HTTPException(status_code=502, detail=str(e))
 
 
 async def mealie_get(path: str) -> dict | list:

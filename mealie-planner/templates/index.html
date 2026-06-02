@@ -590,8 +590,7 @@
   <div x-show="tooltipRecipe" class="tooltip-floating"
        x-transition:enter.duration.150ms.opacity.scale.95
        x-transition:leave.duration.100ms.opacity.scale.95
-       :style="`left:${tooltipX}px;top:${tooltipY}px;transform:translateX(-50%) translateY(-100%) translateY(-8px)`"
-       @mouseenter="hideTooltip()">
+       :style="`left:${tooltipX}px;top:${tooltipY}px;transform:translateX(-50%) translateY(-100%) translateY(-8px)`">
     <p class="tooltip__name" x-text="tooltipRecipe?.name"></p>
     <p x-show="tooltipRecipe?.description" class="tooltip__desc" x-text="tooltipRecipe?.description"></p>
     <div x-show="tooltipRecipe?.tags?.length" class="tooltip__tags">

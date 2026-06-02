@@ -618,6 +618,7 @@ function planner() {
 
     async sparkle(date, mt) {
       const key = this.slotKey(date, mt);
+      if (this.sparkling[key]) return;
       this.sparkling = { ...this.sparkling, [key]: true };
       try {
         const recipe = await this._fetch(`/api/sparkle?date=${date}&meal_type=${mt}`);
@@ -1165,7 +1166,14 @@ function planner() {
     },
     _saveSettings(patch) {
       if ('show_quick_add' in patch) localStorage.setItem('showQuickAdd', String(patch.show_quick_add));
-      this._patch('/api/settings', patch).catch(() => {});
+      if (!this._pendingSettingsPatch) this._pendingSettingsPatch = {};
+      Object.assign(this._pendingSettingsPatch, patch);
+      clearTimeout(this._settingsPatchTimer);
+      this._settingsPatchTimer = setTimeout(() => {
+        const p = this._pendingSettingsPatch;
+        this._pendingSettingsPatch = null;
+        this._patch('/api/settings', p).catch(() => {});
+      }, 500);
     },
   };
 }

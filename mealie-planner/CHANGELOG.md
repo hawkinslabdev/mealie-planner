@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.2
+
+- Recipe images are now cached locally, you may see a slight increase in loading times
+- Fix: the remove button on recipe cards no longer jumps away when you try to click it
+- Fix: quickly toggling settings no longer sends a burst of save requests
+- Fix: rapidly picking random recipes (sparkle) no longer overwhelms Mealie with requests
+
 ## 0.5.1
 
 - Add swipe gestures for quick add and settings modal

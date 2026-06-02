@@ -1653,7 +1653,6 @@
      touch-action: none;
 }
  .chip[draggable="true"]:hover {
-     transform: translateY(-1px);
      box-shadow: 0 3px 8px oklch(0% 0 0 / 0.18);
 }
  .chip[draggable="true"]:active {
@@ -1718,6 +1717,7 @@
      padding: var(--space-3) var(--space-4);
      max-width: 280px;
      box-shadow: 0 8px 24px oklch(0% 0 0 / 0.4);
+     pointer-events: none;
 }
  .tooltip-floating::after {
      content: '';
@@ -2130,9 +2130,8 @@
      transition-duration: 60ms;
 }
  .chip[draggable="true"]:hover {
-     transform: translateY(-2px);
      box-shadow: 0 4px 12px oklch(0% 0 0 / 0.22), 0 0 0 1px oklch(0% 0 0 / 0.08);
-     transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+     transition: box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Options toggle slider */

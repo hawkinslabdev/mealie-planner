@@ -2,6 +2,7 @@ import json
 import logging
 import time
 from datetime import datetime
+from pathlib import Path
 from urllib.parse import urlparse
 
 import httpx
@@ -10,7 +11,7 @@ from fastapi import APIRouter, Form, HTTPException, Query, Request, Response, Up
 from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel, field_validator
 
-from config import get_credentials
+from config import DATA_PATH, get_credentials
 from i18n import get_locale
 from database import (
     cache_last_refreshed,
@@ -22,8 +23,8 @@ from database import (
     refresh_recipe_cache,
     upsert_recipe_cache,
 )
-from mealie import get_http_client, mealie_get, mealie_patch, mealie_post
-from utils import extract_og_image, normalize_meal_entry, rate_limiter, require_slug, require_uuid, task_manager
+from mealie import _outbound_sem, get_http_client, mealie_get, mealie_patch, mealie_post
+from utils import _MISS, extract_og_image, normalize_meal_entry, rate_limiter, require_slug, require_uuid, sparkle_cache, task_manager
 
 logger = logging.getLogger("mealie_planner")
 router = APIRouter()
@@ -31,6 +32,25 @@ router = APIRouter()
 _last_poll_at: int = 0
 _ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 _MAX_IMAGE_BYTES = 10 * 1024 * 1024
+_IMAGE_CACHE_TTL = 86400  # 1 day — stale images refresh within 24 h
+
+_img_cache_dir: Path | None = None
+
+
+def _get_img_cache_dir() -> Path:
+    global _img_cache_dir
+    if _img_cache_dir is None:
+        _img_cache_dir = Path(DATA_PATH) / "image_cache"
+        _img_cache_dir.mkdir(exist_ok=True)
+    return _img_cache_dir
+
+
+def _img_cache_path(recipe_id: str) -> Path:
+    return _get_img_cache_dir() / recipe_id
+
+
+def _invalidate_image_cache(recipe_id: str) -> None:
+    _img_cache_path(recipe_id).unlink(missing_ok=True)
 _LOCALE_TO_BCP47: dict[str, str] = {
     "en": "en-US", "de": "de-DE", "nl": "nl-NL", "es": "es-ES",
     "fr": "fr-FR", "it": "it-IT", "pl": "pl-PL", "ru": "ru-RU",
@@ -113,23 +133,48 @@ async def force_cache_refresh(request: Request):
 
 
 @router.get("/api/media/{recipe_id}")
-async def proxy_recipe_image(recipe_id: str):
+async def proxy_recipe_image(recipe_id: str, request: Request):
     require_uuid(recipe_id, "recipe ID")
+
+    cache_path = _img_cache_path(recipe_id)
+    now = time.time()
+
+    if cache_path.exists():
+        stat = cache_path.stat()
+        if now - stat.st_mtime < _IMAGE_CACHE_TTL:
+            etag = f'"{recipe_id}-{int(stat.st_mtime)}"'
+            if request.headers.get("if-none-match") == etag:
+                return Response(status_code=304)
+            return Response(
+                content=cache_path.read_bytes(),
+                media_type="image/webp",
+                headers={"Cache-Control": f"public, max-age={_IMAGE_CACHE_TTL}", "ETag": etag},
+            )
+
     url, token = get_credentials()
     if not url or not token:
         raise HTTPException(status_code=400, detail="Mealie not configured")
 
     full_url = f"{url.rstrip('/')}/api/media/recipes/{recipe_id}/images/min-original.webp"
-    headers = {"Authorization": f"Bearer {token}"}
-
     client = await get_http_client()
     try:
-        resp = await client.get(full_url, headers=headers)
-        resp.raise_for_status()
+        async with _outbound_sem:
+            resp = await client.get(full_url, headers={"Authorization": f"Bearer {token}"})
+            resp.raise_for_status()
+        content = resp.content
+        content_type = resp.headers.get("content-type", "image/webp")
+
+        try:
+            cache_path.write_bytes(content)
+            etag = f'"{recipe_id}-{int(cache_path.stat().st_mtime)}"'
+        except OSError:
+            logger.warning("image_cache.write_failed recipe_id=%s", recipe_id)
+            etag = f'"{recipe_id}"'
+
         return Response(
-            content=resp.content,
-            media_type=resp.headers.get("content-type", "image/webp"),
-            headers={"Cache-Control": "public, max-age=86400"},
+            content=content,
+            media_type=content_type,
+            headers={"Cache-Control": f"public, max-age={_IMAGE_CACHE_TTL}", "ETag": etag},
         )
     except httpx.HTTPStatusError as e:
         if e.response.status_code == 404:
@@ -454,6 +499,15 @@ async def upload_recipe_image(slug: str, file: UploadFile, request: Request):
         except httpx.HTTPError as e:
             raise HTTPException(status_code=502, detail=str(e))
 
+    try:
+        recipe_data = await mealie_get(f"/api/recipes/{slug}")
+        if isinstance(recipe_data, dict):
+            rid = recipe_data.get("id")
+            if rid:
+                _invalidate_image_cache(rid)
+    except Exception:
+        pass
+
     return {"ok": True}
 
 
@@ -546,18 +600,24 @@ async def sparkle(date: str, meal_type: str = "dinner"):
     last_week = anchor - timedelta(days=7)
     last_week_str = last_week.strftime("%Y-%m-%d")
 
-    last_week_recipe = None
-    try:
-        data = await mealie_get(
-            f"/api/households/mealplans?start_date={last_week_str}&end_date={last_week_str}&perPage=10"
-        )
-        items = data.get("items", []) if isinstance(data, dict) else data
-        for item in items:
-            if item.get("entryType", "dinner") == meal_type:
-                last_week_recipe = normalize_meal_entry(item)
-                break
-    except HTTPException:
-        pass
+    cache_key = f"{last_week_str}:{meal_type}"
+    cached = sparkle_cache.get(cache_key)
+    if cached is not _MISS:
+        last_week_recipe = cached
+    else:
+        last_week_recipe = None
+        try:
+            data = await mealie_get(
+                f"/api/households/mealplans?start_date={last_week_str}&end_date={last_week_str}&perPage=10"
+            )
+            items = data.get("items", []) if isinstance(data, dict) else data
+            for item in items:
+                if item.get("entryType", "dinner") == meal_type:
+                    last_week_recipe = normalize_meal_entry(item)
+                    break
+        except HTTPException:
+            pass
+        sparkle_cache.set(cache_key, last_week_recipe)
 
     all_recipes = await get_cached_recipes(limit=10000)
     if not all_recipes:

@@ -15,7 +15,7 @@ from httpx import AsyncClient, ASGITransport
 
 import routers.settings as _settings_mod
 from main import app
-from utils import rate_limiter
+from utils import rate_limiter, sparkle_cache
 
 # Test constants 
 
@@ -91,6 +91,7 @@ def _reset_state():
     _settings_mod._status_cache = {}
     _settings_mod._status_cached_at = 0.0
     rate_limiter._buckets.clear()
+    sparkle_cache._store.clear()
 
 
 @pytest_asyncio.fixture
@@ -433,6 +434,20 @@ class TestRecipes:
             r = await client.post("/api/recipes/import-url", json={"url": "http://"})
         assert r.status_code == 422
 
+    async def test_sparkle_mealplan_cache_deduplicates_mealie_calls(self, client):
+        """Repeated sparkle calls for the same week slot must hit Mealie only once."""
+        from fastapi import HTTPException
+
+        cached = [{"id": RECIPE_UUID, "name": "Pasta", "slug": "pasta"}]
+        mealie_get_mock = AsyncMock(side_effect=HTTPException(400, "no plans"))
+        with (
+            patch("routers.recipes.mealie_get", mealie_get_mock),
+            patch("routers.recipes.get_cached_recipes", new=AsyncMock(return_value=cached)),
+        ):
+            await client.get("/api/sparkle?date=2025-06-01&meal_type=dinner")
+            await client.get("/api/sparkle?date=2025-06-01&meal_type=dinner")
+        assert mealie_get_mock.call_count == 1
+
 
 
 
@@ -528,3 +543,39 @@ class TestBodySizeLimit:
             headers={"Content-Type": "application/json", "Content-Length": str(len(big))},
         )
         assert r.status_code == 413
+
+
+class TestOutboundSemaphore:
+    async def test_semaphore_limits_concurrent_mealie_calls(self):
+        """10 concurrent Mealie calls must never exceed the semaphore cap of 4."""
+        import asyncio
+        import mealie as mealie_mod
+
+        SEM_CAP = 4  # must match _outbound_sem initial value in mealie.py
+        peak_concurrent = 0
+        active = 0
+
+        async def _counting_get(url, headers):
+            nonlocal peak_concurrent, active
+            active += 1
+            peak_concurrent = max(peak_concurrent, active)
+            await asyncio.sleep(0)  # yield so other coroutines can be scheduled
+            active -= 1
+            resp = MagicMock()
+            resp.status_code = 200
+            resp.raise_for_status = MagicMock()
+            resp.json = MagicMock(return_value={"items": []})
+            return resp
+
+        mock_client = MagicMock()
+        mock_client.get = _counting_get
+
+        with (
+            patch("mealie.get_credentials", return_value=(MEALIE_URL, API_TOKEN)),
+            patch("mealie.get_http_client", new=AsyncMock(return_value=mock_client)),
+        ):
+            await asyncio.gather(*[
+                mealie_mod.mealie_get("/api/test") for _ in range(10)
+            ])
+
+        assert peak_concurrent <= SEM_CAP
