@@ -203,6 +203,20 @@ async def get_recipe(slug: str):
         "name": data.get("name"),
         "description": data.get("description"),
         "image_url": f"/api/media/{data['id']}" if data.get("id") else None,
+        "yield": data.get("recipeYield"),
+        "ingredients": [
+            {
+                "text": (i.get("display") or i.get("note") or (i.get("food") or {}).get("name") or "").strip(),
+                "title": i.get("title") or None,
+            }
+            for i in (data.get("recipeIngredient") or [])
+            if (i.get("display") or i.get("note") or (i.get("food") or {}).get("name"))
+        ],
+        "steps": [
+            {"text": (s.get("text") or "").strip(), "title": s.get("title") or None}
+            for s in (data.get("recipeInstructions") or [])
+            if (s.get("text") or "").strip()
+        ],
     }
 
 

@@ -76,7 +76,8 @@
         "undo": "Deshacer",
         "prevPeriod": "Período anterior",
         "nextPeriod": "Período siguiente",
-        "recipeDeleted": "Receta eliminada"
+        "recipeDeleted": "Receta eliminada",
+        "cook": "Cocinar"
     },
     "modal": {
         "titleReplace": "Cambiar receta",
@@ -168,5 +169,15 @@
         "errorShort": "Introduce los 6 caracteres.",
         "errorIncorrect": "PIN incorrecto.",
         "errorNetwork": "Error de red. Inténtalo de nuevo."
+    },
+    "cook": {
+        "loading": "Cargando…",
+        "ingredients": "Ingredientes",
+        "noIngredients": "No hay ingredientes",
+        "steps": "Pasos",
+        "noSteps": "No hay pasos",
+        "keepAwake": "Pantalla activa",
+        "loadError": "No se pudo cargar esta receta.",
+        "keepAwakeUnavailable": "No disponible en este navegador."
     }
 }

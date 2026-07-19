@@ -29,15 +29,14 @@
       <span x-show="mode !== 'haos'">Mealie Planner</span>
     </span>
     <div class="navbar-end">
-      <div x-show="configured" class="navbar-status">
-        <div x-show="mealieReachable" class="status-dot status-dot--ok">
-          <span class="status-dot__pip"></span>
-          <span x-text="mealieVersion || 'Connected'"></span>
-        </div>
-        <div x-show="!mealieReachable" class="status-dot status-dot--warn">
-          <span class="status-dot__pip"></span>
+      <div x-show="configured && !mealieReachable" class="navbar-status">
+        <button class="status-dot status-dot--warn" @click="settingsOpen = true">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22.61 16.95A5 5 0 0 0 18 10h-1.26a8 8 0 0 0-7.05-6M5 5a8 8 0 0 0 4 15h9a5 5 0 0 0 1.7-.3"/>
+            <line x1="1" y1="1" x2="23" y2="23"/>
+          </svg>
           <span x-text="t('nav.unreachable')"></span>
-        </div>
+        </button>
       </div>
       <div style="position:relative">
         <button @click="themeMenuOpen = !themeMenuOpen" class="icon-btn" :class="themeMenuOpen && 'active'" :title="'Theme: ' + colorTheme" :aria-expanded="themeMenuOpen" aria-haspopup="true">
@@ -352,7 +351,7 @@
             <template x-if="item.t === 'dh'">
               <div>
                 <p class="g-day-hdr__wd" x-text="item.wd"></p>
-                <p class="g-day-hdr__num mono" x-text="item.dn"></p>
+                <p class="g-day-hdr__num" x-text="item.dn"></p>
               </div>
             </template>
             <template x-if="item.t === 'ml'">
@@ -383,6 +382,7 @@
                           </button>
                         </div>
                         <div x-show="!entry.orphaned" class="chip-acts">
+                          <button class="ca ca--cook" @click.stop="openCook(entry)" :title="t('planner.cook')">▸ <span x-text="t('planner.cook')"></span></button>
                           <a class="ca" :href="getMealieLink(entry.recipe_slug)" target="_blank" :title="t('planner.openInMealie')">↗ <span x-text="t('planner.open')"></span></a>
                           <button class="ca ca--sm" @click.stop="openModalReplace(item.date, item.mt, entry)" x-text="t('planner.changeRecipe')"></button>
                           <button class="ca ca--sm" x-show="recipeActions.length > 0" @click.stop="openActionMenu(entry, $event)">···</button>
@@ -430,7 +430,7 @@
         <div class="mobile-week-day" :class="day.isToday && 'mobile-week-day--today'">
           <div class="mobile-week-day__hdr">
             <span class="mobile-week-day__label" :class="day.isToday && 'mobile-week-day__label--today'" x-text="day.label"></span>
-            <span class="mobile-week-day__date mono" x-text="formatDate(day.date)"></span>
+            <span class="mobile-week-day__date" x-text="formatDate(day.date)"></span>
           </div>
           <template x-for="mt in enabledMealTypes" :key="mt">
             <div class="mobile-slot"
@@ -454,15 +454,18 @@
                       <img x-show="!entry.orphaned" class="mobile-thumb"
                         :src="entry.image_url"
                         :alt="entry.recipe_name"
+                        @click.stop="openCook(entry)"
                         @error="_imgError($event, entry.recipe_name)">
                       <div class="mobile-recipe-info">
-                        <p class="mobile-recipe-name" x-text="entry.orphaned ? t('planner.recipeDeleted') : entry.recipe_name"></p>
-                        <div x-show="!entry.orphaned" style="display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap">
+                        <p class="mobile-recipe-name" :class="!entry.orphaned && 'mobile-recipe-name--cook'" @click.stop="!entry.orphaned && openCook(entry)" x-text="entry.orphaned ? t('planner.recipeDeleted') : entry.recipe_name"></p>
+                        <div x-show="!entry.orphaned" class="mobile-recipe-acts">
                           <a class="mobile-recipe-link" :href="getMealieLink(entry.recipe_slug)" target="_blank" x-text="t('planner.openInMealieMobile')"></a>
-                          <button class="ca" style="font-size:0.7rem;padding:1px 6px" @click.stop="openModalReplace(day.date, mt, entry)" x-text="t('planner.changeRecipe')"></button>
-                          <button class="ca" x-show="recipeActions.length > 0" style="font-size:0.7rem;padding:1px 6px" @click.stop="openActionMenu(entry, $event)">···</button>
+                          <button class="ca" @click.stop="openActionMenu(entry, $event, day.date, mt)">···</button>
                         </div>
                       </div>
+                      <button x-show="!entry.orphaned" class="mobile-open-btn" :aria-label="t('planner.cook')" @click.stop="openCook(entry)">
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                      </button>
                       <button class="mobile-rm-btn" :aria-label="t('planner.remove')" @click="removeRecipe(day.date, mt, entry.id)">
                         <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                       </button>
@@ -600,6 +603,103 @@
     </div>
   </div>
 
+  <!-- cook / preview mode -->
+  <div x-show="cookOpen" class="cook" x-cloak
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       x-transition:leave="transition ease-in duration-150"
+       x-transition:leave-start="opacity-100"
+       x-transition:leave-end="opacity-0"
+       x-ref="cookPanel" tabindex="-1"
+       role="dialog" aria-modal="true" aria-labelledby="cook-title">
+    <div class="cook__header">
+      <button class="cook__close icon-btn" @click="closeCook()" :aria-label="t('modal.close')">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+      <p class="cook__title" id="cook-title" x-text="cookRecipe?.name || (cookLoading ? t('cook.loading') : '')"></p>
+    </div>
+
+    <!-- loading -->
+    <div x-show="cookLoading" class="cook__state">
+      <div class="skel" style="width:60%;height:20px;border-radius:8px;margin-bottom:var(--space-4)"></div>
+      <div class="skel" style="width:90%;height:14px;border-radius:6px;margin-bottom:var(--space-2)"></div>
+      <div class="skel" style="width:80%;height:14px;border-radius:6px"></div>
+    </div>
+
+    <!-- error -->
+    <div x-show="cookError" class="cook__state cook__state--error">
+      <p x-text="t('cook.loadError')"></p>
+      <button class="btn btn-ghost" @click="closeCook()" x-text="t('modal.close')"></button>
+    </div>
+
+    <template x-if="!cookLoading && !cookError && cookRecipe">
+      <div class="cook__scroll">
+        <div class="cook__sheet">
+          <img x-show="cookRecipe?.image_url" class="cook__photo" :src="cookRecipe?.image_url" alt=""
+               @error="$event.target.style.display='none'">
+          <p x-show="cookRecipe?.yield" class="cook__yield" x-text="cookRecipe?.yield"></p>
+
+          <h2 class="cook__section" x-text="t('cook.ingredients')"></h2>
+          <template x-if="cookIngredients.length === 0">
+            <p class="cook__empty" x-text="t('cook.noIngredients')"></p>
+          </template>
+          <template x-for="(ing, i) in cookIngredients" :key="i">
+            <div>
+              <p x-show="ing.title" class="cook__ing-group" x-text="ing.title"></p>
+              <button class="cook__ing-item" :class="isCookIngredientChecked(i) && 'cook__ing-item--done'"
+                      role="checkbox" :aria-checked="isCookIngredientChecked(i)"
+                      @click="toggleCookIngredient(i)">
+                <span class="cook__ing-check" aria-hidden="true"></span>
+                <span x-text="ing.text"></span>
+              </button>
+            </div>
+          </template>
+
+          <h2 class="cook__section" x-text="t('cook.steps')"></h2>
+          <template x-if="cookSteps.length === 0">
+            <p class="cook__empty" x-text="t('cook.noSteps')"></p>
+          </template>
+          <ol class="cook__steps">
+            <template x-for="(step, i) in cookSteps" :key="i">
+              <li>
+                <button class="cook__step" :class="isCookStepChecked(i) && 'cook__step--done'"
+                        role="checkbox" :aria-checked="isCookStepChecked(i)"
+                        @click="toggleCookStep(i)">
+                  <span class="cook__step-n" x-text="i + 1"></span>
+                  <span class="cook__step-body">
+                    <span x-show="step.title" class="cook__step-title" x-text="step.title"></span>
+                    <span class="cook__step-text" x-text="step.text"></span>
+                  </span>
+                </button>
+              </li>
+            </template>
+          </ol>
+
+          <div class="opt-row cook__awake-row">
+            <span class="opt-label cook__awake-label">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/></svg>
+              <span x-text="t('cook.keepAwake')"></span>
+            </span>
+            <button role="switch" :aria-checked="cookKeepAwake"
+                    class="opt-toggle" :class="cookKeepAwake && 'opt-toggle--on'"
+                    @click="toggleCookKeepAwake()"
+                    :title="t('cook.keepAwake')"></button>
+          </div>
+          <p x-show="cookKeepAwake && !_wakeLockActive" class="cook__awake-warn" x-text="t('cook.keepAwakeUnavailable')"></p>
+
+          <a class="btn btn-ghost btn-full cook__mealie" :href="getMealieLink(cookRecipe?.slug)" target="_blank" rel="noopener">
+            <span x-text="t('planner.openInMealie')"></span>
+            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+              <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </template>
+  </div>
+
   <!-- recipe action menu -->
   <div x-show="actionMenuOpen" class="action-menu"
        @click.outside="actionMenuOpen = false"
@@ -610,7 +710,10 @@
        x-transition:leave="transition ease-in duration-75"
        x-transition:leave-start="opacity-100 scale-100"
        x-transition:leave-end="opacity-0 scale-95">
-    <p class="action-menu__title" x-text="t('actions.title')"></p>
+    <p class="action-menu__title" x-show="actionMenuCtx || recipeActions.length > 0" x-text="t('actions.title')"></p>
+    <button class="action-menu__item action-menu__item--change" x-show="actionMenuCtx" @click="actionMenuChange()">
+      <span x-text="t('planner.changeRecipe')"></span>
+    </button>
     <template x-for="action in recipeActions" :key="action.id">
       <button class="action-menu__item"
               @click="triggerRecipeAction(action.id, actionMenuRecipe.slug)"

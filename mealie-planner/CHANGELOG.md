@@ -1,11 +1,20 @@
 # Changelog
 
+## 0.6.0
+
+- Recipe ingredients and steps are now visible, allowing a quick glance at your recipe without leaving the app
+- Tick off ingredients and steps as you go, they're remembered until you open a different recipe
+- Your screen can be kept awake while a recipe is open, so it won't dim halfway through cooking
+- Recipes now have an "Open in Mealie" button at the bottom, for when you need the full page
+- On mobile, changing a recipe moved into the ··· menu to keep the row uncluttered
+- The connection status only appears when Mealie can't be reached, and tapping it takes you straight to settings
+
 ## 0.5.2
 
 - Recipe images are now cached locally, you may see a slight increase in loading times
-- Fix: the remove button on recipe cards no longer jumps away when you try to click it
-- Fix: quickly toggling settings no longer sends a burst of save requests
-- Fix: rapidly picking random recipes (sparkle) no longer overwhelms Mealie with requests
+- Fix: the remove button on recipe cards (on desktop) no longer jumps away when you try to click it
+- Fix: quickly toggling settings no longer sends a burst of http requests
+- Fix: rapidly picking random recipes (sparkle) no longer overwhelms Mealie with request
 
 ## 0.5.1
 

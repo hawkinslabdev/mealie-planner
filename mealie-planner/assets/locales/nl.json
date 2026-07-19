@@ -76,7 +76,8 @@
         "undo": "Ongedaan maken",
         "prevPeriod": "Vorige periode",
         "nextPeriod": "Volgende periode",
-        "recipeDeleted": "Recept verwijderd"
+        "recipeDeleted": "Recept verwijderd",
+        "cook": "Koken"
     },
     "modal": {
         "titleReplace": "Recept wijzigen",
@@ -168,5 +169,15 @@
         "errorShort": "Voer alle 6 tekens in.",
         "errorIncorrect": "Onjuiste pincode.",
         "errorNetwork": "Netwerkfout. Probeer het opnieuw."
+    },
+    "cook": {
+        "loading": "Laden…",
+        "ingredients": "Ingrediënten",
+        "noIngredients": "Geen ingrediënten vermeld",
+        "steps": "Stappen",
+        "noSteps": "Geen stappen vermeld",
+        "keepAwake": "Scherm blijft aan",
+        "loadError": "Kon dit recept niet laden.",
+        "keepAwakeUnavailable": "Niet beschikbaar in deze browser."
     }
 }

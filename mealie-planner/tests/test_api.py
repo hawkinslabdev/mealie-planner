@@ -369,6 +369,42 @@ class TestRecipes:
             r = await client.get("/api/media/not-a-uuid")
         assert r.status_code == 400
 
+    async def test_get_recipe_exposes_ingredients_and_steps(self, client):
+        full = {
+            "id": RECIPE_UUID,
+            "slug": "pasta-bake",
+            "name": "Pasta Bake",
+            "description": "Tasty",
+            "recipeYield": "4 servings",
+            "recipeIngredient": [
+                {"display": "200g pasta", "title": "Base"},
+                {"note": "2 eggs"},
+                {"food": {"name": "salt"}},
+                {"display": ""},
+            ],
+            "recipeInstructions": [
+                {"text": "Boil water", "title": "Prep"},
+                {"text": "   "},
+                {"text": "Bake 20 min"},
+            ],
+        }
+        with _creds_ctx(), patch(
+            "routers.recipes.mealie_get", new=AsyncMock(return_value=full)
+        ):
+            r = await client.get("/api/recipes/pasta-bake")
+        assert r.status_code == 200
+        data = r.json()
+        assert data["yield"] == "4 servings"
+        assert [i["text"] for i in data["ingredients"]] == ["200g pasta", "2 eggs", "salt"]
+        assert data["ingredients"][0]["title"] == "Base"
+        assert [s["text"] for s in data["steps"]] == ["Boil water", "Bake 20 min"]
+        assert data["steps"][0]["title"] == "Prep"
+
+    async def test_get_recipe_invalid_slug(self, client):
+        with _creds_ctx():
+            r = await client.get("/api/recipes/bad slug!!")
+        assert r.status_code == 400
+
     async def test_sparkle_returns_recipe(self, client):
         from fastapi import HTTPException
 

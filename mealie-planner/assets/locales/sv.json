@@ -76,7 +76,8 @@
         "undo": "Ångra",
         "prevPeriod": "Föregående period",
         "nextPeriod": "Nästa period",
-        "recipeDeleted": "Recept raderat"
+        "recipeDeleted": "Recept raderat",
+        "cook": "Laga"
     },
     "modal": {
         "titleReplace": "Byt recept",
@@ -168,5 +169,15 @@
         "errorShort": "Ange alla 6 tecken.",
         "errorIncorrect": "Felaktig PIN.",
         "errorNetwork": "Nätverksfel. Försök igen."
+    },
+    "cook": {
+        "loading": "Laddar…",
+        "ingredients": "Ingredienser",
+        "noIngredients": "Inga ingredienser angivna",
+        "steps": "Steg",
+        "noSteps": "Inga steg angivna",
+        "keepAwake": "Skärmen förblir på",
+        "loadError": "Det gick inte att ladda receptet.",
+        "keepAwakeUnavailable": "Inte tillgängligt i den här webbläsaren."
     }
 }
