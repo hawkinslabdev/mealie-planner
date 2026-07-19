@@ -76,7 +76,8 @@
         "undo": "Zpět",
         "prevPeriod": "Předchozí období",
         "nextPeriod": "Další období",
-        "recipeDeleted": "Recept smazán"
+        "recipeDeleted": "Recept smazán",
+        "cook": "Vařit"
     },
     "modal": {
         "titleReplace": "Změnit recept",
@@ -168,5 +169,15 @@
         "errorShort": "Zadejte všech 6 znaků.",
         "errorIncorrect": "Nesprávný PIN.",
         "errorNetwork": "Chyba sítě. Zkuste to prosím znovu."
+    },
+    "cook": {
+        "loading": "Načítání…",
+        "ingredients": "Ingredience",
+        "noIngredients": "Žádné ingredience",
+        "steps": "Kroky",
+        "noSteps": "Žádné kroky",
+        "keepAwake": "Obrazovka zůstává zapnutá",
+        "loadError": "Tento recept se nepodařilo načíst.",
+        "keepAwakeUnavailable": "V tomto prohlížeči není k dispozici."
     }
 }

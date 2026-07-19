@@ -76,7 +76,8 @@
         "undo": "Angre",
         "prevPeriod": "Forrige periode",
         "nextPeriod": "Neste periode",
-        "recipeDeleted": "Oppskrift slettet"
+        "recipeDeleted": "Oppskrift slettet",
+        "cook": "Lag mat"
     },
     "modal": {
         "titleReplace": "Bytt oppskrift",
@@ -168,5 +169,15 @@
         "errorShort": "Skriv inn alle 6 tegn.",
         "errorIncorrect": "Feil PIN.",
         "errorNetwork": "Nettverksfeil. Prøv igjen."
+    },
+    "cook": {
+        "loading": "Laster…",
+        "ingredients": "Ingredienser",
+        "noIngredients": "Ingen ingredienser oppgitt",
+        "steps": "Trinn",
+        "noSteps": "Ingen trinn oppgitt",
+        "keepAwake": "Skjermen holdes på",
+        "loadError": "Kunne ikke laste inn denne oppskriften.",
+        "keepAwakeUnavailable": "Ikke tilgjengelig i denne nettleseren."
     }
 }

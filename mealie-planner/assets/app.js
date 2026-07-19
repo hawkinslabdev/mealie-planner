@@ -55,6 +55,21 @@ function planner() {
     tooltipX: 0,
     tooltipY: 0,
 
+    /* cook / preview mode */
+    cookOpen: false,
+    cookRecipe: null,        // full detail {name, ingredients[], steps[], ...}
+    cookLoading: false,
+    cookError: false,
+    _checkedIngredients: {},
+    _checkedSteps: {},
+    _cookSlug: null,
+    _cookReturnFocus: null,
+    cookKeepAwake: localStorage.getItem('cookKeepAwake') !== 'false',
+    _wakeLock: null,
+    _wakeLockActive: false,
+    _keepAwakeVideo: null,
+    _keepAwakeTimer: null,
+
     undoBar: false,
     undoMessage: '',
     pendingActions: [],
@@ -91,6 +106,7 @@ function planner() {
     recipeActions: [],
     actionMenuOpen: false,
     actionMenuRecipe: null,
+    actionMenuCtx: null,
     actionMenuX: 0,
     actionMenuY: 0,
     actionLoading: null,
@@ -239,7 +255,9 @@ function planner() {
         if (!this.imageImportEnabled && this.quickAddTab === 'image') this.quickAddTab = 'url';
         await this.initMobileScroll();
         document.addEventListener('visibilitychange', () => {
-          if (document.visibilityState !== 'visible' || !this.days.length) return;
+          if (document.visibilityState !== 'visible') return;
+          if (this.cookOpen && this.cookKeepAwake) this._acquireWakeLock();
+          if (!this.days.length) return;
           const s = this.days[0].date, e = this.days.at(-1).date;
           if (!this._loadPlanCache(s, e)) this.loadMealPlan();
         });
@@ -484,7 +502,7 @@ function planner() {
       document.body.style.width = '100%';
       this._onTouchStart = (e) => { this._touchStartY = e.touches[0]?.clientY ?? 0; };
       this._onTouchMove = (e) => {
-        const el = e.target.closest('.modal-body, .settings-inner, .qa-body');
+        const el = e.target.closest('.modal-body, .settings-inner, .qa-body, .cook__scroll');
         if (!el) { e.preventDefault(); return; }
         // at scroll boundaries prevent default so rubber-band doesn't leak to body
         if (el.scrollTop <= 0 && e.touches[0].clientY > this._touchStartY) { e.preventDefault(); return; }
@@ -646,24 +664,185 @@ function planner() {
     },
     hideTooltip() { this.tooltipRecipe = null; },
 
+    /* cook / preview mode */
+    get cookSteps() { return this.cookRecipe?.steps || []; },
+    get cookIngredients() { return this.cookRecipe?.ingredients || []; },
+
+    async openCook(entry) {
+      if (!entry || entry.orphaned || !entry.recipe_slug) return;
+      this.hideTooltip();
+      this._cookReturnFocus = document.activeElement;
+      const cached = this._cookSlug === entry.recipe_slug && !!this.cookRecipe;
+      if (!cached) {
+        this._cookSlug = entry.recipe_slug;
+        this.cookRecipe = null;
+        this._loadCookProgress(entry.recipe_slug);
+      }
+      this.cookOpen = true;
+      this.cookError = false;
+      this.cookLoading = !cached;
+      this._lockBodyScroll();
+      if (this.cookKeepAwake) this._acquireWakeLock();
+      this.$nextTick(() => this.$refs.cookPanel?.focus());
+      if (cached) return;
+      try {
+        this.cookRecipe = await this._fetch(`/api/recipes/${entry.recipe_slug}`);
+      } catch (e) {
+        this.cookError = true;
+        this._cookSlug = null;
+      } finally {
+        this.cookLoading = false;
+      }
+    },
+    closeCook() {
+      if (!this.cookOpen) return;
+      this.cookOpen = false;
+      this._unlockBodyScroll();
+      this._releaseWakeLock();
+      const back = this._cookReturnFocus;
+      this._cookReturnFocus = null;
+      if (back?.isConnected) this.$nextTick(() => back.focus());
+    },
+    toggleCookIngredient(i) {
+      this._checkedIngredients = { ...this._checkedIngredients, [i]: !this._checkedIngredients[i] };
+      this._saveCookProgress();
+    },
+    isCookIngredientChecked(i) { return !!this._checkedIngredients[i]; },
+    toggleCookStep(i) {
+      this._checkedSteps = { ...this._checkedSteps, [i]: !this._checkedSteps[i] };
+      this._saveCookProgress();
+    },
+    isCookStepChecked(i) { return !!this._checkedSteps[i]; },
+
+    toggleCookKeepAwake() {
+      this.cookKeepAwake = !this.cookKeepAwake;
+      localStorage.setItem('cookKeepAwake', String(this.cookKeepAwake));
+      if (this.cookKeepAwake) this._acquireWakeLock();
+      else this._releaseWakeLock();
+    },
+
+    _loadCookProgress(slug) {
+      let saved = null;
+      try { saved = JSON.parse(localStorage.getItem('cookProgress') || 'null'); } catch (_) {}
+      if (saved && saved.slug === slug) {
+        this._checkedIngredients = saved.ingredients || {};
+        this._checkedSteps = saved.steps || {};
+      } else {
+        this._checkedIngredients = {};
+        this._checkedSteps = {};
+        this._saveCookProgress();
+      }
+    },
+    _saveCookProgress() {
+      if (!this._cookSlug) return;
+      try {
+        localStorage.setItem('cookProgress', JSON.stringify({
+          slug: this._cookSlug,
+          ingredients: this._checkedIngredients,
+          steps: this._checkedSteps,
+        }));
+      } catch (_) {}
+    },
+
+    async _acquireWakeLock() {
+      if (this._wakeLock) return;
+      if (this._keepAwakeVideo) {
+        this._keepAwakeVideo.play().catch(() => {});
+        return;
+      }
+      if ('wakeLock' in navigator) {
+        try {
+          this._wakeLock = await navigator.wakeLock.request('screen');
+          this._wakeLockActive = true;
+          this._wakeLock.addEventListener?.('release', () => {
+            this._wakeLock = null;
+            this._wakeLockActive = false;
+          });
+          return;
+        } catch (_) {}
+      }
+      this._startKeepAwakeVideo();
+    },
+    _releaseWakeLock() {
+      try { this._wakeLock?.release?.(); } catch (_) {}
+      this._wakeLock = null;
+      this._stopKeepAwakeVideo();
+      this._wakeLockActive = false;
+    },
+
+    _startKeepAwakeVideo() {
+      const canvas = document.createElement('canvas');
+      if (typeof canvas.captureStream !== 'function') return;
+      canvas.width = canvas.height = 2;
+      const ctx = canvas.getContext('2d');
+      let on = false;
+      this._keepAwakeTimer = setInterval(() => {
+        on = !on;
+        ctx.fillStyle = on ? '#000001' : '#000002';
+        ctx.fillRect(0, 0, 2, 2);
+      }, 1000);
+
+      const video = document.createElement('video');
+      video.muted = true;
+      video.loop = true;
+      video.playsInline = true;
+      video.setAttribute('playsinline', '');
+      video.setAttribute('muted', '');
+      video.setAttribute('aria-hidden', 'true');
+      video.style.cssText = 'position:fixed;left:0;bottom:0;width:1px;height:1px;opacity:0.01;pointer-events:none;z-index:-1';
+      try {
+        video.srcObject = canvas.captureStream(1);
+      } catch (_) {
+        clearInterval(this._keepAwakeTimer);
+        return;
+      }
+      document.body.appendChild(video);
+      this._keepAwakeVideo = video;
+      video.play()
+        .then(() => { this._wakeLockActive = true; })
+        .catch(() => this._stopKeepAwakeVideo());
+    },
+    _stopKeepAwakeVideo() {
+      clearInterval(this._keepAwakeTimer);
+      this._keepAwakeTimer = null;
+      const v = this._keepAwakeVideo;
+      if (!v) return;
+      this._keepAwakeVideo = null;
+      try {
+        v.pause();
+        v.srcObject?.getTracks?.().forEach(t => t.stop());
+        v.srcObject = null;
+      } catch (_) {}
+      v.remove();
+    },
+
     /* keyboard */
     setActiveCell(date, mt) { if (date && mt) this.activeCell = { date, mt }; },
     sparkleActive() { if (this.activeCell) this.sparkle(this.activeCell.date, this.activeCell.mt); },
     onKeydown(event) {
       if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
+      if (this.cookOpen) {
+        if (event.key === 'Escape') { event.preventDefault(); this.closeCook(); }
+        else if (event.key === 'Tab') this._trapFocus(event, '.cook');
+        return;
+      }
       if (event.key === 'ArrowLeft') { event.preventDefault(); if (!this.modalOpen) this.shiftPage(-1); }
       else if (event.key === 'ArrowRight') { event.preventDefault(); if (!this.modalOpen) this.shiftPage(1); }
       else if (event.key === 'r' || event.key === 'R') { if (!this.modalOpen) this.sparkleActive(); }
       else if (event.key === 'Escape') { this.modalOpen = false; if (this.quickAddOpen) this.closeQuickAdd(); this.themeMenuOpen = false; this.settingsOpen = false; this.actionMenuOpen = false; this.langMenuOpen = false; }
       else if (event.key === 'Tab' && (this.modalOpen || this.quickAddOpen)) {
-        const modal = document.querySelector(this.quickAddOpen ? '.modal--compact' : '.modal:not(.modal--compact)');
-        if (!modal) return;
-        const focusable = [...modal.querySelectorAll('button:not([disabled]), input, a, [tabindex]:not([tabindex="-1"])')];
-        if (focusable.length < 2) return;
-        const first = focusable[0], last = focusable[focusable.length - 1];
-        if (event.shiftKey) { if (document.activeElement === first) { event.preventDefault(); last.focus(); } }
-        else { if (document.activeElement === last) { event.preventDefault(); first.focus(); } }
+        this._trapFocus(event, this.quickAddOpen ? '.modal--compact' : '.modal:not(.modal--compact)');
       }
+    },
+
+    _trapFocus(event, selector) {
+      const root = document.querySelector(selector);
+      if (!root) return;
+      const focusable = [...root.querySelectorAll('button:not([disabled]), input, a, [tabindex]:not([tabindex="-1"])')];
+      if (focusable.length < 2) return;
+      const first = focusable[0], last = focusable[focusable.length - 1];
+      if (event.shiftKey) { if (document.activeElement === first) { event.preventDefault(); last.focus(); } }
+      else { if (document.activeElement === last) { event.preventDefault(); first.focus(); } }
     },
 
     /* undo which re-creates the single removed entry */
@@ -825,9 +1004,10 @@ function planner() {
       } catch {}
     },
 
-    openActionMenu(entry, event) {
+    openActionMenu(entry, event, date = null, mt = null) {
       if (!entry) return;
       this.actionMenuRecipe = { slug: entry.recipe_slug, name: entry.recipe_name };
+      this.actionMenuCtx = date && mt ? { date, mt, entry } : null;
       const rect = event.currentTarget.getBoundingClientRect();
       let x = rect.left, y = rect.bottom + 6;
       if (x + 200 > window.innerWidth) x = window.innerWidth - 208;
@@ -835,6 +1015,12 @@ function planner() {
       this.actionMenuX = x;
       this.actionMenuY = y;
       this.actionMenuOpen = true;
+    },
+
+    actionMenuChange() {
+      const ctx = this.actionMenuCtx;
+      this.actionMenuOpen = false;
+      if (ctx) this.openModalReplace(ctx.date, ctx.mt, ctx.entry);
     },
 
     async triggerRecipeAction(actionId, recipeSlug) {

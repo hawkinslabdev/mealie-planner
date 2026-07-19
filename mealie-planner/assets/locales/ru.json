@@ -76,7 +76,8 @@
         "undo": "Отменить",
         "prevPeriod": "Предыдущий период",
         "nextPeriod": "Следующий период",
-        "recipeDeleted": "Рецепт удалён"
+        "recipeDeleted": "Рецепт удалён",
+        "cook": "Готовить"
     },
     "modal": {
         "titleReplace": "Изменить рецепт",
@@ -168,5 +169,15 @@
         "errorShort": "Введите все 6 символов.",
         "errorIncorrect": "Неверный PIN-код.",
         "errorNetwork": "Ошибка сети. Попробуйте еще раз."
+    },
+    "cook": {
+        "loading": "Загрузка…",
+        "ingredients": "Ингредиенты",
+        "noIngredients": "Ингредиенты не указаны",
+        "steps": "Шаги",
+        "noSteps": "Шаги не указаны",
+        "keepAwake": "Экран не гаснет",
+        "loadError": "Не удалось загрузить рецепт.",
+        "keepAwakeUnavailable": "Недоступно в этом браузере."
     }
 }

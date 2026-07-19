@@ -76,7 +76,8 @@
         "undo": "Undo",
         "prevPeriod": "Previous period",
         "nextPeriod": "Next period",
-        "recipeDeleted": "Recipe deleted"
+        "recipeDeleted": "Recipe deleted",
+        "cook": "Cook"
     },
     "modal": {
         "titleReplace": "Change recipe",
@@ -168,5 +169,15 @@
         "errorShort": "Enter all 6 characters.",
         "errorIncorrect": "Incorrect PIN.",
         "errorNetwork": "Network error. Try again."
+    },
+    "cook": {
+        "loading": "Loading…",
+        "ingredients": "Ingredients",
+        "noIngredients": "No ingredients listed",
+        "steps": "Steps",
+        "noSteps": "No steps listed",
+        "keepAwake": "Screen stays on",
+        "loadError": "Couldn't load this recipe.",
+        "keepAwakeUnavailable": "Not available in this browser."
     }
 }

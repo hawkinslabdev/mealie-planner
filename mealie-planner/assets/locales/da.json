@@ -76,7 +76,8 @@
         "undo": "Fortryd",
         "prevPeriod": "Forrige periode",
         "nextPeriod": "Næste periode",
-        "recipeDeleted": "Opskrift slettet"
+        "recipeDeleted": "Opskrift slettet",
+        "cook": "Tilbered"
     },
     "modal": {
         "titleReplace": "Skift opskrift",
@@ -168,5 +169,15 @@
         "errorShort": "Indtast alle 6 tegn.",
         "errorIncorrect": "Forkert PIN.",
         "errorNetwork": "Netværksfejl. Prøv igen."
+    },
+    "cook": {
+        "loading": "Indlæser…",
+        "ingredients": "Ingredienser",
+        "noIngredients": "Ingen ingredienser angivet",
+        "steps": "Trin",
+        "noSteps": "Ingen trin angivet",
+        "keepAwake": "Skærmen forbliver tændt",
+        "loadError": "Kunne ikke indlæse denne opskrift.",
+        "keepAwakeUnavailable": "Ikke tilgængelig i denne browser."
     }
 }
