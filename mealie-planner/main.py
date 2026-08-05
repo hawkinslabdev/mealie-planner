@@ -54,6 +54,7 @@ async def lifespan(app: FastAPI):
     cfg._get_or_create_key()
     await init_db()
     task_manager.spawn(warm_cache_if_needed())
+    task_manager.spawn(mealplan.warm_mealplan_cache())
     yield
     try:
         await task_manager.cancel_all()

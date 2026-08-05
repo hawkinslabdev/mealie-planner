@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.2
+
+- Fix: the meal plan is now kept ready in the background, so switching weeks feels instant
+- Fix: a meal added or removed could briefly reappear or vanish again while the plan refreshed
+- Fix: changing your Mealie connection could still show meals from the old server for a minute
+- Fix: recipes without a serving size no longer show a lonely "persons" with no number
+- Fix: browsing far back and forth through weeks no longer grows memory use over time
+- Fix: a fresh install no longer logs a scary error before Mealie is configured
+
 ## 0.6.1
 
 - Fix: picking a random recipe is now genuinely random and no longer waits on Mealie
