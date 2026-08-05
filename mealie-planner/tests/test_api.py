@@ -14,6 +14,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from httpx import AsyncClient, ASGITransport
 
 import routers.settings as _settings_mod
+import routers.mealplan as _mealplan_mod
 from main import app
 from utils import rate_limiter
 
@@ -90,6 +91,9 @@ def _reset_state():
     """Reset module-level caches / rate-limiter state between tests."""
     _settings_mod._status_cache = {}
     _settings_mod._status_cached_at = 0.0
+    _mealplan_mod._mealplan_cache.clear()
+    _mealplan_mod._mealplan_cached_at.clear()
+    _mealplan_mod._mealplan_revalidating.clear()
     rate_limiter._buckets.clear()
 
 
@@ -118,6 +122,7 @@ def _creds_ctx(url=MEALIE_URL, token=API_TOKEN):
         "mealie.get_credentials",
         "routers.settings.get_credentials",
         "routers.recipes.get_credentials",
+        "routers.mealplan.get_credentials",
     ):
         stack.enter_context(patch(target, return_value=(url, token)))
     return stack
@@ -269,6 +274,171 @@ class TestMealplan:
         assert data[0]["meal_type"] == "dinner"
         assert data[0]["recipe_id"] == RECIPE_UUID
 
+    async def test_get_caches_same_range(self, client):
+        mealie_get = AsyncMock(return_value={"items": [SAMPLE_ENTRY]})
+        with patch("routers.mealplan.mealie_get", mealie_get):
+            r1 = await client.get("/api/mealplan?start_date=2025-06-01&end_date=2025-06-07")
+            r2 = await client.get("/api/mealplan?start_date=2025-06-01&end_date=2025-06-07")
+        assert r1.json() == r2.json()
+        mealie_get.assert_awaited_once()
+
+    async def test_get_caches_different_ranges_separately(self, client):
+        mealie_get = AsyncMock(side_effect=lambda url: {"items": [SAMPLE_ENTRY]})
+        with patch("routers.mealplan.mealie_get", mealie_get):
+            await client.get("/api/mealplan?start_date=2025-06-01&end_date=2025-06-07")
+            await client.get("/api/mealplan?start_date=2025-06-08&end_date=2025-06-14")
+        assert mealie_get.await_count == 2
+
+    async def test_stale_served_instantly_then_revalidated(self, client):
+        mealie_get = AsyncMock(return_value={"items": [SAMPLE_ENTRY]})
+        spawned: list = []
+        fake_tm = MagicMock()
+        fake_tm.spawn = lambda coro: spawned.append(coro) or MagicMock()
+        key = ("2025-06-01", "2025-06-07")
+        with (
+            patch("routers.mealplan.mealie_get", mealie_get),
+            patch("routers.mealplan._mealplan_cache", {key: []}),
+            patch("routers.mealplan._mealplan_cached_at", {key: 0.0}),
+            patch("routers.mealplan.task_manager", fake_tm),
+        ):
+            r1 = await client.get("/api/mealplan?start_date=2025-06-01&end_date=2025-06-07")
+            assert r1.status_code == 200
+            assert r1.json() == []  # stale data served immediately, no Mealie block
+            assert len(spawned) == 1  # background refresh scheduled
+            await spawned[0]  # let revalidation complete
+            r2 = await client.get("/api/mealplan?start_date=2025-06-01&end_date=2025-06-07")
+            assert len(r2.json()) == 1  # fresh data now served
+            assert len(spawned) == 1  # cache fresh, no second spawn
+        assert mealie_get.await_count == 1
+
+    async def test_stale_single_flight(self, client):
+        mealie_get = AsyncMock(return_value={"items": [SAMPLE_ENTRY]})
+        spawned: list = []
+        fake_tm = MagicMock()
+        fake_tm.spawn = lambda coro: spawned.append(coro) or MagicMock()
+        key = ("2025-06-01", "2025-06-07")
+        with (
+            patch("routers.mealplan.mealie_get", mealie_get),
+            patch("routers.mealplan._mealplan_cache", {key: []}),
+            patch("routers.mealplan._mealplan_cached_at", {key: 0.0}),
+            patch("routers.mealplan.task_manager", fake_tm),
+        ):
+            await client.get("/api/mealplan?start_date=2025-06-01&end_date=2025-06-07")
+            await client.get("/api/mealplan?start_date=2025-06-01&end_date=2025-06-07")
+        assert len(spawned) == 1  # concurrent stale requests share one refresh
+
+    async def test_post_updates_cache_in_place(self, client):
+        mealie_get = AsyncMock(return_value={"items": []})
+        fake_tm = MagicMock()
+        with (
+            patch("routers.mealplan.mealie_get", mealie_get),
+            patch("routers.mealplan.mealie_post", new=AsyncMock(return_value=SAMPLE_ENTRY)),
+            patch("routers.mealplan.task_manager", fake_tm),
+        ):
+            await client.get("/api/mealplan?start_date=2025-06-01&end_date=2025-06-07")
+            mealie_get.reset_mock()
+            r = await client.post(
+                "/api/mealplan",
+                json={"date": "2025-06-02", "meal_type": "dinner", "recipe_id": RECIPE_UUID},
+            )
+            assert r.status_code == 200
+            r2 = await client.get("/api/mealplan?start_date=2025-06-01&end_date=2025-06-07")
+        assert len(r2.json()) == 1  # mirrored, no blocking Mealie fetch
+        assert mealie_get.await_count == 0
+
+    async def test_delete_updates_cache_in_place(self, client):
+        mealie_get = AsyncMock(return_value={"items": [SAMPLE_ENTRY]})
+        fake_tm = MagicMock()
+        with (
+            patch("routers.mealplan.mealie_get", mealie_get),
+            patch("routers.mealplan.mealie_delete", new=AsyncMock()),
+            patch("routers.mealplan.task_manager", fake_tm),
+        ):
+            await client.get("/api/mealplan?start_date=2025-06-01&end_date=2025-06-07")
+            mealie_get.reset_mock()
+            r = await client.delete("/api/mealplan/42")
+            assert r.status_code == 204
+            r2 = await client.get("/api/mealplan?start_date=2025-06-01&end_date=2025-06-07")
+        assert r2.json() == []
+        assert mealie_get.await_count == 0
+
+    async def test_warm_populates_cache(self, client):
+        from datetime import date as _date
+        from routers.mealplan import warm_mealplan_cache
+
+        with _creds_ctx(), patch(
+            "routers.mealplan.mealie_get", new=AsyncMock(return_value={"items": [SAMPLE_ENTRY]})
+        ):
+            await warm_mealplan_cache()
+        assert _mealplan_mod._mealplan_cache
+        key = next(iter(_mealplan_mod._mealplan_cache))
+        assert key[0] == _date.today().isoformat()
+
+    async def test_warm_skips_when_unconfigured(self, client):
+        from routers.mealplan import warm_mealplan_cache
+
+        mealie_get = AsyncMock(return_value={"items": []})
+        with (
+            patch("routers.mealplan.get_credentials", return_value=(None, None)),
+            patch("routers.mealplan.mealie_get", mealie_get),
+        ):
+            await warm_mealplan_cache()
+        assert not _mealplan_mod._mealplan_cache
+        mealie_get.assert_not_awaited()
+
+    async def test_revalidation_does_not_clobber_local_write(self, client):
+        mealie_get = AsyncMock(return_value={"items": []})  # Mealie state before the POST landed
+        spawned: list = []
+        fake_tm = MagicMock()
+        fake_tm.spawn = lambda coro: spawned.append(coro) or MagicMock()
+        key = ("2025-06-01", "2025-06-07")
+        with (
+            patch("routers.mealplan.mealie_get", mealie_get),
+            patch("routers.mealplan.mealie_post", new=AsyncMock(return_value=SAMPLE_ENTRY)),
+            patch("routers.mealplan._mealplan_cache", {key: []}),
+            patch("routers.mealplan._mealplan_cached_at", {key: 0.0}),
+            patch("routers.mealplan.task_manager", fake_tm),
+        ):
+            await client.get("/api/mealplan?start_date=2025-06-01&end_date=2025-06-07")
+            assert len(spawned) == 1  # revalidation in flight
+            r = await client.post(
+                "/api/mealplan",
+                json={"date": "2025-06-02", "meal_type": "dinner", "recipe_id": RECIPE_UUID},
+            )
+            assert r.status_code == 200
+            await spawned[0]  # in-flight fetch resolves with pre-POST data
+            r2 = await client.get("/api/mealplan?start_date=2025-06-01&end_date=2025-06-07")
+        assert len(r2.json()) == 1  # new entry survived the stale revalidation
+
+    async def test_config_change_discards_in_flight_revalidation(self, client):
+        mealie_get = AsyncMock(return_value={"items": [SAMPLE_ENTRY]})  # old Mealie server
+        spawned: list = []
+        fake_tm = MagicMock()
+        fake_tm.spawn = lambda coro: spawned.append(coro) or MagicMock()
+        key = ("2025-06-01", "2025-06-07")
+        with (
+            patch("routers.mealplan.mealie_get", mealie_get),
+            patch("routers.mealplan._mealplan_cache", {key: []}),
+            patch("routers.mealplan._mealplan_cached_at", {key: 0.0}),
+            patch("routers.mealplan.task_manager", fake_tm),
+        ):
+            await client.get("/api/mealplan?start_date=2025-06-01&end_date=2025-06-07")
+            _mealplan_mod.clear_mealplan_cache()
+            await spawned[0]
+            assert not _mealplan_mod._mealplan_cache
+
+    async def test_cache_keys_are_capped(self, client):
+        from datetime import date as _date, timedelta as _td
+
+        with patch(
+            "routers.mealplan.mealie_get", new=AsyncMock(return_value={"items": [SAMPLE_ENTRY]})
+        ):
+            for i in range(_mealplan_mod._MEALPLAN_MAX_KEYS + 3):
+                end = (_date(2025, 7, 1) + _td(days=i)).isoformat()
+                await client.get(f"/api/mealplan?start_date=2025-06-01&end_date={end}")
+        assert len(_mealplan_mod._mealplan_cache) <= _mealplan_mod._MEALPLAN_MAX_KEYS
+        assert len(_mealplan_mod._mealplan_cached_at) <= _mealplan_mod._MEALPLAN_MAX_KEYS
+
     async def test_get_invalid_date(self, client):
         r = await client.get("/api/mealplan?start_date=not-a-date&end_date=2025-06-07")
         assert r.status_code == 400
@@ -398,6 +568,15 @@ class TestRecipes:
         assert data["ingredients"][0]["title"] == "Base"
         assert [s["text"] for s in data["steps"]] == ["Boil water", "Bake 20 min"]
         assert data["steps"][0]["title"] == "Prep"
+
+    @pytest.mark.parametrize("raw", ["servings", "  ", "personen", None])
+    async def test_get_recipe_drops_yield_without_quantity(self, client, raw):
+        full = {"id": RECIPE_UUID, "slug": "pasta-bake", "name": "Pasta Bake", "recipeYield": raw}
+        with _creds_ctx(), patch(
+            "routers.recipes.mealie_get", new=AsyncMock(return_value=full)
+        ):
+            r = await client.get("/api/recipes/pasta-bake")
+        assert r.json()["yield"] is None
 
     async def test_get_recipe_invalid_slug(self, client):
         with _creds_ctx():

@@ -10,6 +10,7 @@ from pydantic import BaseModel, field_validator
 from config import DOCKER_MODE, encrypt_token, get_credentials, get_mode, write_credentials
 from database import get_db, refresh_recipe_cache
 from mealie import get_http_client, mealie_get
+from routers.mealplan import clear_mealplan_cache
 from utils import rate_limiter, task_manager
 
 logger = logging.getLogger("mealie_planner")
@@ -149,6 +150,7 @@ async def save_config(payload: ConfigPayload, request: Request):
     logger.info("config.updated url=%s ip=%s", payload.mealie_url, ip)
     _status_cached_at = 0.0
     _capabilities_cached_at = 0.0
+    clear_mealplan_cache()
     task_manager.spawn(refresh_recipe_cache())
     return {"ok": True}
 

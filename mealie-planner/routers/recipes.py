@@ -197,13 +197,14 @@ async def recipe_link(slug: str):
 async def get_recipe(slug: str):
     require_slug(slug, "recipe slug")
     data = await mealie_get(f"/api/recipes/{slug}")
+    recipe_yield = (data.get("recipeYield") or "").strip()
     return {
         "id": data.get("id"),
         "slug": data.get("slug"),
         "name": data.get("name"),
         "description": data.get("description"),
         "image_url": f"/api/media/{data['id']}" if data.get("id") else None,
-        "yield": data.get("recipeYield"),
+        "yield": recipe_yield if any(c.isdigit() for c in recipe_yield) else None,
         "ingredients": [
             {
                 "text": (i.get("display") or i.get("note") or (i.get("food") or {}).get("name") or "").strip(),
