@@ -15,7 +15,7 @@ from httpx import AsyncClient, ASGITransport
 
 import routers.settings as _settings_mod
 from main import app
-from utils import rate_limiter, sparkle_cache
+from utils import rate_limiter
 
 # Test constants 
 
@@ -91,7 +91,6 @@ def _reset_state():
     _settings_mod._status_cache = {}
     _settings_mod._status_cached_at = 0.0
     rate_limiter._buckets.clear()
-    sparkle_cache._store.clear()
 
 
 @pytest_asyncio.fixture
@@ -406,14 +405,8 @@ class TestRecipes:
         assert r.status_code == 400
 
     async def test_sparkle_returns_recipe(self, client):
-        from fastapi import HTTPException
-
         cached = [{"id": RECIPE_UUID, "name": "Pasta", "slug": "pasta"}]
-        with (
-            # 400 from Mealie means no plan exists for the date; sparkle falls back to a random cached recipe
-            patch("routers.recipes.mealie_get", side_effect=HTTPException(400, "no plans")),
-            patch("routers.recipes.get_cached_recipes", new=AsyncMock(return_value=cached)),
-        ):
+        with patch("routers.recipes.get_cached_recipes", new=AsyncMock(return_value=cached)):
             r = await client.get("/api/sparkle?date=2025-06-01&meal_type=dinner")
         assert r.status_code == 200
         assert r.json()["id"] == RECIPE_UUID
@@ -423,12 +416,7 @@ class TestRecipes:
         assert r.status_code == 400
 
     async def test_sparkle_empty_cache(self, client):
-        from fastapi import HTTPException
-
-        with (
-            patch("routers.recipes.mealie_get", side_effect=HTTPException(400, "no plans")),
-            patch("routers.recipes.get_cached_recipes", new=AsyncMock(return_value=[])),
-        ):
+        with patch("routers.recipes.get_cached_recipes", new=AsyncMock(return_value=[])):
             r = await client.get("/api/sparkle?date=2025-06-01")
         assert r.status_code == 404
 
@@ -469,22 +457,6 @@ class TestRecipes:
         with _creds_ctx():
             r = await client.post("/api/recipes/import-url", json={"url": "http://"})
         assert r.status_code == 422
-
-    async def test_sparkle_mealplan_cache_deduplicates_mealie_calls(self, client):
-        """Repeated sparkle calls for the same week slot must hit Mealie only once."""
-        from fastapi import HTTPException
-
-        cached = [{"id": RECIPE_UUID, "name": "Pasta", "slug": "pasta"}]
-        mealie_get_mock = AsyncMock(side_effect=HTTPException(400, "no plans"))
-        with (
-            patch("routers.recipes.mealie_get", mealie_get_mock),
-            patch("routers.recipes.get_cached_recipes", new=AsyncMock(return_value=cached)),
-        ):
-            await client.get("/api/sparkle?date=2025-06-01&meal_type=dinner")
-            await client.get("/api/sparkle?date=2025-06-01&meal_type=dinner")
-        assert mealie_get_mock.call_count == 1
-
-
 
 
 class TestAuth:

@@ -36,7 +36,7 @@ function planner() {
     initialized: false,
     configured: false,
     mode: 'haos',
-    mealieReachable: false,
+    mealieReachable: true,  // assume fine until the probe says otherwise — the badge is a warning, not a status light
     mealieVersion: null,
 
     settingsOpen: false,
@@ -230,15 +230,19 @@ function planner() {
       const _s = this.days[0]?.date, _e = this.days.at(-1)?.date;
       if (_s && !this._loadPlanCache(_s, _e)) this.planLoading = true;
       try {
-        const status = await this._fetch('/api/status');
-        this.configured      = status.configured;
-        this.mode            = status.mode;
-        this.mealieReachable = status.mealie_reachable;
-        this.mealieVersion   = status.version;
-        if (!this.configured) { this.settingsOpen = true; return; }
+        // /api/config is local-only; /api/status probes Mealie and can take seconds, so it
+        // must not gate the data loads or the mobile skeleton sits there waiting on it
         const cfg = await this._fetch('/api/config');
+        this.configured = cfg.configured;
+        this.mode       = cfg.mode;
         this.settingsForm.mealie_url = cfg.mealie_url;
-        // Load data first so mobile skeleton (mobileDays.length === 0) persists uuintil ready
+        if (!this.configured) { this.settingsOpen = true; return; }
+        // Not awaited: it only feeds the "unreachable" badge, and Promise.all would drag
+        // everything else down to its speed
+        this._fetch('/api/status').then(status => {
+          this.mealieReachable = status.mealie_reachable !== false;
+          this.mealieVersion   = status.version;
+        }).catch(() => {});
         const [, , , settings, capabilities] = await Promise.all([
           this.loadMealPlan(),
           this.loadRecipes(),

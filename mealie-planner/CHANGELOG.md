@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.1
+
+- Fix: picking a random recipe is now genuinely random and no longer waits on Mealie
+- Fix: the app no longer loads fonts from the internet, so it starts instantly and works fully offline
+- Fix: your meal plan now appears right away instead of waiting for the connection check to Mealie
+- Fix: the app requested everything twice on startup
+- Fix: on mobile, recipe names sat too high next to their thumbnail
+
 ## 0.6.0
 
 - Recipe ingredients and steps are now visible, allowing a quick glance at your recipe without leaving the app

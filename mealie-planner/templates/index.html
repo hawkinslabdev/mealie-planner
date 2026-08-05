@@ -12,16 +12,14 @@
     function api(path) { return INGRESS_PATH + path; }
   </script>
   <script defer src="{{ ingress_path }}/assets/alpine.min.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&display=swap" rel="stylesheet">
+  <link rel="preload" href="{{ ingress_path }}/assets/fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="icon" href="{{ ingress_path }}/favicon.ico" sizes="any">
   <link rel="stylesheet" href="{{ ingress_path }}/assets/style.css">
 </head>
 <body>
 
 <h1 class="sr-only">Mealie Planner</h1>
-<div x-data="planner()" x-init="init(); $watch('modalOpen', v => v ? $data._lockBodyScroll() : $data._unlockBodyScroll()); $watch('quickAddOpen', v => v ? $data._lockBodyScroll() : $data._unlockBodyScroll()); $watch('settingsOpen', v => $data._onSettingsToggle(v))" x-cloak @keydown.window="onKeydown($event)">
+<div x-data="planner()" x-init="$watch('modalOpen', v => v ? $data._lockBodyScroll() : $data._unlockBodyScroll()); $watch('quickAddOpen', v => v ? $data._lockBodyScroll() : $data._unlockBodyScroll()); $watch('settingsOpen', v => $data._onSettingsToggle(v))" x-cloak @keydown.window="onKeydown($event)">
 
   <!-- navbar -->
   <nav class="navbar" :class="mode === 'haos' && 'navbar--haos'">

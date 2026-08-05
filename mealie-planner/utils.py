@@ -3,7 +3,6 @@ import logging
 import re
 import time
 from datetime import datetime
-from typing import Any
 from urllib.parse import urlparse
 
 from fastapi import HTTPException, Request
@@ -72,40 +71,6 @@ class _RateLimiter:
 
 rate_limiter = _RateLimiter()
 
-
-_MISS = object()
-
-
-class _TTLCache:
-    """In-memory TTL cache. Single-threaded asyncio — no locking needed."""
-    def __init__(self, ttl: float = 30.0):
-        self._ttl = ttl
-        self._store: dict[str, tuple[float, object]] = {}
-
-    def get(self, key: str) -> Any:
-        """Return cached value or _MISS if not cached / expired."""
-        entry = self._store.get(key)
-        if entry is None:
-            return _MISS
-        ts, val = entry
-        if time.time() - ts > self._ttl:
-            del self._store[key]
-            return _MISS
-        return val
-
-    def set(self, key: str, value) -> None:
-        self._store[key] = (time.time(), value)
-        if len(self._store) > 256:
-            self._evict()
-
-    def _evict(self) -> None:
-        now = time.time()
-        expired = [k for k, (ts, _) in self._store.items() if now - ts > self._ttl]
-        for k in expired:
-            del self._store[k]
-
-
-sparkle_cache = _TTLCache(ttl=30.0)
 
 # og:image extraction — handles both attribute orderings and quote styles
 _OG_IMAGE_RE = re.compile(

@@ -89,8 +89,8 @@ async def get_status(request: Request):
 
 @router.get("/api/config")
 async def get_config():
-    url, _ = get_credentials()
-    return {"mealie_url": url or "", "mode": get_mode()}
+    url, token = get_credentials()
+    return {"mealie_url": url or "", "mode": get_mode(), "configured": bool(url and token)}
 
 
 class ConfigPayload(BaseModel):

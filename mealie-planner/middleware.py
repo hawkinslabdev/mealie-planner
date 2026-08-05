@@ -15,8 +15,8 @@ _IMPECCABLE_LIVE_DEV = " http://localhost:8400" if os.environ.get("DEV_MODE") el
 _CSP = (
     "default-src 'self'; "
     f"script-src 'self' 'unsafe-inline' 'unsafe-eval'{_IMPECCABLE_LIVE_DEV}; "
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-    "font-src https://fonts.gstatic.com; "
+    "style-src 'self' 'unsafe-inline'; "
+    "font-src 'self'; "
     "img-src 'self' data: blob:; "
     f"connect-src 'self'{_IMPECCABLE_LIVE_DEV}; "
     "frame-ancestors 'self';"

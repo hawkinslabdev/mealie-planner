@@ -24,7 +24,7 @@ from database import (
     upsert_recipe_cache,
 )
 from mealie import _outbound_sem, get_http_client, mealie_get, mealie_patch, mealie_post
-from utils import _MISS, extract_og_image, normalize_meal_entry, rate_limiter, require_slug, require_uuid, sparkle_cache, task_manager
+from utils import extract_og_image, rate_limiter, require_date, require_slug, require_uuid, task_manager
 
 logger = logging.getLogger("mealie_planner")
 router = APIRouter()
@@ -604,34 +604,8 @@ async def import_recipe_from_image(
 @router.get("/api/sparkle")
 async def sparkle(date: str, meal_type: str = "dinner"):
     import random
-    from datetime import timedelta
 
-    try:
-        anchor = datetime.strptime(date, "%Y-%m-%d")
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
-
-    last_week = anchor - timedelta(days=7)
-    last_week_str = last_week.strftime("%Y-%m-%d")
-
-    cache_key = f"{last_week_str}:{meal_type}"
-    cached = sparkle_cache.get(cache_key)
-    if cached is not _MISS:
-        last_week_recipe = cached
-    else:
-        last_week_recipe = None
-        try:
-            data = await mealie_get(
-                f"/api/households/mealplans?start_date={last_week_str}&end_date={last_week_str}&perPage=10"
-            )
-            items = data.get("items", []) if isinstance(data, dict) else data
-            for item in items:
-                if item.get("entryType", "dinner") == meal_type:
-                    last_week_recipe = normalize_meal_entry(item)
-                    break
-        except HTTPException:
-            pass
-        sparkle_cache.set(cache_key, last_week_recipe)
+    require_date(date)
 
     all_recipes = await get_cached_recipes(limit=10000)
     if not all_recipes:
@@ -640,13 +614,4 @@ async def sparkle(date: str, meal_type: str = "dinner"):
             detail="No recipes in cache. Trigger /api/cache/refresh first.",
         )
 
-    pool = list(all_recipes)
-
-    if last_week_recipe and last_week_recipe.get("recipe_id"):
-        match = next(
-            (r for r in all_recipes if r["id"] == last_week_recipe["recipe_id"]), None
-        )
-        if match:
-            pool.append(match)
-
-    return random.choice(pool)
+    return random.choice(all_recipes)
