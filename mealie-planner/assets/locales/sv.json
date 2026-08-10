@@ -19,6 +19,8 @@
         "dockerNotice": "Allt är klart! Dessa konfigureras via miljövariablerna <code>MEALIE_API_URL</code> och <code>MEALIE_API_KEY</code>.",
         "connected": "Ansluten till Mealie",
         "unreachable": "Konfigurerad men Mealie är för tillfället ej nåbar",
+        "btnEdit": "Redigera",
+        "btnCancel": "Avbryt",
         "urlLabel": "Instans-URL",
         "tokenLabel": "API-token",
         "tokenPlaceholderUpdate": "Lämna tomt för att behålla befintlig token",

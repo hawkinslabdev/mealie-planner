@@ -9,7 +9,7 @@ from config import get_credentials
 logger = logging.getLogger("mealie_planner")
 
 _http_client: httpx.AsyncClient | None = None
-_outbound_sem = asyncio.Semaphore(4)  # lets set to max 4 concurrent outbound Mealie API calls
+_outbound_sem = asyncio.Semaphore(4)
 
 
 async def get_http_client() -> httpx.AsyncClient:

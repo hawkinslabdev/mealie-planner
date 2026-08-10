@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import time
 
 from cryptography.fernet import Fernet
@@ -25,11 +26,22 @@ if LOCALE_OVERRIDE not in SUPPORTED_LOCALES:
 LOCALE_DIR = os.path.join(os.path.dirname(__file__), "assets", "locales")
 
 
+def _read_app_version() -> str:
+    try:
+        with open(os.path.join(os.path.dirname(__file__), "config.yaml")) as f:
+            m = re.search(r'^version:\s*"?([\w.\-]+)"?', f.read(), re.MULTILINE)
+        return m.group(1) if m else ""
+    except OSError:
+        return ""
+
+
+APP_VERSION = _read_app_version()
+
+
 def get_mode() -> str:
     return "docker" if DOCKER_MODE else "haos"
 
 
-# Encryption
 def _get_or_create_key() -> bytes:
     if os.path.exists(KEY_FILE):
         with open(KEY_FILE, "rb") as f:
@@ -56,7 +68,6 @@ def _looks_encrypted(value: str) -> bool:
     return value.startswith("gAAAAA")
 
 
-# Session tokens
 def create_session_token() -> str:
     return encrypt_token(json.dumps({"t": int(time.time()) + SESSION_TTL}))
 
@@ -69,7 +80,6 @@ def verify_session_token(token: str) -> bool:
         return False
 
 
-# Credential cache
 _cred_cache: dict[str, str | None] = {"url": None, "token": None}
 _cred_loaded_at: float = 0.0
 
@@ -113,7 +123,7 @@ def get_credentials() -> tuple[str | None, str | None]:
         except Exception:
             pass
 
-    # If options.json has different non-empty credentials, the user updated the HAOS add-on config and then importts them into credentials.json
+    # HAOS add-on config (options.json) wins if it now differs from what's cached
     if os.path.exists(OPTIONS_FILE):
         try:
             with open(OPTIONS_FILE) as f:

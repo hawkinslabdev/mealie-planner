@@ -100,5 +100,6 @@ async def index(request: Request):
             "ingress_path": request.state.ingress_path,
             "locale": locale,
             "translations": load_locale_json(locale),
+            "app_version": cfg.APP_VERSION,
         },
     )

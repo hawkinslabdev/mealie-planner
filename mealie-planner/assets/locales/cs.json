@@ -19,6 +19,8 @@
         "dockerNotice": "Vše je připraveno! Toto je nakonfigurováno pomocí proměnných prostředí <code>MEALIE_API_URL</code> a <code>MEALIE_API_KEY</code>.",
         "connected": "Připojeno k Mealie",
         "unreachable": "Nakonfigurováno, ale Mealie je momentálně nedostupné",
+        "btnEdit": "Upravit",
+        "btnCancel": "Zrušit",
         "urlLabel": "URL adresa Mealie",
         "tokenLabel": "API token",
         "tokenPlaceholderUpdate": "Ponechte prázdné pro zachování aktuálního tokenu",

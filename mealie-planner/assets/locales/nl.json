@@ -19,6 +19,8 @@
         "dockerNotice": "Helemaal gereed! Dit wordt geconfigureerd via de omgevingsvariabelen <code>MEALIE_API_URL</code> en <code>MEALIE_API_KEY</code>.",
         "connected": "Verbonden met Mealie",
         "unreachable": "Geconfigureerd, maar Mealie is momenteel onbereikbaar",
+        "btnEdit": "Bewerken",
+        "btnCancel": "Annuleren",
         "urlLabel": "Mealie-URL",
         "tokenLabel": "API-token",
         "tokenPlaceholderUpdate": "Leeg laten om het huidige token te behouden",

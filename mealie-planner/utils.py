@@ -85,7 +85,6 @@ def extract_og_image(html: str) -> str | None:
     return (m.group(1) or m.group(2)) if m else None
 
 
-# Input validation
 _UUID_RE = re.compile(
     r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
     re.IGNORECASE,

@@ -31,18 +31,21 @@ function planner() {
     modalSearch: '',
     modalLimit: 24,
     modalMode: 'add',        // 'add' | 'replace'
-    modalReplaceEntry: null, // entry being replaced in replace mode
+    modalReplaceEntry: null,
 
     initialized: false,
     configured: false,
     mode: 'haos',
     mealieReachable: true,  // assume fine until the probe says otherwise — the badge is a warning, not a status light
     mealieVersion: null,
+    appVersion: window._MP_VERSION || '',
 
     settingsOpen: false,
     settingsForm: { mealie_url: '', api_token: '' },
     settingsSaving: false,
     settingsError: null,
+    editingConnection: false,
+    savedMealieUrl: '',
 
     cacheRefreshing: false,
     cacheCount: null,
@@ -225,24 +228,21 @@ function planner() {
       this.applyTheme();
       this.applyAccent();
       this.buildDays();
-      
-      // Show desktop skeleton immediately when there is no cached plan data
+
       const _s = this.days[0]?.date, _e = this.days.at(-1)?.date;
       if (_s && !this._loadPlanCache(_s, _e)) this.planLoading = true;
       try {
-        // /api/config is local-only; /api/status probes Mealie and can take seconds, so it
-        // must not gate the data loads or the mobile skeleton sits there waiting on it
         const cfg = await this._fetch('/api/config');
         this.configured = cfg.configured;
         this.mode       = cfg.mode;
         this.settingsForm.mealie_url = cfg.mealie_url;
+        this.savedMealieUrl = cfg.mealie_url;
         if (!this.configured) { this.settingsOpen = true; return; }
-        // Not awaited: it only feeds the "unreachable" badge, and Promise.all would drag
-        // everything else down to its speed
+        // Not awaited: only feeds the "unreachable" badge, and Promise.all would wait on it too
         this._fetch('/api/status').then(status => {
           this.mealieReachable = status.mealie_reachable !== false;
           this.mealieVersion   = status.version;
-        }).catch(() => {});
+        }).catch(() => { this.mealieReachable = false; });
         const [, , , settings, capabilities] = await Promise.all([
           this.loadMealPlan(),
           this.loadRecipes(),
@@ -255,7 +255,7 @@ function planner() {
         if (typeof settings.quick_add_tab === 'string') this.quickAddTab = settings.quick_add_tab;
         this.imageImportEnabled = capabilities.image_import_enabled === true;
         this.videoInstructionsEnabled = capabilities.video_instructions_enabled !== false;
-        // If image tab was saved but AI is now disabled, fall back to urll
+        // If image tab was saved but AI is now disabled, fall back to url
         if (!this.imageImportEnabled && this.quickAddTab === 'image') this.quickAddTab = 'url';
         await this.initMobileScroll();
         document.addEventListener('visibilitychange', () => {
@@ -922,7 +922,7 @@ function planner() {
 
       if (srcDate === targetDate && srcMt === targetMt) return;
 
-      // Optimistic: remove from src, append to target
+      // optimistic
       this.setSlot(srcDate, srcMt, this.getSlot(srcDate, srcMt).filter(e => e.id !== srcEntry.id));
       this.setSlot(targetDate, targetMt, [...this.getSlot(targetDate, targetMt), srcEntry]);
 
@@ -949,14 +949,26 @@ function planner() {
         this.configured      = status.configured;
         this.mealieReachable = status.mealie_reachable;
         this.mealieVersion   = status.version;
+        this.savedMealieUrl  = this.settingsForm.mealie_url;
         this.settingsForm.api_token = '';
         this.settingsOpen = false;
+        this.editingConnection = false;
         await Promise.all([this.loadMealPlan(), this.loadRecipes()]);
+        if (!this.mobileDays.length) await this.initMobileScroll();
       } catch (e) {
         this.settingsError = e.message || this.t('error.saveFallback');
       } finally {
         this.settingsSaving = false;
       }
+    },
+
+    toggleEditConnection() {
+      if (this.editingConnection) {
+        this.settingsForm.mealie_url = this.savedMealieUrl;
+        this.settingsForm.api_token = '';
+        this.settingsError = null;
+      }
+      this.editingConnection = !this.editingConnection;
     },
 
     toggleMealType(type) {

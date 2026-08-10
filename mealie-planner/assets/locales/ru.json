@@ -19,6 +19,8 @@
         "dockerNotice": "Все готово! Это настраивается через переменные окружения <code>MEALIE_API_URL</code> и <code>MEALIE_API_KEY</code>.",
         "connected": "Подключено к Mealie",
         "unreachable": "Настроено, но Mealie в данный момент недоступен",
+        "btnEdit": "Изменить",
+        "btnCancel": "Отмена",
         "urlLabel": "URL-адрес Mealie",
         "tokenLabel": "API-токен",
         "tokenPlaceholderUpdate": "Оставьте пустым, чтобы сохранить текущий токен",
