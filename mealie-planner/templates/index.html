@@ -126,7 +126,10 @@
               <template x-if="configured">
                 <div class="notice" style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3)">
                   <span>
-                    <span x-show="mealieReachable" x-text="t('settings.connected') + (mealieVersion ? ' · ' + mealieVersion : '')"></span>
+                    <span x-show="mealieReachable">
+                      <span x-text="t('settings.connected')"></span>
+                      <span x-show="mealieVersion" class="mealie-version" x-text="'· ' + mealieVersion"></span>
+                    </span>
                     <span x-show="!mealieReachable" x-text="t('settings.unreachable')"></span>
                   </span>
                   <button @click="toggleEditConnection()" class="btn btn-ghost" :aria-expanded="editingConnection" x-text="editingConnection ? t('settings.btnCancel') : t('settings.btnEdit')"></button>

@@ -620,6 +620,9 @@
      font-size: .8125rem;
      color: var(--text);
 }
+ @media (max-width: 719px) {
+     .mealie-version { display: none; }
+}
  .error-msg {
      font-size: var(--text-sm);
      color: var(--err);

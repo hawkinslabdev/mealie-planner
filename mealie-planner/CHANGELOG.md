@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.4
+
+- Fix: Hide the version number in the settings UI on mobile
+
 ## 0.6.3
 
 - The Mealie connection URL and token now collapse behind an "Edit" toggle once connected (#13)
