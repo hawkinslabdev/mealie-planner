@@ -19,6 +19,8 @@
         "dockerNotice": "Tout est prêt ! La configuration se fait via les variables d'environnement <code>MEALIE_API_URL</code> et <code>MEALIE_API_KEY</code>.",
         "connected": "Connecté à Mealie",
         "unreachable": "Configuré, mais Mealie est actuellement inaccessible",
+        "btnEdit": "Modifier",
+        "btnCancel": "Annuler",
         "urlLabel": "URL de l'instance",
         "tokenLabel": "Jeton API",
         "tokenPlaceholderUpdate": "Laisser vide pour conserver le jeton actuel",
