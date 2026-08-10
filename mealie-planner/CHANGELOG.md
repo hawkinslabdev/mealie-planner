@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.3
+
+- The Mealie connection URL and token now collapse behind an "Edit" toggle once connected (#13)
+- The app version now shows next to "Report an Issue" in settings
+- Fix: a failed connection check (e.g. a 502 from Mealie) no longer showed the "connected" badge as if nothing were wrong (#20)
+- Fix: dragging a meal to a new slot on mobile could select text instead of moving it (#21)
+- Fix: configuring the connection from the settings UI could leave the mobile view stuck on its loading skeleton
+
 ## 0.6.2
 
 - Fix: the meal plan is now kept ready in the background, so switching weeks feels instant

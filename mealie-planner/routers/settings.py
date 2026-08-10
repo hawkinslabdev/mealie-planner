@@ -127,8 +127,7 @@ async def save_config(payload: ConfigPayload, request: Request):
     client = await get_http_client()
     headers = {"Authorization": f"Bearer {token_to_use}"}
     try:
-        # SSRF: scheme is validated by ConfigPayload; follow_redirects=False prevents
-        # chained redirects to internal hosts.
+        # SSRF: scheme validated by ConfigPayload; follow_redirects=False blocks chained redirects to internal hosts
         resp = await client.get(
             f"{payload.mealie_url.rstrip('/')}/api/app/about",
             headers=headers,

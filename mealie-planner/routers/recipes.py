@@ -32,7 +32,7 @@ router = APIRouter()
 _last_poll_at: int = 0
 _ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 _MAX_IMAGE_BYTES = 10 * 1024 * 1024
-_IMAGE_CACHE_TTL = 86400  # 1 day — stale images refresh within 24 h
+_IMAGE_CACHE_TTL = 86400  # 1 day
 
 _img_cache_dir: Path | None = None
 

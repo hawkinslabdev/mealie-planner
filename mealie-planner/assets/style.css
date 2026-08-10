@@ -1601,7 +1601,6 @@
      position: relative;
      overflow: hidden;
 }
- /* alpine enter */
  /* modal panel enter — CSS animation replays whenever display:none→visible */
  @keyframes modal-panel-in {
      from {
@@ -1628,7 +1627,6 @@
      opacity: 1;
      transform: translateY(0) scale(1);
 }
- /* alpine leave */
  .toast-leave {
      transition: opacity 160ms ease-in,
                  transform 160ms ease-in;
@@ -1703,6 +1701,8 @@
  .chip[draggable="true"] {
      cursor: grab;
      touch-action: none;
+     -webkit-user-select: none;
+     user-select: none;
 }
  .chip[draggable="true"]:hover {
      box-shadow: 0 3px 8px oklch(0% 0 0 / 0.18);
@@ -1723,6 +1723,8 @@
  .mobile-recipe-row[draggable="true"] {
      cursor: grab;
      touch-action: none;
+     -webkit-user-select: none;
+     user-select: none;
 }
  .mobile-slot.drag-over {
      background: var(--bg-subtle);
@@ -2465,7 +2467,6 @@
      to   { opacity: 1; transform: translateY(0); }
 }
 
-/* compact modal */
  @media (max-width: 579px) {
      .modal--compact {
          height: auto;
@@ -2489,7 +2490,6 @@
      padding: var(--space-1) var(--space-1) var(--space-2);
 }
 
-/* spinner inside buttons */
  @keyframes btn-spin {
      to { transform: rotate(360deg); }
 }
@@ -2498,7 +2498,6 @@
      flex-shrink: 0;
 }
 
-/* image upload label */
  .qa-file-label--has-file {
      border-color: var(--accent);
      border-style: solid;

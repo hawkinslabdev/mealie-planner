@@ -8,6 +8,7 @@
   <script>
     window._MP_I18N = {{ translations | tojson }};
     window._MP_LOCALE = "{{ locale }}";
+    window._MP_VERSION = {{ app_version | tojson }};
     const INGRESS_PATH = "{{ ingress_path }}";
     function api(path) { return INGRESS_PATH + path; }
   </script>
@@ -21,7 +22,6 @@
 <h1 class="sr-only">Mealie Planner</h1>
 <div x-data="planner()" x-init="$watch('modalOpen', v => v ? $data._lockBodyScroll() : $data._unlockBodyScroll()); $watch('quickAddOpen', v => v ? $data._lockBodyScroll() : $data._unlockBodyScroll()); $watch('settingsOpen', v => $data._onSettingsToggle(v))" x-cloak @keydown.window="onKeydown($event)">
 
-  <!-- navbar -->
   <nav class="navbar" :class="mode === 'haos' && 'navbar--haos'">
     <span class="navbar-brand">
       <span x-show="mode !== 'haos'">Mealie Planner</span>
@@ -85,7 +85,6 @@
     </div>
   </nav>
 
-  <!-- settings -->
   <div x-show="settingsOpen" class="settings-wrap"
        :class="!configured && 'settings-wrap--first-run'"
        x-transition:enter="transition ease-out duration-150"
@@ -125,26 +124,33 @@
           <template x-if="mode === 'haos'">
             <div class="form-stack">
               <template x-if="configured">
-                <div class="notice">
-                  <span x-show="mealieReachable" x-text="t('settings.connected') + (mealieVersion ? ' · ' + mealieVersion : '')"></span>
-                  <span x-show="!mealieReachable" x-text="t('settings.unreachable')"></span>
+                <div class="notice" style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3)">
+                  <span>
+                    <span x-show="mealieReachable" x-text="t('settings.connected') + (mealieVersion ? ' · ' + mealieVersion : '')"></span>
+                    <span x-show="!mealieReachable" x-text="t('settings.unreachable')"></span>
+                  </span>
+                  <button @click="toggleEditConnection()" class="btn btn-ghost" :aria-expanded="editingConnection" x-text="editingConnection ? t('settings.btnCancel') : t('settings.btnEdit')"></button>
                 </div>
               </template>
-              <div class="form-field">
-                <label class="form-label" for="mealie-url" x-text="t('settings.urlLabel')"></label>
-                <input id="mealie-url" type="url" x-model="settingsForm.mealie_url" placeholder="https://mealie.yourdomain.com" class="form-input">
-              </div>
-              <div class="form-field">
-                <label class="form-label" for="mealie-token" x-text="t('settings.tokenLabel')"></label>
-                <input id="mealie-token" type="password" x-model="settingsForm.api_token"
-                       :placeholder="configured ? t('settings.tokenPlaceholderUpdate') : t('settings.tokenPlaceholderNew')"
-                       class="form-input">
-              </div>
-              <p x-show="settingsError" class="error-msg" x-text="settingsError"></p>
-              <button @click="saveSettings()" :disabled="settingsSaving" class="btn btn-primary btn-full">
-                <span x-show="!settingsSaving" x-text="configured ? t('settings.btnUpdate') : t('settings.btnSave')"></span>
-                <span x-show="settingsSaving" x-text="t('settings.btnValidating')"></span>
-              </button>
+              <template x-if="!configured || editingConnection">
+                <div class="form-stack">
+                  <div class="form-field">
+                    <label class="form-label" for="mealie-url" x-text="t('settings.urlLabel')"></label>
+                    <input id="mealie-url" type="url" x-model="settingsForm.mealie_url" placeholder="https://mealie.yourdomain.com" class="form-input">
+                  </div>
+                  <div class="form-field">
+                    <label class="form-label" for="mealie-token" x-text="t('settings.tokenLabel')"></label>
+                    <input id="mealie-token" type="password" x-model="settingsForm.api_token"
+                           :placeholder="configured ? t('settings.tokenPlaceholderUpdate') : t('settings.tokenPlaceholderNew')"
+                           class="form-input">
+                  </div>
+                  <p x-show="settingsError" class="error-msg" x-text="settingsError"></p>
+                  <button @click="saveSettings()" :disabled="settingsSaving" class="btn btn-primary btn-full">
+                    <span x-show="!settingsSaving" x-text="configured ? t('settings.btnUpdate') : t('settings.btnSave')"></span>
+                    <span x-show="settingsSaving" x-text="t('settings.btnValidating')"></span>
+                  </button>
+                </div>
+              </template>
             </div>
           </template>
         </div>
@@ -270,7 +276,7 @@
             </a>
             <a href="https://github.com/hawkinslabdev/mealie-planner/issues/new" target="_blank" rel="noopener noreferrer" class="form-label" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              <span x-text="t('settings.reportIssue')"></span>
+              <span x-text="appVersion ? t('settings.reportIssue') + ' (v' + appVersion + ')' : t('settings.reportIssue')"></span>
             </a>
           </div>
         </div>
@@ -279,7 +285,6 @@
     </div>
   </div>
 
-  <!-- empty state -->
   <div x-show="initialized && !configured && !settingsOpen" class="empty-state">
     <svg class="empty-state__art" width="130" height="82" viewBox="0 0 130 82" fill="none" aria-hidden="true">
       <!-- Breakfast row: amber -->
@@ -319,13 +324,11 @@
   <!-- planner -->
   <div x-show="configured">
 
-    <!-- error -->
     <div x-show="planError" class="banner banner--error">
       <span class="banner__msg" x-text="planError"></span>
       <button class="banner__retry" @click="loadMealPlan()" x-text="t('planner.retry')"></button>
     </div>
 
-    <!-- week bar -->
     <div class="week-bar">
       <button class="week-nav-btn" @click="shiftPeriod(-1)" :aria-label="t('planner.prevPeriod')">
         <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
@@ -341,7 +344,6 @@
     </div>
     <div x-show="enabledMealTypes.length === 0" class="no-slots" x-text="t('planner.noSlotsEnabled')"></div>
 
-    <!-- grid -->
     <div class="planner-wrap" x-show="enabledMealTypes.length > 0">
       <div class="planner-grid" :style="`grid-template-columns: 68px repeat(${days.length}, minmax(100px, 1fr))`">
         <template x-for="(item, idx) in gridItems" :key="idx">
@@ -406,9 +408,7 @@
       </div>
     </div>
 
-    <!-- mobile -->
     <div class="mobile-view" x-show="enabledMealTypes.length > 0">
-      <!-- Top-level skeleton while mobileDays haven't populated yet -->
       <div x-show="mobileDays.length === 0" class="mobile-init-skel">
         <template x-for="i in [1,2,3,4]" :key="i">
           <div class="mobile-skel-day">
@@ -483,7 +483,6 @@
         </div>
       </template>
 
-      <!-- infinite scroll skeleton -->
       <div x-show="mobileLoadingMore" class="mobile-load-more" aria-hidden="true">
         <template x-for="i in [1,2,3]" :key="i">
           <div class="mobile-skel-day">
@@ -499,10 +498,8 @@
         </template>
       </div>
 
-      <!-- sentinel -->
       <div id="mobile-scroll-sentinel"></div>
 
-      <!-- end of range -->
       <div x-show="!mobileHasMore" class="mobile-range-end">
         <span class="mobile-range-end__line"></span>
         <span class="mobile-range-end__label" x-text="t('planner.endOfRange')"></span>
@@ -554,7 +551,6 @@
           </button>
         </template>
 
-        <!-- recent -->
         <template x-if="recipesLoadedAt !== null && !modalSearch && recentRecipeObjects.length">
           <div>
             <p class="modal-section-label" x-text="t('modal.recentlyUsed')"></p>
@@ -571,7 +567,6 @@
           </div>
         </template>
 
-        <!-- results -->
         <div x-show="recipesLoadedAt !== null && filteredRecipes.length === 0" class="center-msg" x-text="t('modal.noMatch', {q: modalSearch})"></div>
         <div x-show="recipesLoadedAt !== null && filteredRecipes.length > 0" class="recipe-grid">
           <template x-for="r in visibleRecipes" :key="r.id">
@@ -587,7 +582,6 @@
     </div>
   </div>
 
-  <!-- tooltip -->
   <div x-show="tooltipRecipe" class="tooltip-floating"
        x-transition:enter.duration.150ms.opacity.scale.95
        x-transition:leave.duration.100ms.opacity.scale.95
@@ -618,14 +612,12 @@
       <p class="cook__title" id="cook-title" x-text="cookRecipe?.name || (cookLoading ? t('cook.loading') : '')"></p>
     </div>
 
-    <!-- loading -->
     <div x-show="cookLoading" class="cook__state">
       <div class="skel" style="width:60%;height:20px;border-radius:8px;margin-bottom:var(--space-4)"></div>
       <div class="skel" style="width:90%;height:14px;border-radius:6px;margin-bottom:var(--space-2)"></div>
       <div class="skel" style="width:80%;height:14px;border-radius:6px"></div>
     </div>
 
-    <!-- error -->
     <div x-show="cookError" class="cook__state cook__state--error">
       <p x-text="t('cook.loadError')"></p>
       <button class="btn btn-ghost" @click="closeCook()" x-text="t('modal.close')"></button>
@@ -807,7 +799,6 @@
                 x-text="t('quickAdd.tabNew')"></button>
       </div>
 
-      <!-- Tab: Import URL -->
       <div x-show="quickAddTab === 'url'" class="qa-body"
            x-transition:enter="transition ease-out duration-100"
            x-transition:enter-start="opacity-0"
@@ -826,7 +817,6 @@
         </div>
       </div>
 
-      <!-- Tab: New recipe -->
       <div x-show="quickAddTab === 'recipe'" class="qa-body"
            x-transition:enter="transition ease-out duration-100"
            x-transition:enter-start="opacity-0"
@@ -853,7 +843,6 @@
         </div>
       </div>
 
-      <!-- Tab: Image import -->
       <div x-show="quickAddTab === 'image'" class="qa-body"
            x-transition:enter="transition ease-out duration-100"
            x-transition:enter-start="opacity-0"
@@ -880,7 +869,6 @@
       </div>
 
       <div class="qa-footer">
-        <!-- success state -->
         <template x-if="quickAddDone">
           <div class="qa-done">
             <div class="qa-done__row">
@@ -902,7 +890,6 @@
               <span x-text="quickAddIsVideo ? t('quickAdd.slowVideo') : t('quickAdd.slowGeneric')"></span>
             </div>
 
-            <!-- proxy consent prompt -->
             <template x-if="quickAddProxyAvailable && quickAddTab === 'url'">
               <div class="qa-proxy-prompt">
                 <p class="qa-hint" x-text="t('quickAdd.proxyPrompt')"></p>
@@ -949,7 +936,6 @@
     </div>
   </div>
 
-  <!-- logout modal -->
   <div id="logout-modal" hidden class="logout-backdrop">
     <div class="modal" style="max-width:340px;align-items:stretch;gap:0;padding:var(--space-5);text-align:center">
       <p style="font-size:var(--text-base);font-weight:600;margin-bottom:4px" x-text="t('logout.title')"></p>
