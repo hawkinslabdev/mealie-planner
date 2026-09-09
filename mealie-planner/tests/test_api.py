@@ -11,6 +11,7 @@ import pytest_asyncio
 from contextlib import ExitStack
 from cryptography.fernet import Fernet
 from unittest.mock import AsyncMock, MagicMock, patch
+from fastapi import HTTPException
 from httpx import AsyncClient, ASGITransport
 
 import routers.settings as _settings_mod
@@ -717,8 +718,66 @@ class TestActions:
         )
         assert r.status_code == 422
 
+    async def test_list_falls_back_when_first_path_is_empty(self, client):
+        responses = [
+            {"items": []},
+            {"items": [{"id": ACTION_UUID, "title": "Send to TV", "actionType": "post"}]},
+        ]
+        with patch("routers.actions.mealie_get", new=AsyncMock(side_effect=responses)):
+            r = await client.get("/api/recipe-actions")
+        assert r.status_code == 200
+        assert [a["id"] for a in r.json()] == [ACTION_UUID]
+
+    async def test_list_survives_non_json_response(self, client):
+        error = HTTPException(status_code=502, detail="Mealie returned an unexpected response.")
+        with patch("routers.actions.mealie_get", new=AsyncMock(side_effect=error)):
+            r = await client.get("/api/recipe-actions")
+        assert r.status_code == 200
+        assert r.json() == []
+
+    async def test_trigger_post_action_with_empty_mealie_response(self, client):
+        action = {"id": ACTION_UUID, "actionType": "post"}
+        with (
+            patch("routers.actions.mealie_get", new=AsyncMock(return_value=action)),
+            patch("routers.actions.mealie_post", new=AsyncMock(return_value=None)),
+        ):
+            r = await client.post(
+                f"/api/recipe-actions/{ACTION_UUID}/trigger",
+                json={"recipe_slug": "pasta-bake"},
+            )
+        assert r.status_code == 200
+        assert r.json() == {"type": "post", "ok": True}
 
 
+class TestMealieResponseHandling:
+    async def _post(self, status_code, content, json_value=None):
+        import mealie as mealie_mod
+
+        resp = MagicMock()
+        resp.status_code = status_code
+        resp.content = content
+        resp.raise_for_status = MagicMock()
+        resp.json = (
+            MagicMock(return_value=json_value)
+            if json_value is not None
+            else MagicMock(side_effect=ValueError("not json"))
+        )
+        mock_client = MagicMock()
+        mock_client.post = AsyncMock(return_value=resp)
+
+        with (
+            patch("mealie.get_credentials", return_value=(MEALIE_URL, API_TOKEN)),
+            patch("mealie.get_http_client", new=AsyncMock(return_value=mock_client)),
+        ):
+            return await mealie_mod.mealie_post("/api/test", {})
+
+    async def test_empty_body_returns_none(self):
+        assert await self._post(202, b"") is None
+
+    async def test_non_json_body_raises_502(self):
+        with pytest.raises(HTTPException) as exc:
+            await self._post(200, b"<!doctype html><html></html>")
+        assert exc.value.status_code == 502
 
 class TestBodySizeLimit:
     async def test_oversized_body_rejected(self, client):

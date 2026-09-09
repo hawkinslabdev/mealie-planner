@@ -10,36 +10,29 @@ logger = logging.getLogger("mealie_planner")
 router = APIRouter()
 
 
-@router.get("/api/recipe-actions/raw")
-async def get_recipe_actions_raw():
-    results = {}
-    for path in ["/api/groups/recipe-actions", "/api/households/recipe-actions"]:
-        try:
-            results[path] = await mealie_get(f"{path}?perPage=10")
-        except HTTPException as e:
-            results[path] = {"error": e.detail}
-    return results
+_ACTION_BASES = ["/api/households/recipe-actions", "/api/groups/recipe-actions"]
 
 
 @router.get("/api/recipe-actions")
 async def get_recipe_actions():
-    for path in ["/api/groups/recipe-actions", "/api/households/recipe-actions"]:
+    for base in _ACTION_BASES:
         try:
-            data = await mealie_get(f"{path}?perPage=100")
-            items: list = (
-                data.get("items", []) if isinstance(data, dict) else (data or [])
-            )
-            return [
-                {
-                    "id": item.get("id", ""),
-                    "name": item.get("title") or item.get("name") or item.get("label") or "Action",
-                    "action_type": item.get("actionType") or item.get("action_type") or "link",
-                }
-                for item in items
-                if isinstance(item, dict) and item.get("id")
-            ]
-        except HTTPException:
+            data = await mealie_get(f"{base}?perPage=100")
+        except HTTPException as e:
+            logger.debug("recipe actions unavailable at %s: %s", base, e.detail)
             continue
+        items: list = data.get("items", []) if isinstance(data, dict) else (data or [])
+        actions = [
+            {
+                "id": item.get("id", ""),
+                "name": item.get("title") or item.get("name") or item.get("label") or "Action",
+                "action_type": item.get("actionType") or item.get("action_type") or "link",
+            }
+            for item in items
+            if isinstance(item, dict) and item.get("id")
+        ]
+        if actions:
+            return actions
     return []
 
 
@@ -61,10 +54,8 @@ async def trigger_recipe_action(action_id: str, payload: RecipeActionTrigger, re
         raise HTTPException(status_code=429, detail="Too many requests.")
 
     action: dict | None = None
-    for path in [
-        f"/api/households/recipe-actions/{action_id}",
-        f"/api/groups/recipe-actions/{action_id}",
-    ]:
+    for base in _ACTION_BASES:
+        path = f"{base}/{action_id}"
         try:
             raw = await mealie_get(path)
             if isinstance(raw, dict):
@@ -89,12 +80,9 @@ async def trigger_recipe_action(action_id: str, payload: RecipeActionTrigger, re
         )
         return {"type": "link", "url": final_url}
 
-    for path in [
-        f"/api/households/recipe-actions/{action_id}/trigger/{payload.recipe_slug}",
-        f"/api/groups/recipe-actions/{action_id}/trigger/{payload.recipe_slug}",
-    ]:
+    for base in _ACTION_BASES:
         try:
-            await mealie_post(path, {})
+            await mealie_post(f"{base}/{action_id}/trigger/{payload.recipe_slug}", {})
             return {"type": "post", "ok": True}
         except HTTPException as e:
             if e.status_code == 404:

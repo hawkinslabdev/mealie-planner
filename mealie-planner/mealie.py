@@ -56,25 +56,29 @@ async def _mealie_request(
             else:
                 raise ValueError(f"Unsupported method: {method}")
 
-            if resp.status_code == 204:
-                return None
             resp.raise_for_status()
-            return resp.json()
+            if resp.status_code == 204 or not resp.content:
+                return None
+            try:
+                return resp.json()
+            except ValueError:
+                logger.warning("mealie non-JSON response path=%s status=%s", path, resp.status_code)
+                raise HTTPException(status_code=502, detail="Mealie returned an unexpected response.")
         except httpx.HTTPStatusError as e:
             raise HTTPException(status_code=e.response.status_code, detail=str(e))
         except httpx.HTTPError as e:
             raise HTTPException(status_code=502, detail=str(e))
 
 
-async def mealie_get(path: str) -> dict | list:
+async def mealie_get(path: str) -> dict | list | None:
     return await _mealie_request("GET", path)
 
 
-async def mealie_post(path: str, body: dict) -> dict | list:
+async def mealie_post(path: str, body: dict) -> dict | list | None:
     return await _mealie_request("POST", path, body)
 
 
-async def mealie_patch(path: str, body: dict) -> dict | list:
+async def mealie_patch(path: str, body: dict) -> dict | list | None:
     return await _mealie_request("PATCH", path, body)
 
 
