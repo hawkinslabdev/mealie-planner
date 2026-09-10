@@ -794,7 +794,7 @@
         <button class="qa-tab" :class="quickAddTab === 'url' && 'qa-tab--on'"
                 @click="_switchQuickAddTab('url'); $nextTick(() => $refs.quickAddUrlInput?.focus())"
                 x-text="t('quickAdd.tabUrl')"></button>
-        <button x-show="imageImportEnabled" class="qa-tab" :class="quickAddTab === 'image' && 'qa-tab--on'"
+        <button x-show="aiImportEnabled" class="qa-tab" :class="quickAddTab === 'image' && 'qa-tab--on'"
                 @click="_switchQuickAddTab('image')"
                 x-text="t('quickAdd.tabImage')"></button>
         <button class="qa-tab" :class="quickAddTab === 'recipe' && 'qa-tab--on'"
@@ -851,14 +851,22 @@
            x-transition:enter-start="opacity-0"
            x-transition:enter-end="opacity-100">
         <div class="form-stack">
-          <div class="form-field">
+          <div class="form-field" x-show="imageImportEnabled">
             <label class="form-label" x-text="t('quickAdd.imageScanLabel')"></label>
-            <label class="qa-file-label" :class="quickAddScanFile && 'qa-file-label--has-file'">
+            <label class="qa-file-label" :class="quickAddScanFiles.length && 'qa-file-label--has-file'">
               <svg x-show="!quickAddScanPreview" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
               <img x-show="quickAddScanPreview" :src="quickAddScanPreview" class="qa-preview" alt="">
-              <span class="qa-file-name" x-text="quickAddScanFile ? quickAddScanFile.name : t('quickAdd.imageScanPlaceholder')"></span>
-              <input type="file" class="qa-file-input" accept="image/*" x-ref="quickAddScanInput" @change="onQuickAddScanFileChange($event)">
+              <span class="qa-file-name" x-text="quickAddScanLabel()"></span>
+              <input type="file" class="qa-file-input" accept="image/*" multiple x-ref="quickAddScanInput" @change="onQuickAddScanFileChange($event)">
             </label>
+          </div>
+          <div class="form-field">
+            <label class="form-label" x-text="t('quickAdd.aiTextLabel')"></label>
+            <textarea x-model="quickAddText" x-ref="quickAddTextInput" rows="4"
+                      class="form-input"
+                      :placeholder="t('quickAdd.aiTextPlaceholder')"
+                      maxlength="20000"
+                      :disabled="quickAddLoading"></textarea>
           </div>
           <p class="qa-hint" x-text="t('quickAdd.imageScanHint')"></p>
           <div class="opt-row">
@@ -921,10 +929,10 @@
               <span x-show="quickAddLoading" x-text="t('quickAdd.creating')"></span>
             </button>
 
-            <!-- Image import button: Mealie: POST /api/recipes/create/image (OCR photo → recipe) -->
+            <!-- AI import button: Mealie: POST /api/recipes/create/ai (photos and/or pasted text → recipe) -->
             <button x-show="quickAddTab === 'image'"
-                    @click="importRecipeFromImage()"
-                    :disabled="quickAddLoading || !quickAddScanFile"
+                    @click="importRecipeWithAi()"
+                    :disabled="quickAddLoading || (!quickAddScanFiles.length && !quickAddText.trim())"
                     class="btn btn-primary btn-full">
               <svg x-show="quickAddLoading" class="btn-spinner" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
               <span x-show="!quickAddLoading" x-text="t('quickAdd.btnImportImage')"></span>

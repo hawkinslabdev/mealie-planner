@@ -38,6 +38,7 @@ async def get_capabilities():
     if _capabilities_cache and time.time() - _capabilities_cached_at < _CAPABILITIES_TTL:
         return _capabilities_cache
 
+    ai_import_enabled = False
     image_import_enabled = False
     video_instructions_enabled = True
     url, token = get_credentials()
@@ -46,12 +47,17 @@ async def get_capabilities():
             data = await mealie_get("/api/groups/self")
             ai = data.get("aiProviderSettings") or {}
             providers = ai.get("providers") or []
+            ai_import_enabled = bool(ai.get("aiEnabled") and len(providers) > 0)
             image_import_enabled = bool(ai.get("imageProviderEnabled") and len(providers) > 0)
             video_instructions_enabled = bool(ai.get("audioProviderId") and len(providers) > 0)
         except Exception:
             pass
 
-    result = {"image_import_enabled": image_import_enabled, "video_instructions_enabled": video_instructions_enabled}
+    result = {
+        "ai_import_enabled": ai_import_enabled or image_import_enabled,
+        "image_import_enabled": image_import_enabled,
+        "video_instructions_enabled": video_instructions_enabled,
+    }
     _capabilities_cache = result
     _capabilities_cached_at = time.time()
     return result

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.0
+
+- The camera tab is now an AI tab: import a recipe from photos, from pasted text, or from both at once
+- Several photos can go into one recipe, so a two-page spread no longer needs two imports
+- Recipe scanning now uses Mealie's current AI import, falling back to the old photo endpoint on Mealie below 3.24
+
 ## 0.6.5
 
 - Fix: recipe actions no longer fail with an error on Mealie 2.x and 3.x, where they moved from groups to households (#27)

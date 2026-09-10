@@ -79,6 +79,7 @@ function planner() {
     _scrollY: 0,
 
     showQuickAdd: localStorage.getItem('showQuickAdd') !== 'false',  // pill in Settings → Options
+    aiImportEnabled: false,
     imageImportEnabled: false,
     videoInstructionsEnabled: true,
     translateRecipe: false,
@@ -90,8 +91,9 @@ function planner() {
     quickAddName: '',
     quickAddImageFile: null,
     quickAddImagePreview: null,
-    quickAddScanFile: null,
+    quickAddScanFiles: [],
     quickAddScanPreview: null,
+    quickAddText: '',
     quickAddLoading: false,
     quickAddSlow: false,
     quickAddIsVideo: false,
@@ -254,9 +256,10 @@ function planner() {
         if (typeof settings.translate_recipe === 'boolean') this.translateRecipe = settings.translate_recipe;
         if (typeof settings.quick_add_tab === 'string') this.quickAddTab = settings.quick_add_tab;
         this.imageImportEnabled = capabilities.image_import_enabled === true;
+        this.aiImportEnabled = capabilities.ai_import_enabled === true;
         this.videoInstructionsEnabled = capabilities.video_instructions_enabled !== false;
         // If image tab was saved but AI is now disabled, fall back to url
-        if (!this.imageImportEnabled && this.quickAddTab === 'image') this.quickAddTab = 'url';
+        if (!this.aiImportEnabled && this.quickAddTab === 'image') this.quickAddTab = 'url';
         await this.initMobileScroll();
         document.addEventListener('visibilitychange', () => {
           if (document.visibilityState !== 'visible') return;
@@ -1162,7 +1165,8 @@ function planner() {
       this.quickAddName = '';
       this.quickAddImageFile = null;
       if (this.quickAddImagePreview) { URL.revokeObjectURL(this.quickAddImagePreview); this.quickAddImagePreview = null; }
-      this.quickAddScanFile = null;
+      this.quickAddScanFiles = [];
+      this.quickAddText = '';
       if (this.quickAddScanPreview) { URL.revokeObjectURL(this.quickAddScanPreview); this.quickAddScanPreview = null; }
       this.quickAddLoading = false;
       this.quickAddSlow = false;
@@ -1188,7 +1192,8 @@ function planner() {
       this.quickAddMinHeight = null;
       if (this.quickAddImagePreview) { URL.revokeObjectURL(this.quickAddImagePreview); this.quickAddImagePreview = null; }
       if (this.quickAddScanPreview) { URL.revokeObjectURL(this.quickAddScanPreview); this.quickAddScanPreview = null; }
-      this.quickAddScanFile = null;
+      this.quickAddScanFiles = [];
+      this.quickAddText = '';
     },
 
     onQuickAddFileChange(event) {
@@ -1200,22 +1205,31 @@ function planner() {
     },
 
     onQuickAddScanFileChange(event) {
-      const file = event.target.files?.[0];
-      if (!file) return;
-      this.quickAddScanFile = file;
+      const files = [...(event.target.files || [])].slice(0, 5);
+      if (!files.length) return;
+      this.quickAddScanFiles = files;
       if (this.quickAddScanPreview) URL.revokeObjectURL(this.quickAddScanPreview);
-      this.quickAddScanPreview = URL.createObjectURL(file);
+      this.quickAddScanPreview = URL.createObjectURL(files[0]);
     },
 
-    async importRecipeFromImage() {
-      if (!this.quickAddScanFile) { this.quickAddError = this.t('quickAdd.errorImageRequired'); return; }
+    quickAddScanLabel() {
+      const n = this.quickAddScanFiles.length;
+      if (!n) return this.t('quickAdd.imageScanPlaceholder');
+      return n === 1 ? this.quickAddScanFiles[0].name : this.t('quickAdd.imageScanCount', { n });
+    },
+
+    async importRecipeWithAi() {
+      const text = this.quickAddText.trim();
+      if (!this.quickAddScanFiles.length && !text) { this.quickAddError = this.t('quickAdd.errorAiInputRequired'); return; }
       this.quickAddLoading = true;
       this.quickAddError = null;
+      this._startSlowTimer();
       try {
         const fd = new FormData();
-        fd.append('file', this.quickAddScanFile, this.quickAddScanFile.name);
+        for (const file of this.quickAddScanFiles) fd.append('files', file, file.name);
+        if (text) fd.append('text', text);
         if (this.translateRecipe) fd.append('translate', 'true');
-        const resp = await fetch(api('/api/recipes/import-image'), { method: 'POST', body: fd });
+        const resp = await fetch(api('/api/recipes/import-ai'), { method: 'POST', body: fd });
         if (!resp.ok) {
           const body = await resp.json().catch(() => ({}));
           this.quickAddError = this._extractError(body, resp.status);
@@ -1225,6 +1239,7 @@ function planner() {
       } catch (e) {
         this.quickAddError = this._friendlyError(e);
       } finally {
+        this._clearSlowTimer();
         this.quickAddLoading = false;
       }
     },

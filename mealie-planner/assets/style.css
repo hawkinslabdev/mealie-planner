@@ -601,6 +601,11 @@
  .form-input::placeholder {
      color: var(--text-subtle);
 }
+ textarea.form-input {
+     resize: vertical;
+     min-height: 84px;
+     line-height: 1.5;
+}
  .form-stack {
      display: flex;
      flex-direction: column;

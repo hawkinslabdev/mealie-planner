@@ -155,13 +155,16 @@
         "openInMealie": "Open in Mealie to add ingredients & steps ↗",
         "proxyPrompt": "The website may be blocking automated access. Would you like to try fetching the page through this server instead?",
         "btnRetryProxy": "Retry via Mealie Planner",
-        "tabImage": "Camera",
-        "imageScanLabel": "Recipe photo",
-        "imageScanPlaceholder": "Choose a photo…",
-        "imageScanHint": "Upload a photo of a recipe card or cookbook page. Mealie will use AI to extract the ingredients and steps.",
-        "btnImportImage": "Import from photo",
+        "tabImage": "AI",
+        "imageScanLabel": "Recipe photos",
+        "imageScanPlaceholder": "Choose photos…",
+        "imageScanHint": "Upload photos of a recipe card or cookbook page, paste the recipe text, or both. Mealie's AI turns them into a recipe.",
+        "btnImportImage": "Import with AI",
         "importingImage": "Recognising recipe… (may take 15–30 seconds)",
-        "errorImageRequired": "Choose a photo first."
+        "imageScanCount": "{n} photos selected",
+        "aiTextLabel": "Recipe text (optional)",
+        "aiTextPlaceholder": "Paste the ingredients and steps…",
+        "errorAiInputRequired": "Add a photo or paste some recipe text first."
     },
     "auth": {
         "pageTitle": "Mealie Planner · Unlock",

@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 
 import httpx
 from curl_cffi.requests import AsyncSession as _CurlSession
-from fastapi import APIRouter, Form, HTTPException, Query, Request, Response, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, Query, Request, Response, UploadFile
 from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel, field_validator
 
@@ -32,6 +32,8 @@ router = APIRouter()
 _last_poll_at: int = 0
 _ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 _MAX_IMAGE_BYTES = 10 * 1024 * 1024
+_MAX_AI_IMAGES = 5
+_MAX_AI_TEXT_CHARS = 20000
 _IMAGE_CACHE_TTL = 86400  # 1 day
 
 _img_cache_dir: Path | None = None
@@ -324,9 +326,32 @@ class QuickCreatePayload(BaseModel):
         return v
 
 
+def _image_filename(upload: UploadFile, content_type: str) -> str:
+    ext = ""
+    if upload.filename and "." in upload.filename:
+        ext = upload.filename.rsplit(".", 1)[-1].lower()
+    if not ext:
+        ext = content_type.split("/")[-1]
+    if ext == "jpeg":
+        ext = "jpg"
+    if ext not in ("jpg", "png", "webp", "gif"):
+        ext = "jpg"
+    return upload.filename or f"image.{ext}"
+
+
+def _slug_from_mealie_response(body) -> str:
+    if isinstance(body, str) and body:
+        return body
+    if isinstance(body, dict):
+        slug = body.get("slug") or body.get("name")
+        if slug:
+            return slug
+    raise HTTPException(status_code=502, detail=f"Unexpected Mealie response: {body!r}")
+
+
 async def _finish_recipe_import(slug: str) -> dict:
     data = await mealie_get(f"/api/recipes/{slug}")
-    recipe_id = data.get("id")
+    recipe_id = data.get("id") if isinstance(data, dict) else None
     if not recipe_id:
         raise HTTPException(status_code=502, detail="Recipe imported but ID not found.")
     await upsert_recipe_cache(data)
@@ -356,16 +381,7 @@ async def import_recipe_url(payload: ImportUrlPayload, request: Request):
                 headers={"Authorization": f"Bearer {token}"},
             )
             resp.raise_for_status()
-            body = resp.json()
-            # Mealie returns bare slug string (older) or {"slug": "..."} object (newer)
-            if isinstance(body, str) and body:
-                slug = body
-            elif isinstance(body, dict):
-                slug = body.get("slug") or body.get("name")
-                if not slug:
-                    raise HTTPException(status_code=502, detail=f"Unexpected Mealie response: {body}")
-            else:
-                raise HTTPException(status_code=502, detail=f"Unexpected Mealie response: {body!r}")
+            slug = _slug_from_mealie_response(resp.json())
         except httpx.HTTPStatusError as e:
             detail = e.response.text[:200] if e.response.content else str(e)
             if e.response.status_code in (400, 422):
@@ -526,62 +542,77 @@ async def upload_recipe_image(slug: str, file: UploadFile, request: Request):
     return {"ok": True}
 
 
-@router.post("/api/recipes/import-image")
-async def import_recipe_from_image(
+@router.post("/api/recipes/import-ai")
+async def import_recipe_with_ai(
     request: Request,
-    file: UploadFile = Form(...),
+    files: list[UploadFile] = File(default_factory=list),
+    text: str = Form(""),
     translate: bool = Form(False),
 ):
     if not rate_limiter.check(request, key="recipe-create", max_hits=5):
         raise HTTPException(status_code=429, detail="Too many requests.")
 
-    content_type = (file.content_type or "").split(";")[0].strip().lower()
-    if content_type not in _ALLOWED_IMAGE_TYPES:
-        raise HTTPException(status_code=400, detail="File must be a JPEG, PNG, WebP, or GIF image.")
+    text = text.strip()
+    if len(text) > _MAX_AI_TEXT_CHARS:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Pasted text is too long (max {_MAX_AI_TEXT_CHARS:,} characters).",
+        )
+    if len(files) > _MAX_AI_IMAGES:
+        raise HTTPException(status_code=400, detail=f"Attach at most {_MAX_AI_IMAGES} photos.")
 
-    contents = await file.read()
-    if len(contents) > _MAX_IMAGE_BYTES:
-        raise HTTPException(status_code=413, detail="Image too large (max 10 MB).")
+    uploads: list[tuple[str, tuple[str, bytes, str]]] = []
+    for upload in files:
+        content_type = (upload.content_type or "").split(";")[0].strip().lower()
+        if content_type not in _ALLOWED_IMAGE_TYPES:
+            raise HTTPException(status_code=400, detail="Photos must be JPEG, PNG, WebP, or GIF images.")
+        contents = await upload.read()
+        if not contents:
+            continue
+        if len(contents) > _MAX_IMAGE_BYTES:
+            raise HTTPException(status_code=413, detail="Image too large (max 10 MB).")
+        uploads.append(("images", (_image_filename(upload, content_type), contents, content_type)))
+
+    if not uploads and not text:
+        raise HTTPException(status_code=400, detail="Add a photo or paste the recipe text.")
 
     mealie_url, token = get_credentials()
     if not mealie_url or not token:
         raise HTTPException(status_code=400, detail="Mealie not configured")
 
-    params: dict[str, str] = {}
-    if translate:
-        locale = get_locale(request)
-        bcp47 = _LOCALE_TO_BCP47.get(locale)
-        if bcp47:
-            params["translateLanguage"] = bcp47
+    bcp47 = _LOCALE_TO_BCP47.get(get_locale(request)) if translate else None
+    form: dict[str, str] = {}
+    if text:
+        form["content"] = text
+    if bcp47:
+        form["translateLanguage"] = bcp47
 
-    ext = ""
-    if file.filename and "." in file.filename:
-        ext = file.filename.rsplit(".", 1)[-1].lower()
-    if not ext:
-        ext = content_type.split("/")[-1]
-    if ext == "jpeg":
-        ext = "jpg"
-    if ext not in ("jpg", "png", "webp", "gif"):
-        ext = "jpg"
+    base = mealie_url.rstrip("/")
+    headers = {"Authorization": f"Bearer {token}"}
 
-    async with httpx.AsyncClient(timeout=120.0) as client:
+    async with httpx.AsyncClient(timeout=180.0) as client:
         try:
             resp = await client.post(
-                f"{mealie_url.rstrip('/')}/api/recipes/create/image",
-                params=params,
-                headers={"Authorization": f"Bearer {token}"},
-                files={"images": (file.filename or f"image.{ext}", contents, content_type)},
+                f"{base}/api/recipes/create/ai",
+                data=form,
+                files=uploads,
+                headers=headers,
             )
+            if resp.status_code in (404, 405):
+                if not uploads:
+                    raise HTTPException(
+                        status_code=422,
+                        detail="This Mealie version cannot import recipes from text. Upgrade to Mealie 3.24 or newer, or attach a photo instead.",
+                    )
+                logger.info("ai_import.fallback_to_legacy_image_endpoint status=%s", resp.status_code)
+                resp = await client.post(
+                    f"{base}/api/recipes/create/image",
+                    params={"translateLanguage": bcp47} if bcp47 else {},
+                    files=uploads[:1],
+                    headers=headers,
+                )
             resp.raise_for_status()
-            body = resp.json()
-            if isinstance(body, str) and body:
-                slug = body
-            elif isinstance(body, dict):
-                slug = body.get("slug") or body.get("name")
-                if not slug:
-                    raise HTTPException(status_code=502, detail=f"Unexpected Mealie response: {body}")
-            else:
-                raise HTTPException(status_code=502, detail=f"Unexpected Mealie response: {body!r}")
+            slug = _slug_from_mealie_response(resp.json())
         except httpx.HTTPStatusError as e:
             detail = e.response.text[:200] if e.response.content else str(e)
             raise HTTPException(status_code=502, detail=f"Mealie {e.response.status_code}: {detail}")
@@ -589,15 +620,14 @@ async def import_recipe_from_image(
             raise HTTPException(status_code=502, detail=str(e))
 
     result = await _finish_recipe_import(slug)
-    recipe_id = result["id"]
 
     try:
         await mealie_post("/api/comments", {
-            "recipeId": recipe_id,
+            "recipeId": result["id"],
             "text": "Imported via Mealie Planner's proxy.",
         })
     except Exception:
-        logger.debug("image_import.comment_failed slug=%s", slug)
+        logger.debug("ai_import.comment_failed slug=%s", slug)
 
     return result
 
