@@ -1,18 +1,18 @@
 import json
 import logging
+import re
 import time
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlparse
 
 import httpx
-from curl_cffi.requests import AsyncSession as _CurlSession
-from fastapi import APIRouter, Form, HTTPException, Query, Request, Response, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, Query, Request, Response, UploadFile
 from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel, field_validator
 
 from config import DATA_PATH, get_credentials
-from i18n import get_locale
+from i18n import get_locale, load_locale_json
 from database import (
     cache_last_refreshed,
     ensure_cache_fresh,
@@ -24,7 +24,7 @@ from database import (
     upsert_recipe_cache,
 )
 from mealie import _outbound_sem, get_http_client, mealie_get, mealie_patch, mealie_post
-from utils import extract_og_image, rate_limiter, require_date, require_slug, require_uuid, task_manager
+from utils import rate_limiter, require_date, require_slug, require_uuid, task_manager
 
 logger = logging.getLogger("mealie_planner")
 router = APIRouter()
@@ -32,6 +32,21 @@ router = APIRouter()
 _last_poll_at: int = 0
 _ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 _MAX_IMAGE_BYTES = 10 * 1024 * 1024
+_MAX_AI_IMAGES = 5
+_MAX_AI_TEXT_CHARS = 20000
+_MEALIE_ERROR_KEYS = {
+    "AI services are not enabled": "aiNotEnabled",
+    "The AI provider was unable to complete the request. Please try again": "aiRequestFailed",
+    "AI image services are not enabled": "imageProviderNotEnabled",
+    "No recipe was found in the provided source": "noRecipeFound",
+    "No content, images, or URL were provided": "noSource",
+    "The AI provider did not return a recipe": "providerReturnedNothing",
+    "Something went wrong while creating the recipe. Please try again": "unknownError",
+    "Unable to read any content from the provided source": "unreadableSource",
+    "Unable to download the video. It may be private, removed, or from an unsupported site": "videoDownloadFailed",
+    "The AI provider is rate limiting requests. Please wait a moment and try again": "rateLimit",
+}
+_VIDEO_URL_RE = re.compile(r"youtube\.com|youtu\.be|tiktok\.com|instagram\.com/reel|vimeo\.com|twitch\.tv", re.I)
 _IMAGE_CACHE_TTL = 86400  # 1 day
 
 _img_cache_dir: Path | None = None
@@ -221,82 +236,6 @@ async def get_recipe(slug: str):
     }
 
 
-async def _fetch_and_import_via_proxy(
-    recipe_url: str, mealie_url: str, token: str
-) -> tuple[str, str | None]:
-    """Fetch recipe HTML impersonating Chrome, then send to Mealie's HTML/JSON stream importer.
-    Returns (slug, og_image_url_or_none)."""
-    async with _CurlSession() as session:
-        try:
-            page = await session.get(recipe_url, impersonate="chrome146", timeout=30)
-            page.raise_for_status()
-        except Exception as e:
-            resp = getattr(e, "response", None)
-            sc = resp.status_code if resp is not None else None
-            detail = (
-                "The website is blocking server-side access — create the recipe manually."
-                if sc == 403
-                else f"Could not fetch the recipe page: {e}"
-            )
-            raise HTTPException(status_code=502, detail=detail)
-
-    og_image_url = extract_og_image(page.text)
-    logger.debug("proxy.fetched url=%s bytes=%d og_image=%r", recipe_url, len(page.content), og_image_url)
-
-    slug: str | None = None
-    async with httpx.AsyncClient(timeout=45.0) as client:
-        try:
-            async with client.stream(
-                "POST",
-                f"{mealie_url.rstrip('/')}/api/recipes/create/html-or-json/stream",
-                # Include original URL so Mealie can resolve relative image paths and set orgURL
-                json={"data": page.text, "url": recipe_url, "include_tags": True},
-                headers={"Authorization": f"Bearer {token}", "Accept": "text/event-stream"},
-            ) as resp:
-                if resp.status_code >= 400:
-                    body_bytes = await resp.aread()
-                    try:
-                        detail = json.loads(body_bytes).get("detail", body_bytes.decode()[:200])
-                    except Exception:
-                        detail = body_bytes.decode()[:200]
-                    raise HTTPException(
-                        status_code=502, detail=f"Mealie could not parse the recipe — {detail}"
-                    )
-                async for line in resp.aiter_lines():
-                    logger.debug("proxy.sse line=%r", line)
-                    if not line.startswith("data:"):
-                        continue
-                    raw = line[5:].strip()
-                    if not raw:
-                        continue
-                    try:
-                        evt = json.loads(raw)
-                    except json.JSONDecodeError:
-                        continue
-                    if isinstance(evt, str) and evt:
-                        slug = evt
-                    elif isinstance(evt, dict):
-                        data = evt.get("data", evt)
-                        if isinstance(data, str) and data:
-                            slug = data
-                        elif isinstance(data, dict):
-                            s = data.get("slug") or data.get("name")
-                            if s:
-                                slug = s
-        except HTTPException:
-            raise
-        except httpx.HTTPError as e:
-            raise HTTPException(status_code=502, detail=str(e))
-
-    logger.debug("proxy.slug slug=%r", slug)
-    if not slug:
-        raise HTTPException(
-            status_code=502,
-            detail="Mealie could not extract a recipe from this page — try a different URL",
-        )
-    return slug, og_image_url
-
-
 class ImportUrlPayload(BaseModel):
     url: str
 
@@ -324,9 +263,61 @@ class QuickCreatePayload(BaseModel):
         return v
 
 
+def _image_filename(upload: UploadFile, content_type: str) -> str:
+    ext = ""
+    if upload.filename and "." in upload.filename:
+        ext = upload.filename.rsplit(".", 1)[-1].lower()
+    if not ext:
+        ext = content_type.split("/")[-1]
+    if ext == "jpeg":
+        ext = "jpg"
+    if ext not in ("jpg", "png", "webp", "gif"):
+        ext = "jpg"
+    return upload.filename or f"image.{ext}"
+
+
+def _slug_from_mealie_response(body) -> str:
+    if isinstance(body, str) and body:
+        return body
+    if isinstance(body, dict):
+        slug = body.get("slug") or body.get("name")
+        if slug:
+            return slug
+    raise HTTPException(status_code=502, detail=f"Unexpected Mealie response: {body!r}")
+
+
+def _mealie_headers(token: str, request: Request) -> dict[str, str]:
+    return {
+        "Authorization": f"Bearer {token}",
+        "Accept-Language": _LOCALE_TO_BCP47.get(get_locale(request), "en-US"),
+    }
+
+
+def _mealie_error_detail(resp: httpx.Response, request: Request) -> str:
+    msg = ""
+    try:
+        d = resp.json().get("detail")
+        if isinstance(d, dict) and d.get("message"):
+            msg = str(d["message"]).strip()
+    except Exception:
+        pass
+    logger.warning(
+        "mealie.import_failed status=%s path=%s body=%s",
+        resp.status_code, resp.request.url.path, (msg or resp.text)[:300],
+    )
+    key = _MEALIE_ERROR_KEYS.get(msg.rstrip("."))
+    if key:
+        translated = load_locale_json(get_locale(request)).get("quickAdd", {}).get("mealieErrors", {}).get(key)
+        if translated:
+            return translated
+    if not msg:
+        msg = resp.text[:200].strip() if resp.content else f"HTTP {resp.status_code}"
+    return msg if msg.endswith((".", "!", "?")) else msg + "."
+
+
 async def _finish_recipe_import(slug: str) -> dict:
     data = await mealie_get(f"/api/recipes/{slug}")
-    recipe_id = data.get("id")
+    recipe_id = data.get("id") if isinstance(data, dict) else None
     if not recipe_id:
         raise HTTPException(status_code=502, detail="Recipe imported but ID not found.")
     await upsert_recipe_cache(data)
@@ -348,88 +339,33 @@ async def import_recipe_url(payload: ImportUrlPayload, request: Request):
     if not mealie_url or not token:
         raise HTTPException(status_code=400, detail="Mealie not configured")
 
-    async with httpx.AsyncClient(timeout=35.0) as client:
+    base = mealie_url.rstrip("/")
+    headers = _mealie_headers(token, request)
+    is_video = bool(_VIDEO_URL_RE.search(payload.url))
+    async with httpx.AsyncClient(timeout=180.0 if is_video else 35.0) as client:
         try:
-            resp = await client.post(
-                f"{mealie_url.rstrip('/')}/api/recipes/create/url",
-                json={"url": payload.url, "include_tags": True},
-                headers={"Authorization": f"Bearer {token}"},
-            )
-            resp.raise_for_status()
-            body = resp.json()
-            # Mealie returns bare slug string (older) or {"slug": "..."} object (newer)
-            if isinstance(body, str) and body:
-                slug = body
-            elif isinstance(body, dict):
-                slug = body.get("slug") or body.get("name")
-                if not slug:
-                    raise HTTPException(status_code=502, detail=f"Unexpected Mealie response: {body}")
+            if is_video:
+                resp = await client.post(f"{base}/api/recipes/create/ai", data={"url": payload.url}, headers=headers)
             else:
-                raise HTTPException(status_code=502, detail=f"Unexpected Mealie response: {body!r}")
+                resp = await client.post(
+                    f"{base}/api/recipes/create/url",
+                    json={"url": payload.url, "include_tags": True},
+                    headers=headers,
+                )
+            resp.raise_for_status()
+            slug = _slug_from_mealie_response(resp.json())
         except httpx.HTTPStatusError as e:
-            detail = e.response.text[:200] if e.response.content else str(e)
+            detail = _mealie_error_detail(e.response, request)
             if e.response.status_code in (400, 422):
                 return JSONResponse(
                     status_code=422,
-                    content={"detail": f"Could not import recipe — {detail}", "proxy_available": True},
+                    content={"detail": detail},
                 )
-            raise HTTPException(status_code=502, detail=f"Mealie {e.response.status_code}: {detail}")
+            raise HTTPException(status_code=502, detail=detail)
         except httpx.HTTPError as e:
             raise HTTPException(status_code=502, detail=str(e))
 
     return await _finish_recipe_import(slug)
-
-
-@router.post("/api/recipes/import-url-proxy")
-async def import_recipe_url_proxy(payload: ImportUrlPayload, request: Request):
-    if not rate_limiter.check(request, key="recipe-create", max_hits=5):
-        raise HTTPException(status_code=429, detail="Too many requests.")
-
-    mealie_url, token = get_credentials()
-    if not mealie_url or not token:
-        raise HTTPException(status_code=400, detail="Mealie not configured")
-
-    slug, og_image_url = await _fetch_and_import_via_proxy(payload.url, mealie_url, token)
-    result = await _finish_recipe_import(slug)
-    recipe_id = result["id"]
-
-    # Ensure orgURL is set (Mealie may not set it from HTML-only import)
-    try:
-        await mealie_patch(f"/api/recipes/{slug}", {"orgURL": payload.url})
-    except Exception:
-        logger.debug("proxy.patch_orgurl_failed slug=%s", slug)
-
-    # Upload og:image > ensures the recipe card shows an image in the planner
-    if og_image_url:
-        try:
-            async with _CurlSession() as session:
-                img_resp = await session.get(og_image_url, impersonate="chrome146", timeout=15)
-                img_resp.raise_for_status()
-            raw_ext = og_image_url.split("?")[0].rsplit(".", 1)[-1].lower()
-            ext = raw_ext if raw_ext in ("jpg", "jpeg", "png", "webp", "gif") else "jpg"
-            fname_ext = "jpg" if ext == "jpeg" else ext
-            ct = img_resp.headers.get("content-type", f"image/{fname_ext}").split(";")[0].strip()
-            async with httpx.AsyncClient(timeout=15.0) as client:
-                await client.put(
-                    f"{mealie_url.rstrip('/')}/api/recipes/{slug}/image",
-                    headers={"Authorization": f"Bearer {token}"},
-                    files={"image": (f"image.{fname_ext}", img_resp.content, ct)},
-                    data={"extension": fname_ext},
-                )
-            logger.debug("proxy.image_uploaded slug=%s og_image=%s", slug, og_image_url)
-        except Exception as e:
-            logger.debug("proxy.image_upload_failed slug=%s: %s", slug, e)
-
-    # Tag the recipe with a comment so its origin is traceable in Mealie
-    try:
-        await mealie_post("/api/comments", {
-            "recipeId": recipe_id,
-            "text": "Imported via Mealie Planner's proxy.",
-        })
-    except Exception:
-        logger.debug("proxy.comment_failed slug=%s", slug)
-
-    return result
 
 
 @router.post("/api/recipes/quick-create")
@@ -526,78 +462,102 @@ async def upload_recipe_image(slug: str, file: UploadFile, request: Request):
     return {"ok": True}
 
 
-@router.post("/api/recipes/import-image")
-async def import_recipe_from_image(
+@router.post("/api/recipes/import-ai")
+async def import_recipe_with_ai(
     request: Request,
-    file: UploadFile = Form(...),
+    files: list[UploadFile] = File(default_factory=list),
+    text: str = Form(""),
+    url: str = Form(""),
     translate: bool = Form(False),
+    create_new_organizers: bool = Form(False),
 ):
     if not rate_limiter.check(request, key="recipe-create", max_hits=5):
         raise HTTPException(status_code=429, detail="Too many requests.")
 
-    content_type = (file.content_type or "").split(";")[0].strip().lower()
-    if content_type not in _ALLOWED_IMAGE_TYPES:
-        raise HTTPException(status_code=400, detail="File must be a JPEG, PNG, WebP, or GIF image.")
+    text = text.strip()
+    if len(text) > _MAX_AI_TEXT_CHARS:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Pasted text is too long (max {_MAX_AI_TEXT_CHARS:,} characters).",
+        )
+    if len(files) > _MAX_AI_IMAGES:
+        raise HTTPException(status_code=400, detail=f"Attach at most {_MAX_AI_IMAGES} photos.")
 
-    contents = await file.read()
-    if len(contents) > _MAX_IMAGE_BYTES:
-        raise HTTPException(status_code=413, detail="Image too large (max 10 MB).")
+    uploads: list[tuple[str, tuple[str, bytes, str]]] = []
+    for upload in files:
+        content_type = (upload.content_type or "").split(";")[0].strip().lower()
+        if content_type not in _ALLOWED_IMAGE_TYPES:
+            raise HTTPException(status_code=400, detail="Photos must be JPEG, PNG, WebP, or GIF images.")
+        contents = await upload.read()
+        if not contents:
+            continue
+        if len(contents) > _MAX_IMAGE_BYTES:
+            raise HTTPException(status_code=413, detail="Image too large (max 10 MB).")
+        uploads.append(("images", (_image_filename(upload, content_type), contents, content_type)))
+
+    url = url.strip()
+    if url:
+        parsed = urlparse(url)
+        if parsed.scheme not in ("http", "https") or not parsed.netloc:
+            raise HTTPException(status_code=422, detail="URL must be a valid http or https address.")
+    if not uploads and not text and not url:
+        raise HTTPException(status_code=400, detail="Add a photo, a link, or paste the recipe text.")
 
     mealie_url, token = get_credentials()
     if not mealie_url or not token:
         raise HTTPException(status_code=400, detail="Mealie not configured")
 
-    params: dict[str, str] = {}
-    if translate:
-        locale = get_locale(request)
-        bcp47 = _LOCALE_TO_BCP47.get(locale)
-        if bcp47:
-            params["translateLanguage"] = bcp47
+    bcp47 = _LOCALE_TO_BCP47.get(get_locale(request)) if translate else None
+    form: dict[str, str] = {}
+    if text:
+        form["content"] = text
+    if url:
+        form["url"] = url
+    if bcp47:
+        form["translateLanguage"] = bcp47
+    if create_new_organizers:
+        form["createNewOrganizers"] = "true"
 
-    ext = ""
-    if file.filename and "." in file.filename:
-        ext = file.filename.rsplit(".", 1)[-1].lower()
-    if not ext:
-        ext = content_type.split("/")[-1]
-    if ext == "jpeg":
-        ext = "jpg"
-    if ext not in ("jpg", "png", "webp", "gif"):
-        ext = "jpg"
+    base = mealie_url.rstrip("/")
+    headers = _mealie_headers(token, request)
 
-    async with httpx.AsyncClient(timeout=120.0) as client:
+    async with httpx.AsyncClient(timeout=180.0) as client:
         try:
             resp = await client.post(
-                f"{mealie_url.rstrip('/')}/api/recipes/create/image",
-                params=params,
-                headers={"Authorization": f"Bearer {token}"},
-                files={"images": (file.filename or f"image.{ext}", contents, content_type)},
+                f"{base}/api/recipes/create/ai",
+                data=form,
+                files=uploads,
+                headers=headers,
             )
+            if resp.status_code in (404, 405):
+                if not uploads or url or text:
+                    raise HTTPException(
+                        status_code=422,
+                        detail="This Mealie version cannot import recipes from text or links. Upgrade to Mealie 3.24 or newer, or attach a photo instead.",
+                    )
+                logger.info("ai_import.fallback_to_legacy_image_endpoint status=%s", resp.status_code)
+                resp = await client.post(
+                    f"{base}/api/recipes/create/image",
+                    params={"translateLanguage": bcp47} if bcp47 else {},
+                    files=uploads[:1],
+                    headers=headers,
+                )
             resp.raise_for_status()
-            body = resp.json()
-            if isinstance(body, str) and body:
-                slug = body
-            elif isinstance(body, dict):
-                slug = body.get("slug") or body.get("name")
-                if not slug:
-                    raise HTTPException(status_code=502, detail=f"Unexpected Mealie response: {body}")
-            else:
-                raise HTTPException(status_code=502, detail=f"Unexpected Mealie response: {body!r}")
+            slug = _slug_from_mealie_response(resp.json())
         except httpx.HTTPStatusError as e:
-            detail = e.response.text[:200] if e.response.content else str(e)
-            raise HTTPException(status_code=502, detail=f"Mealie {e.response.status_code}: {detail}")
+            raise HTTPException(status_code=502, detail=_mealie_error_detail(e.response, request))
         except httpx.HTTPError as e:
             raise HTTPException(status_code=502, detail=str(e))
 
     result = await _finish_recipe_import(slug)
-    recipe_id = result["id"]
 
     try:
         await mealie_post("/api/comments", {
-            "recipeId": recipe_id,
-            "text": "Imported via Mealie Planner's proxy.",
+            "recipeId": result["id"],
+            "text": "Imported with AI via Mealie Planner.",
         })
     except Exception:
-        logger.debug("image_import.comment_failed slug=%s", slug)
+        logger.debug("ai_import.comment_failed slug=%s", slug)
 
     return result
 

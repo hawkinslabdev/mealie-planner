@@ -7,7 +7,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exception_handlers import http_exception_handler
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -71,6 +72,13 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Mealie Planner", lifespan=lifespan)
+
+
+@app.exception_handler(HTTPException)
+async def _log_upstream_errors(request: Request, exc: HTTPException):
+    if exc.status_code >= 500:
+        logger.warning("%s %s -> %s %s", request.method, request.url.path, exc.status_code, exc.detail)
+    return await http_exception_handler(request, exc)
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")
 templates = Jinja2Templates(directory="templates")
 

@@ -12,7 +12,7 @@ from contextlib import ExitStack
 from cryptography.fernet import Fernet
 from unittest.mock import AsyncMock, MagicMock, patch
 from fastapi import HTTPException
-from httpx import AsyncClient, ASGITransport
+from httpx import AsyncClient, ASGITransport, HTTPStatusError
 
 import routers.settings as _settings_mod
 import routers.mealplan as _mealplan_mod
@@ -219,7 +219,7 @@ class TestConfig:
         mock_err_resp = MagicMock()
         mock_err_resp.status_code = 401
         mock_http = MagicMock()
-        mock_http.get = AsyncMock(side_effect=httpx.HTTPStatusError("401", request=MagicMock(), response=mock_err_resp))
+        mock_http.get = AsyncMock(side_effect=HTTPStatusError("401", request=MagicMock(), response=mock_err_resp))
 
         with (
             patch("routers.settings.DOCKER_MODE", False),
@@ -637,6 +637,130 @@ class TestRecipes:
         with _creds_ctx():
             r = await client.post("/api/recipes/import-url", json={"url": "http://"})
         assert r.status_code == 422
+
+    async def test_import_url_video_routes_to_ai(self, client):
+        upstream, mock_http = _ai_upstream(_mealie_response(201, "pasta-bake"))
+        with (
+            _creds_ctx(),
+            upstream,
+            patch("routers.recipes.mealie_get", new=AsyncMock(return_value=SAMPLE_RECIPE)),
+            patch("routers.recipes.upsert_recipe_cache", new=AsyncMock()),
+        ):
+            r = await client.post("/api/recipes/import-url", json={"url": "https://youtube.com/shorts/ayKW8Qskazg"})
+        assert r.status_code == 200
+        call = mock_http.post.call_args
+        assert call.args[0].endswith("/api/recipes/create/ai")
+        assert call.kwargs["data"] == {"url": "https://youtube.com/shorts/ayKW8Qskazg"}
+
+    async def test_import_url_translates_mealie_error(self, client):
+        rejected = _mealie_response(400, {"detail": {"message": "The AI provider is rate limiting requests. Please wait a moment and try again"}})
+        rejected.raise_for_status = MagicMock(side_effect=HTTPStatusError("400", request=MagicMock(), response=rejected))
+        upstream, _ = _ai_upstream(rejected)
+        with _creds_ctx(), upstream:
+            r = await client.post(
+                "/api/recipes/import-url",
+                json={"url": "https://youtube.com/shorts/ayKW8Qskazg"},
+                headers={"Accept-Language": "nl"},
+            )
+        assert r.status_code == 422
+        assert r.json()["detail"].startswith("De AI-provider")
+
+    async def test_import_ai_url_and_organizers(self, client):
+        upstream, mock_http = _ai_upstream(_mealie_response(201, "pasta-bake"))
+        with (
+            _creds_ctx(),
+            upstream,
+            patch("routers.recipes.mealie_get", new=AsyncMock(return_value=SAMPLE_RECIPE)),
+            patch("routers.recipes.upsert_recipe_cache", new=AsyncMock()),
+            patch("routers.recipes.mealie_post", new=AsyncMock()),
+        ):
+            r = await client.post(
+                "/api/recipes/import-ai",
+                data={"url": "https://example.com/pasta", "create_new_organizers": "true"},
+            )
+        assert r.status_code == 200
+        form = mock_http.post.call_args.kwargs["data"]
+        assert form["url"] == "https://example.com/pasta"
+        assert form["createNewOrganizers"] == "true"
+
+    async def test_import_ai_rejects_bad_url(self, client):
+        with _creds_ctx():
+            r = await client.post("/api/recipes/import-ai", data={"url": "ftp://example.com"})
+        assert r.status_code == 422
+
+
+def _mealie_response(status_code: int, json_value=None):
+    resp = MagicMock()
+    resp.status_code = status_code
+    resp.content = b"{}"
+    resp.text = ""
+    resp.raise_for_status = MagicMock()
+    resp.json = MagicMock(return_value=json_value)
+    return resp
+
+
+def _ai_upstream(*responses):
+    """Patch the ad-hoc httpx.AsyncClient used by the AI import route."""
+    mock_http = MagicMock()
+    mock_http.post = AsyncMock(side_effect=list(responses))
+    cm = MagicMock()
+    cm.__aenter__ = AsyncMock(return_value=mock_http)
+    cm.__aexit__ = AsyncMock(return_value=False)
+    return patch("routers.recipes.httpx.AsyncClient", MagicMock(return_value=cm)), mock_http
+
+
+class TestAiImport:
+    def _import_ctx(self):
+        stack = ExitStack()
+        stack.enter_context(_creds_ctx())
+        stack.enter_context(patch("routers.recipes.mealie_get", new=AsyncMock(return_value=SAMPLE_RECIPE)))
+        stack.enter_context(patch("routers.recipes.upsert_recipe_cache", new=AsyncMock()))
+        stack.enter_context(patch("routers.recipes.mealie_post", new=AsyncMock(return_value=None)))
+        return stack
+
+    async def test_text_only_import(self, client):
+        patcher, mock_http = _ai_upstream(_mealie_response(201, "pasta-bake"))
+        with self._import_ctx(), patcher:
+            r = await client.post("/api/recipes/import-ai", data={"text": "2 eggs\nmix well"})
+        assert r.status_code == 200
+        assert r.json()["slug"] == "pasta-bake"
+        url, kwargs = mock_http.post.call_args[0][0], mock_http.post.call_args[1]
+        assert url.endswith("/api/recipes/create/ai")
+        assert kwargs["data"]["content"] == "2 eggs\nmix well"
+
+    async def test_photo_falls_back_to_legacy_endpoint(self, client):
+        patcher, mock_http = _ai_upstream(
+            _mealie_response(404),
+            _mealie_response(201, "pasta-bake"),
+        )
+        with self._import_ctx(), patcher:
+            r = await client.post(
+                "/api/recipes/import-ai",
+                files={"files": ("card.jpg", b"\xff\xd8\xff-not-really-a-jpeg", "image/jpeg")},
+            )
+        assert r.status_code == 200
+        assert mock_http.post.call_count == 2
+        assert mock_http.post.call_args_list[1][0][0].endswith("/api/recipes/create/image")
+
+    async def test_text_only_on_old_mealie_is_rejected(self, client):
+        patcher, _ = _ai_upstream(_mealie_response(404))
+        with self._import_ctx(), patcher:
+            r = await client.post("/api/recipes/import-ai", data={"text": "2 eggs"})
+        assert r.status_code == 422
+        assert "3.24" in r.json()["detail"]
+
+    async def test_requires_photo_or_text(self, client):
+        with self._import_ctx():
+            r = await client.post("/api/recipes/import-ai", data={"text": "   "})
+        assert r.status_code == 400
+
+    async def test_rejects_non_image_upload(self, client):
+        with self._import_ctx():
+            r = await client.post(
+                "/api/recipes/import-ai",
+                files={"files": ("recipe.pdf", b"%PDF-", "application/pdf")},
+            )
+        assert r.status_code == 400
 
 
 class TestAuth:

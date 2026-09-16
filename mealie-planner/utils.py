@@ -72,19 +72,6 @@ class _RateLimiter:
 rate_limiter = _RateLimiter()
 
 
-# og:image extraction — handles both attribute orderings and quote styles
-_OG_IMAGE_RE = re.compile(
-    r"<meta\s[^>]*\bproperty=[\"']og:image[\"'][^>]*\bcontent=[\"']([^\"']+)[\"']"
-    r"|<meta\s[^>]*\bcontent=[\"']([^\"']+)[\"'][^>]*\bproperty=[\"']og:image[\"']",
-    re.IGNORECASE,
-)
-
-
-def extract_og_image(html: str) -> str | None:
-    m = _OG_IMAGE_RE.search(html)
-    return (m.group(1) or m.group(2)) if m else None
-
-
 _UUID_RE = re.compile(
     r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
     re.IGNORECASE,

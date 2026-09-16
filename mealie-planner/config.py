@@ -14,6 +14,7 @@ CACHE_TTL = 3600
 
 DOCKER_MODE = bool(os.environ.get("MEALIE_API_URL"))
 PIN_CODE = os.environ.get("PIN_CODE", "")
+DISABLE_AI = os.environ.get("DISABLE_AI", "").strip().lower() in ("1", "true", "yes")
 REQUIRE_AUTH = bool(PIN_CODE)
 SESSION_COOKIE = "mp_session"
 SESSION_TTL = 86400 * 30

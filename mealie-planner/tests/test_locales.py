@@ -152,7 +152,7 @@ class TestLocaleRegistration:
         """Template must use x-for, not hardcoded <option> tags per locale."""
         hardcoded = re.findall(r'<option\s+value=["\'][a-z]{2}["\']', index_html)
         assert not hardcoded, (
-            f"index.html has {len(hardcoded)} hardcoded locale <option> tag(s) — use x-for instead"
+            f"index.html has {len(hardcoded)} hardcoded locale <option> tag(s), use x-for instead"
         )
 
 
