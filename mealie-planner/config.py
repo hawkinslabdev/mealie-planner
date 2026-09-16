@@ -20,10 +20,23 @@ SESSION_COOKIE = "mp_session"
 SESSION_TTL = 86400 * 30
 
 # For adding a new locale: add the translation (/assets/locales/<locale>.json) and add it to SUPPORTED_LOCALES and LOCALE_NAMES in `app.js` and update SUPPORTED_LOCALES in `main.py`
-SUPPORTED_LOCALES = {"en", "de", "nl", "es", "fr", "it", "pl", "ru", "cs", "sv", "da", "no", "pt_BR"}
-LOCALE_OVERRIDE = os.environ.get("LOCALE", "").strip().lower()
-if LOCALE_OVERRIDE not in SUPPORTED_LOCALES:
-    LOCALE_OVERRIDE = ""
+SUPPORTED_LOCALES = {"en", "de", "nl", "es", "fr", "it", "pl", "ru", "cs", "sv", "da", "no", "pt_BR", "pt_PT", "zh_CN", "hu"}
+
+
+def resolve_locale(tag: str) -> str | None:
+    tag = tag.strip().lower().replace("-", "_")
+    if not tag:
+        return None
+    by_lower = {c.lower(): c for c in SUPPORTED_LOCALES}
+    if tag in by_lower:
+        return by_lower[tag]
+    base = tag.split("_")[0]
+    if base in by_lower:
+        return by_lower[base]
+    return next((c for k, c in sorted(by_lower.items()) if k.startswith(base + "_")), None)
+
+
+LOCALE_OVERRIDE = resolve_locale(os.environ.get("LOCALE", "")) or ""
 LOCALE_DIR = os.path.join(os.path.dirname(__file__), "assets", "locales")
 
 

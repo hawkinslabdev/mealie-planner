@@ -174,3 +174,19 @@ class TestReferenceLocale:
             except json.JSONDecodeError as e:
                 errors.append(f"{f.name}: {e}")
         assert not errors, "Invalid JSON:\n" + "\n".join(errors)
+
+
+class TestResolveLocale:
+    def test_case_and_region_handling(self):
+        import sys
+        sys.path.insert(0, str(ROOT))
+        from config import resolve_locale
+
+        assert resolve_locale("pt_br") == "pt_BR"
+        assert resolve_locale("pt-PT") == "pt_PT"
+        assert resolve_locale("pt") == "pt_BR"
+        assert resolve_locale("zh-TW") == "zh_CN"
+        assert resolve_locale("de-AT") == "de"
+        assert resolve_locale("EN") == "en"
+        assert resolve_locale("xx") is None
+        assert resolve_locale("") is None

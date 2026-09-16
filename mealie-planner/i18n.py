@@ -4,7 +4,7 @@ import os
 
 from fastapi import Request
 
-from config import LOCALE_DIR, LOCALE_OVERRIDE, SUPPORTED_LOCALES
+from config import LOCALE_DIR, LOCALE_OVERRIDE, resolve_locale
 
 logger = logging.getLogger("mealie_planner")
 
@@ -19,16 +19,16 @@ def load_locale_json(lang: str) -> dict:
 
 def detect_accept_language(accept_language: str) -> str | None:
     for part in accept_language.split(","):
-        lang = part.split(";")[0].strip().split("-")[0].lower()
-        if lang in SUPPORTED_LOCALES:
+        lang = resolve_locale(part.split(";")[0])
+        if lang:
             return lang
     return None
 
 
 def get_locale(request: Request) -> str:
     """Priority: cookie > LOCALE env var > Accept-Language header > 'en'."""
-    cookie = request.cookies.get("mp_locale", "").strip().lower()
-    if cookie in SUPPORTED_LOCALES:
+    cookie = resolve_locale(request.cookies.get("mp_locale", ""))
+    if cookie:
         return cookie
     if LOCALE_OVERRIDE:
         return LOCALE_OVERRIDE
