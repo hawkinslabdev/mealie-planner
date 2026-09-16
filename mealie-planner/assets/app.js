@@ -2,8 +2,8 @@ const RECIPES_STALE_MS = 5 * 60 * 1000;
 const PLAN_CACHE_TTL_MS = 5 * 60 * 1000;
 
 /* For adding a new locale: add the translation (/assets/locales/<locale>.json) and add it to SUPPORTED_LOCALES and LOCALE_NAMES in `app.js` and update SUPPORTED_LOCALES in `main.py` */
-const SUPPORTED_LOCALES = ['en', 'de', 'nl', 'es', 'fr', 'it', 'pl', 'ru', 'cs', 'sv', 'da', 'no', 'pt_BR'];
-const LOCALE_NAMES = { en: 'English', de: 'Deutsch', nl: 'Nederlands', es: 'Español', fr: 'Français', it: 'Italiano', pl: 'Polski', ru: 'Русский', cs: 'Čeština', sv: 'Svenska', da: 'Dansk', no: 'Norsk', pt_BR: 'Português (Brasil)' };
+const SUPPORTED_LOCALES = ['en', 'de', 'nl', 'es', 'fr', 'it', 'pl', 'ru', 'cs', 'sv', 'da', 'no', 'pt_BR', 'pt_PT', 'zh_CN', 'hu'];
+const LOCALE_NAMES = { en: 'English', de: 'Deutsch', nl: 'Nederlands', es: 'Español', fr: 'Français', it: 'Italiano', pl: 'Polski', ru: 'Русский', cs: 'Čeština', sv: 'Svenska', da: 'Dansk', no: 'Norsk', pt_BR: 'Português (Brasil)', pt_PT: 'Português (Portugal)', zh_CN: '简体中文', hu: 'Magyar' };
 
 function planner() {
   return {

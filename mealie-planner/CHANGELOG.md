@@ -11,6 +11,8 @@
 - Legacy photo endpoints now fall back to Mealie 3.24+ unified AI import automatically
 - Removed local browser impersonation fallbacks to leverage Mealie 3.22+ native proxy and FlareSolverr support
 - Renamed the quick-add "Add" tab to "Manual"
+- Added translations for Simplified Chinese, European Portuguese, and Hungarian 
+- Fix: Português (Brasil) could not be selected; regional locales (`pt-BR`, `zh-TW`) now resolve to the closest available translation
 
 ## 0.6.4
 

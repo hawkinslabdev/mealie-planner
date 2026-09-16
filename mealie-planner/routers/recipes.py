@@ -303,7 +303,7 @@ def _mealie_error_detail(resp: httpx.Response, request: Request) -> str:
         pass
     logger.warning(
         "mealie.import_failed status=%s path=%s body=%s",
-        resp.status_code, resp.request.url.path, (msg or resp.text)[:300],
+        resp.status_code, resp.request.url.path, resp.text[:1000],
     )
     key = _MEALIE_ERROR_KEYS.get(msg.rstrip("."))
     if key:
