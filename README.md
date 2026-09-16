@@ -46,6 +46,14 @@ services:
 
 After starting the container, the application will be available at `http://localhost:3000`. 
 
+<details>
+<summary>What about HACS?</summary>
+<br>
+  
+Mealie Planner is a Home Assistant add-on, which falls *outside the scope* of HACS. HACS only distributes components that run inside the Home Assistant core process (such as integrations, cards, and themes). Learn more at [https://www.hacs.xyz/docs/faq/addons/](https://www.hacs.xyz/docs/faq/addons/).
+  
+</details>
+
 ## License
 
 This project is licensed under the **AGPL 3.0** license. See [LICENSE](LICENSE) for details. This project is not affiliated with [Mealie](https://mealie.io).
