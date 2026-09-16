@@ -131,6 +131,7 @@ function planner() {
     })(),
 
     locale: window._MP_LOCALE || 'en',
+    get intlLocale() { return this.locale.replace('_', '-'); },
 
     /* computed */
     get filteredRecipes() {
@@ -144,9 +145,9 @@ function planner() {
       const parse = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d); };
       const a = parse(this.days[0].date), b = parse(this.days[this.days.length - 1].date);
       if (a.getMonth() === b.getMonth()) {
-        return `${a.getDate()}–${b.getDate()} ${a.toLocaleDateString(this.locale, {month:'long'})} ${a.getFullYear()}`;
+        return `${a.getDate()}–${b.getDate()} ${a.toLocaleDateString(this.intlLocale, {month:'long'})} ${a.getFullYear()}`;
       }
-      return `${a.toLocaleDateString(this.locale,{day:'numeric',month:'short'})} – ${b.toLocaleDateString(this.locale,{day:'numeric',month:'short',year:'numeric'})}`;
+      return `${a.toLocaleDateString(this.intlLocale,{day:'numeric',month:'short'})} – ${b.toLocaleDateString(this.intlLocale,{day:'numeric',month:'short',year:'numeric'})}`;
     },
 
     get gridItems() {
@@ -290,8 +291,8 @@ function planner() {
         this.days.push({
           date,
           isToday: date === todayStr,
-          label: date === todayStr ? this.t('planner.today') : d.toLocaleDateString(this.locale, {weekday:'long'}),
-          wd: d.toLocaleDateString(this.locale, {weekday:'short'}),
+          label: date === todayStr ? this.t('planner.today') : d.toLocaleDateString(this.intlLocale, {weekday:'long'}),
+          wd: d.toLocaleDateString(this.intlLocale, {weekday:'short'}),
           dn: d.getDate(),
         });
       }
@@ -1011,7 +1012,7 @@ function planner() {
     formatDate(dateStr) {
       if (!dateStr) return '';
       const [y,m,d] = dateStr.split('-').map(Number);
-      return new Date(y,m-1,d).toLocaleDateString(this.locale, {weekday:'short',month:'short',day:'numeric'});
+      return new Date(y,m-1,d).toLocaleDateString(this.intlLocale, {weekday:'short',month:'short',day:'numeric'});
     },
     getMealieLink(slug) {
       if (!slug) return '#';
@@ -1075,8 +1076,8 @@ function planner() {
         return {
           date,
           isToday: date === today,
-          label: date === today ? this.t('planner.today') : d.toLocaleDateString(this.locale, { weekday: 'long' }),
-          wd: d.toLocaleDateString(this.locale, { weekday: 'short' }),
+          label: date === today ? this.t('planner.today') : d.toLocaleDateString(this.intlLocale, { weekday: 'long' }),
+          wd: d.toLocaleDateString(this.intlLocale, { weekday: 'short' }),
           dn: d.getDate(),
         };
       });
