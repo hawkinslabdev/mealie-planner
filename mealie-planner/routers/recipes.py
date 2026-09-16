@@ -530,7 +530,7 @@ async def import_recipe_with_ai(
                 headers=headers,
             )
             if resp.status_code in (404, 405):
-                if not uploads or url:
+                if not uploads or url or text:
                     raise HTTPException(
                         status_code=422,
                         detail="This Mealie version cannot import recipes from text or links. Upgrade to Mealie 3.24 or newer, or attach a photo instead.",

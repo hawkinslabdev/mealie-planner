@@ -38,8 +38,9 @@ services:
     environment:
       - MEALIE_API_URL=https://mealie.yourdomain.com
       - MEALIE_API_KEY=your-api-key-here
-      # Optional and absolutely not necessary:
+      # Optional.
       - PIN_CODE=ABC123
+      - DISABLE_AI=true
     restart: unless-stopped
 ```
 

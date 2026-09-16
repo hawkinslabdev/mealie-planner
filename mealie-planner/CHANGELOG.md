@@ -12,19 +12,11 @@
 - Removed local browser impersonation fallbacks to leverage Mealie 3.22+ native proxy and FlareSolverr support
 - Renamed the quick-add "Add" tab to "Manual"
 
-## 0.6.5
-
-* Fix: recipe actions no longer fail with an error on Mealie 2.x and 3.x, where they moved from groups to households (#27)
-* Fix: triggering a recipe action no longer reports an error when Mealie accepts it without a reply
-
-## 0.6.5
+## 0.6.4
 
 - Fix: recipe actions no longer fail with an error on Mealie 2.x and 3.x, where they moved from groups to households (#27)
 - Fix: triggering a recipe action no longer reports an error when Mealie accepts it without a reply
-
-## 0.6.4
-
-- Fix: Hide the version number in the settings UI on mobile
+- Fix: hide the version number in the settings UI on mobile
 
 ## 0.6.3
 
