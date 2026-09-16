@@ -1,4 +1,4 @@
-FROM python:3.11-slim AS builder
+FROM python:3.13-slim AS builder
 WORKDIR /build
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc libffi-dev \
@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --prefix=/install --no-cache-dir -r requirements.txt
 
-FROM python:3.11-slim AS runtime
+FROM python:3.13-slim AS runtime
 ARG BUILD_VERSION=dev
 LABEL org.opencontainers.image.title="Mealie Planner" \
       org.opencontainers.image.description="A streamlined week-view planner for Mealie" \

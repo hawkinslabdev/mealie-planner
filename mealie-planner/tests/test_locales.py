@@ -119,15 +119,18 @@ class TestLocaleRegistration:
     """Every locale file on disk must be registered in all code-level lists."""
 
     @pytest.fixture(scope="class")
-    def app_js(self) -> str:
+    @staticmethod
+    def app_js() -> str:
         return (ROOT / "assets" / "app.js").read_text(encoding="utf-8")
 
     @pytest.fixture(scope="class")
-    def main_py(self) -> str:
+    @staticmethod
+    def main_py() -> str:
         return (ROOT / "config.py").read_text(encoding="utf-8")
 
     @pytest.fixture(scope="class")
-    def index_html(self) -> str:
+    @staticmethod
+    def index_html() -> str:
         return (ROOT / "templates" / "index.html").read_text(encoding="utf-8")
 
     def test_app_js_supported_locales(self, app_js: str):

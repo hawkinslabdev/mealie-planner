@@ -7,12 +7,14 @@
 - Video links from YouTube, TikTok, Instagram, Vimeo, and Twitch can now be imported using Mealie's transcription engine
 - Added an "Import with AI" option to quick-add when a standard recipe web scrape fails
 - Added a toggle to allow AI generation of missing tags and categories on import
-- Server errors during import now display localized messages while retaining original Mealie logs
-- Legacy photo endpoints now fall back to Mealie 3.24+ unified AI import automatically
 - Removed local browser impersonation fallbacks to leverage Mealie 3.22+ native proxy and FlareSolverr support
 - Renamed the quick-add "Add" tab to "Manual"
 - Added translations for Simplified Chinese, European Portuguese, and Hungarian 
+- Legacy photo endpoints now fall back to Mealie 3.24+ unified AI import automatically
+- Fix: Server errors during import now display localized messages while retaining original Mealie logs
 - Fix: Português (Brasil) could not be selected; regional locales (`pt-BR`, `zh-TW`) now resolve to the closest available translation
+- Fix: align Python version in pip-compile and Dockerfile
+- Security: updated various dependencies
 
 ## 0.6.4
 
