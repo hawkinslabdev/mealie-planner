@@ -2,9 +2,20 @@
 
 ## 0.7.0
 
-- The camera tab is now an AI tab: import a recipe from photos, from pasted text, or from both at once
-- Several photos can go into one recipe, so a two-page spread no longer needs two imports
-- Recipe scanning now uses Mealie's current AI import, falling back to the old photo endpoint on Mealie below 3.24
+- Replaced the camera tab with an AI tab to import recipes from links, photos, text, or a mix of all three
+- Added multi-photo imports so multi-page spreads no longer require separate requests
+- Video links from YouTube, TikTok, Instagram, Vimeo, and Twitch can now be imported using Mealie's transcription engine
+- Added an "Import with AI" option to quick-add when a standard recipe web scrape fails
+- Added a toggle to allow AI generation of missing tags and categories on import
+- Server errors during import now display localized messages while retaining original Mealie logs
+- Legacy photo endpoints now fall back to Mealie 3.24+ unified AI import automatically
+- Removed local browser impersonation fallbacks to leverage Mealie 3.22+ native proxy and FlareSolverr support
+- Renamed the quick-add "Add" tab to "Manual"
+
+## 0.6.5
+
+* Fix: recipe actions no longer fail with an error on Mealie 2.x and 3.x, where they moved from groups to households (#27)
+* Fix: triggering a recipe action no longer reports an error when Mealie accepts it without a reply
 
 ## 0.6.5
 

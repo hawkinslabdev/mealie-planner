@@ -36,7 +36,7 @@ function planner() {
     initialized: false,
     configured: false,
     mode: 'haos',
-    mealieReachable: true,  // assume fine until the probe says otherwise — the badge is a warning, not a status light
+    mealieReachable: true,  // assume fine until the probe says otherwise; the badge is a warning, not a status light
     mealieVersion: null,
     appVersion: window._MP_VERSION || '',
 
@@ -83,6 +83,7 @@ function planner() {
     imageImportEnabled: false,
     videoInstructionsEnabled: true,
     translateRecipe: false,
+    createNewOrganizers: false,
     quickAddOpen: false,
     quickAddDate: null,
     quickAddMt: null,
@@ -94,13 +95,14 @@ function planner() {
     quickAddScanFiles: [],
     quickAddScanPreview: null,
     quickAddText: '',
+    quickAddAiUrl: '',
     quickAddLoading: false,
     quickAddSlow: false,
     quickAddIsVideo: false,
     _quickAddSlowTimer: null,
     quickAddError: null,
     quickAddDone: null,
-    quickAddProxyAvailable: false,
+    quickAddAiFallback: false,
     quickAddMinHeight: null,
 
     activeCell: null,
@@ -254,6 +256,7 @@ function planner() {
         ]);
         if (typeof settings.show_quick_add === 'boolean') this.showQuickAdd = settings.show_quick_add;
         if (typeof settings.translate_recipe === 'boolean') this.translateRecipe = settings.translate_recipe;
+        if (typeof settings.create_new_organizers === 'boolean') this.createNewOrganizers = settings.create_new_organizers;
         if (typeof settings.quick_add_tab === 'string') this.quickAddTab = settings.quick_add_tab;
         this.imageImportEnabled = capabilities.image_import_enabled === true;
         this.aiImportEnabled = capabilities.ai_import_enabled === true;
@@ -409,7 +412,7 @@ function planner() {
     _onSheetTouchStart(e, el, closeFn, breakpoint) {
       if (!window.matchMedia(`(max-width: ${breakpoint}px)`).matches) return;
       if (!el) return;
-      // reset residue from previous gesture — safe even if element is display:none
+      // reset residue from previous gesture, safe even if element is display:none
       el.style.transition = 'none';
       el.style.transform = '';
       el.style.animation = 'none'; // suppress CSS animation fill (settings panel)
@@ -441,7 +444,7 @@ function planner() {
         if (reduced) { el.style.transform = ''; el.style.animation = ''; closeFn(); return; }
         el.style.transition = 'transform 0.26s cubic-bezier(0.4, 0, 1, 1)';
         el.style.transform = 'translateY(110%)';
-        // styles cleaned at next open — avoids race with Alpine leave transition
+        // styles cleaned at next open, avoids race with Alpine leave transition
         setTimeout(closeFn, 260);
       };
       const springBack = (reduced) => {
@@ -1086,7 +1089,7 @@ function planner() {
       const now = new Date();
       const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - this.pastDays);
       const batch = this._buildMobileBatch(start, this.pastDays + 1 + Math.min(6, this.futureDays));
-      // loadMealPlan already fetched this date range — just set mobileDays, no separate fetch needed
+      // loadMealPlan already fetched this date range, just set mobileDays, no separate fetch needed
       this.mobileDays = batch;
       await this.$nextTick();
       await new Promise(r => requestAnimationFrame(r));
@@ -1153,7 +1156,7 @@ function planner() {
     _switchQuickAddTab(tab) {
       this.quickAddTab = tab;
       this.quickAddError = null;
-      this.quickAddProxyAvailable = false;
+      this.quickAddAiFallback = false;
       localStorage.setItem('quickAddTab', tab);
       this._saveSettings({ quick_add_tab: tab });
     },
@@ -1167,13 +1170,14 @@ function planner() {
       if (this.quickAddImagePreview) { URL.revokeObjectURL(this.quickAddImagePreview); this.quickAddImagePreview = null; }
       this.quickAddScanFiles = [];
       this.quickAddText = '';
+      this.quickAddAiUrl = '';
       if (this.quickAddScanPreview) { URL.revokeObjectURL(this.quickAddScanPreview); this.quickAddScanPreview = null; }
       this.quickAddLoading = false;
       this.quickAddSlow = false;
       this.quickAddIsVideo = false;
       this.quickAddError = null;
       this.quickAddDone = null;
-      this.quickAddProxyAvailable = false;
+      this.quickAddAiFallback = false;
       this.quickAddMinHeight = null;
       // reset any drag gesture residue before showing
       const qm = this.$refs.quickAddModal;
@@ -1188,12 +1192,13 @@ function planner() {
     closeQuickAdd() {
       this.quickAddOpen = false;
       this.quickAddDone = null;
-      this.quickAddProxyAvailable = false;
+      this.quickAddAiFallback = false;
       this.quickAddMinHeight = null;
       if (this.quickAddImagePreview) { URL.revokeObjectURL(this.quickAddImagePreview); this.quickAddImagePreview = null; }
       if (this.quickAddScanPreview) { URL.revokeObjectURL(this.quickAddScanPreview); this.quickAddScanPreview = null; }
       this.quickAddScanFiles = [];
       this.quickAddText = '';
+      this.quickAddAiUrl = '';
     },
 
     onQuickAddFileChange(event) {
@@ -1220,15 +1225,19 @@ function planner() {
 
     async importRecipeWithAi() {
       const text = this.quickAddText.trim();
-      if (!this.quickAddScanFiles.length && !text) { this.quickAddError = this.t('quickAdd.errorAiInputRequired'); return; }
+      const url = this.quickAddAiUrl.trim();
+      if (!this.quickAddScanFiles.length && !text && !url) { this.quickAddError = this.t('quickAdd.errorAiInputRequired'); return; }
       this.quickAddLoading = true;
       this.quickAddError = null;
+      this.quickAddIsVideo = this._isVideoUrl(url);
       this._startSlowTimer();
       try {
         const fd = new FormData();
         for (const file of this.quickAddScanFiles) fd.append('files', file, file.name);
         if (text) fd.append('text', text);
+        if (url) fd.append('url', url);
         if (this.translateRecipe) fd.append('translate', 'true');
+        if (this.createNewOrganizers) fd.append('create_new_organizers', 'true');
         const resp = await fetch(api('/api/recipes/import-ai'), { method: 'POST', body: fd });
         if (!resp.ok) {
           const body = await resp.json().catch(() => ({}));
@@ -1265,7 +1274,7 @@ function planner() {
       if (!url) { this.quickAddError = this.t('quickAdd.errorUrlRequired'); return; }
       this.quickAddLoading = true;
       this.quickAddError = null;
-      this.quickAddProxyAvailable = false;
+      this.quickAddAiFallback = false;
       this.quickAddIsVideo = this._isVideoUrl(url);
       this._startSlowTimer();
       try {
@@ -1276,7 +1285,7 @@ function planner() {
         });
         if (!resp.ok) {
           const body = await resp.json().catch(() => ({}));
-          if (body.proxy_available) { this.quickAddProxyAvailable = true; }
+          this.quickAddAiFallback = resp.status === 422 && this.aiImportEnabled;
           this.quickAddError = this._extractError(body, resp.status);
           return;
         }
@@ -1289,22 +1298,10 @@ function planner() {
       }
     },
 
-    async importRecipeViaProxy() {
-      const url = this.quickAddUrl.trim();
-      this.quickAddLoading = true;
-      this.quickAddError = null;
-      this.quickAddProxyAvailable = false;
-      this.quickAddIsVideo = this._isVideoUrl(url);
-      this._startSlowTimer();
-      try {
-        const recipe = await this._post('/api/recipes/import-url-proxy', { url });
-        this._onRecipeImported(recipe);
-      } catch (e) {
-        this.quickAddError = this._friendlyError(e);
-      } finally {
-        this._clearSlowTimer();
-        this.quickAddLoading = false;
-      }
+    retryImportWithAi() {
+      this.quickAddAiUrl = this.quickAddUrl.trim();
+      this._switchQuickAddTab('image');
+      this.importRecipeWithAi();
     },
 
     _onRecipeImported(recipe) {

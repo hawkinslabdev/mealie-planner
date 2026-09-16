@@ -2427,7 +2427,7 @@
      flex-direction: column;
      gap: var(--space-2);
 }
- .qa-proxy-prompt {
+ .qa-fallback-prompt {
      display: flex;
      flex-direction: column;
      gap: var(--space-2);

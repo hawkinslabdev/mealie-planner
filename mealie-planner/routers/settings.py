@@ -7,7 +7,7 @@ import httpx
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, field_validator
 
-from config import DOCKER_MODE, encrypt_token, get_credentials, get_mode, write_credentials
+from config import DISABLE_AI, DOCKER_MODE, encrypt_token, get_credentials, get_mode, write_credentials
 from database import get_db, refresh_recipe_cache
 from mealie import get_http_client, mealie_get
 from routers.mealplan import clear_mealplan_cache
@@ -27,6 +27,7 @@ _CAPABILITIES_TTL: int = 60
 _SETTINGS_DEFAULTS: dict[str, object] = {
     "show_quick_add": True,
     "translate_recipe": False,
+    "create_new_organizers": False,
     "quick_add_tab": "url",
 }
 _ALLOWED_SETTINGS: set[str] = set(_SETTINGS_DEFAULTS)
@@ -40,16 +41,16 @@ async def get_capabilities():
 
     ai_import_enabled = False
     image_import_enabled = False
-    video_instructions_enabled = True
+    video_instructions_enabled = not DISABLE_AI
     url, token = get_credentials()
-    if url and token:
+    if url and token and not DISABLE_AI:
         try:
             data = await mealie_get("/api/groups/self")
             ai = data.get("aiProviderSettings") or {}
             providers = ai.get("providers") or []
             ai_import_enabled = bool(ai.get("aiEnabled") and len(providers) > 0)
             image_import_enabled = bool(ai.get("imageProviderEnabled") and len(providers) > 0)
-            video_instructions_enabled = bool(ai.get("audioProviderId") and len(providers) > 0)
+            video_instructions_enabled = bool(ai.get("audioProviderEnabled", ai.get("audioProviderId")) and len(providers) > 0)
         except Exception:
             pass
 
@@ -181,6 +182,7 @@ _VALID_QUICK_ADD_TABS = {"url", "recipe", "image"}
 class SettingsPatch(BaseModel):
     show_quick_add: bool | None = None
     translate_recipe: bool | None = None
+    create_new_organizers: bool | None = None
     quick_add_tab: str | None = None
 
     @field_validator("quick_add_tab")

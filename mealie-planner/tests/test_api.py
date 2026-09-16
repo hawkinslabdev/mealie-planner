@@ -12,7 +12,7 @@ from contextlib import ExitStack
 from cryptography.fernet import Fernet
 from unittest.mock import AsyncMock, MagicMock, patch
 from fastapi import HTTPException
-from httpx import AsyncClient, ASGITransport
+from httpx import AsyncClient, ASGITransport, HTTPStatusError
 
 import routers.settings as _settings_mod
 import routers.mealplan as _mealplan_mod
@@ -219,7 +219,7 @@ class TestConfig:
         mock_err_resp = MagicMock()
         mock_err_resp.status_code = 401
         mock_http = MagicMock()
-        mock_http.get = AsyncMock(side_effect=httpx.HTTPStatusError("401", request=MagicMock(), response=mock_err_resp))
+        mock_http.get = AsyncMock(side_effect=HTTPStatusError("401", request=MagicMock(), response=mock_err_resp))
 
         with (
             patch("routers.settings.DOCKER_MODE", False),
@@ -636,6 +636,56 @@ class TestRecipes:
     async def test_import_url_no_host(self, client):
         with _creds_ctx():
             r = await client.post("/api/recipes/import-url", json={"url": "http://"})
+        assert r.status_code == 422
+
+    async def test_import_url_video_routes_to_ai(self, client):
+        upstream, mock_http = _ai_upstream(_mealie_response(201, "pasta-bake"))
+        with (
+            _creds_ctx(),
+            upstream,
+            patch("routers.recipes.mealie_get", new=AsyncMock(return_value=SAMPLE_RECIPE)),
+            patch("routers.recipes.upsert_recipe_cache", new=AsyncMock()),
+        ):
+            r = await client.post("/api/recipes/import-url", json={"url": "https://youtube.com/shorts/ayKW8Qskazg"})
+        assert r.status_code == 200
+        call = mock_http.post.call_args
+        assert call.args[0].endswith("/api/recipes/create/ai")
+        assert call.kwargs["data"] == {"url": "https://youtube.com/shorts/ayKW8Qskazg"}
+
+    async def test_import_url_translates_mealie_error(self, client):
+        rejected = _mealie_response(400, {"detail": {"message": "The AI provider is rate limiting requests. Please wait a moment and try again"}})
+        rejected.raise_for_status = MagicMock(side_effect=HTTPStatusError("400", request=MagicMock(), response=rejected))
+        upstream, _ = _ai_upstream(rejected)
+        with _creds_ctx(), upstream:
+            r = await client.post(
+                "/api/recipes/import-url",
+                json={"url": "https://youtube.com/shorts/ayKW8Qskazg"},
+                headers={"Accept-Language": "nl"},
+            )
+        assert r.status_code == 422
+        assert r.json()["detail"].startswith("De AI-provider")
+
+    async def test_import_ai_url_and_organizers(self, client):
+        upstream, mock_http = _ai_upstream(_mealie_response(201, "pasta-bake"))
+        with (
+            _creds_ctx(),
+            upstream,
+            patch("routers.recipes.mealie_get", new=AsyncMock(return_value=SAMPLE_RECIPE)),
+            patch("routers.recipes.upsert_recipe_cache", new=AsyncMock()),
+            patch("routers.recipes.mealie_post", new=AsyncMock()),
+        ):
+            r = await client.post(
+                "/api/recipes/import-ai",
+                data={"url": "https://example.com/pasta", "create_new_organizers": "true"},
+            )
+        assert r.status_code == 200
+        form = mock_http.post.call_args.kwargs["data"]
+        assert form["url"] == "https://example.com/pasta"
+        assert form["createNewOrganizers"] == "true"
+
+    async def test_import_ai_rejects_bad_url(self, client):
+        with _creds_ctx():
+            r = await client.post("/api/recipes/import-ai", data={"url": "ftp://example.com"})
         assert r.status_code == 422
 
 

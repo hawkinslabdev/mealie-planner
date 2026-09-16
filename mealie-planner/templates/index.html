@@ -791,12 +791,12 @@
       </div>
 
       <div class="qa-tabs">
-        <button class="qa-tab" :class="quickAddTab === 'url' && 'qa-tab--on'"
-                @click="_switchQuickAddTab('url'); $nextTick(() => $refs.quickAddUrlInput?.focus())"
-                x-text="t('quickAdd.tabUrl')"></button>
         <button x-show="aiImportEnabled" class="qa-tab" :class="quickAddTab === 'image' && 'qa-tab--on'"
                 @click="_switchQuickAddTab('image')"
                 x-text="t('quickAdd.tabImage')"></button>
+        <button class="qa-tab" :class="quickAddTab === 'url' && 'qa-tab--on'"
+                @click="_switchQuickAddTab('url'); $nextTick(() => $refs.quickAddUrlInput?.focus())"
+                x-text="t('quickAdd.tabUrl')"></button>
         <button class="qa-tab" :class="quickAddTab === 'recipe' && 'qa-tab--on'"
                 @click="_switchQuickAddTab('recipe'); $nextTick(() => $refs.quickAddNameInput?.focus())"
                 x-text="t('quickAdd.tabNew')"></button>
@@ -861,6 +861,14 @@
             </label>
           </div>
           <div class="form-field">
+            <label class="form-label" x-text="t('quickAdd.aiUrlLabel')"></label>
+            <input type="url" x-model="quickAddAiUrl"
+                   :placeholder="t('quickAdd.urlPlaceholder')"
+                   class="form-input"
+                   :disabled="quickAddLoading">
+          </div>
+          <p x-show="!videoInstructionsEnabled && _isVideoUrl(quickAddAiUrl)" class="qa-hint qa-hint--warn" x-text="t('quickAdd.videoNoAudioWarn')"></p>
+          <div class="form-field">
             <label class="form-label" x-text="t('quickAdd.aiTextLabel')"></label>
             <textarea x-model="quickAddText" x-ref="quickAddTextInput" rows="4"
                       class="form-input"
@@ -875,6 +883,13 @@
                     class="opt-toggle" :class="translateRecipe && 'opt-toggle--on'"
                     @click="translateRecipe = !translateRecipe; _saveSettings({translate_recipe: translateRecipe})"
                     :title="t('settings.translateRecipe')"></button>
+          </div>
+          <div class="opt-row">
+            <span class="opt-label" x-text="t('quickAdd.createNewOrganizers')"></span>
+            <button role="switch" :aria-checked="createNewOrganizers"
+                    class="opt-toggle" :class="createNewOrganizers && 'opt-toggle--on'"
+                    @click="createNewOrganizers = !createNewOrganizers; _saveSettings({create_new_organizers: createNewOrganizers})"
+                    :title="t('quickAdd.createNewOrganizers')"></button>
           </div>
         </div>
       </div>
@@ -901,15 +916,15 @@
               <span x-text="quickAddIsVideo ? t('quickAdd.slowVideo') : t('quickAdd.slowGeneric')"></span>
             </div>
 
-            <template x-if="quickAddProxyAvailable && quickAddTab === 'url'">
-              <div class="qa-proxy-prompt">
-                <p class="qa-hint" x-text="t('quickAdd.proxyPrompt')"></p>
-                <button @click="importRecipeViaProxy()" :disabled="quickAddLoading"
-                        class="btn btn-accent-outline btn-full" x-text="t('quickAdd.btnRetryProxy')"></button>
+            <template x-if="quickAddAiFallback && quickAddTab === 'url'">
+              <div class="qa-fallback-prompt">
+                <p class="qa-hint" x-text="t('quickAdd.aiFallbackPrompt')"></p>
+                <button @click="retryImportWithAi()" :disabled="quickAddLoading"
+                        class="btn btn-accent-outline btn-full" x-text="t('quickAdd.btnRetryAi')"></button>
               </div>
             </template>
 
-            <!-- URL import button: Mealie: POST /api/recipes/create/url (fallback: POST /api/recipes/create/html-or-json/stream via proxy) -->
+            <!-- URL import button: Mealie: POST /api/recipes/create/url (video URLs: POST /api/recipes/create/ai) -->
             <button x-show="quickAddTab === 'url'"
                     @click="importRecipeFromUrl()"
                     :disabled="quickAddLoading || !quickAddUrl.trim()"
@@ -929,10 +944,10 @@
               <span x-show="quickAddLoading" x-text="t('quickAdd.creating')"></span>
             </button>
 
-            <!-- AI import button: Mealie: POST /api/recipes/create/ai (photos and/or pasted text → recipe) -->
+            <!-- AI import button: Mealie: POST /api/recipes/create/ai (photos, pasted text and/or a link) -->
             <button x-show="quickAddTab === 'image'"
                     @click="importRecipeWithAi()"
-                    :disabled="quickAddLoading || (!quickAddScanFiles.length && !quickAddText.trim())"
+                    :disabled="quickAddLoading || (!quickAddScanFiles.length && !quickAddText.trim() && !quickAddAiUrl.trim())"
                     class="btn btn-primary btn-full">
               <svg x-show="quickAddLoading" class="btn-spinner" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
               <span x-show="!quickAddLoading" x-text="t('quickAdd.btnImportImage')"></span>
