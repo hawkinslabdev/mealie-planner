@@ -28,7 +28,7 @@ _SETTINGS_DEFAULTS: dict[str, object] = {
     "show_quick_add": True,
     "translate_recipe": False,
     "create_new_organizers": False,
-    "quick_add_tab": "url",
+    "quick_add_tab": None,
 }
 _ALLOWED_SETTINGS: set[str] = set(_SETTINGS_DEFAULTS)
 

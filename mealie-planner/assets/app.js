@@ -87,7 +87,7 @@ function planner() {
     quickAddOpen: false,
     quickAddDate: null,
     quickAddMt: null,
-    quickAddTab: localStorage.getItem('quickAddTab') || 'url',
+    quickAddTab: localStorage.getItem('quickAddTab') || null,
     quickAddUrl: '',
     quickAddName: '',
     quickAddImageFile: null,
@@ -264,6 +264,8 @@ function planner() {
         this.videoInstructionsEnabled = capabilities.video_instructions_enabled !== false;
         // If image tab was saved but AI is now disabled, fall back to url
         if (!this.aiImportEnabled && this.quickAddTab === 'image') this.quickAddTab = 'url';
+        // No saved preference yet: default to AI tab when it's configured, else Link
+        if (!this.quickAddTab) this.quickAddTab = this.aiImportEnabled ? 'image' : 'url';
         await this.initMobileScroll();
         document.addEventListener('visibilitychange', () => {
           if (document.visibilityState !== 'visible') return;

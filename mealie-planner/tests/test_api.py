@@ -479,6 +479,17 @@ class TestMealplan:
             r = await client.delete("/api/mealplan/42")
         assert r.status_code == 204
 
+    async def test_delete_already_gone_in_mealie(self, client):
+        """Mealie cascade-deletes the entry when its recipe is deleted; a 404 means success, not failure."""
+        with patch("routers.mealplan.mealie_delete", side_effect=HTTPException(404, "not found")):
+            r = await client.delete("/api/mealplan/42")
+        assert r.status_code == 204
+
+    async def test_delete_other_mealie_error_still_raises(self, client):
+        with patch("routers.mealplan.mealie_delete", side_effect=HTTPException(502, "down")):
+            r = await client.delete("/api/mealplan/42")
+        assert r.status_code == 502
+
     async def test_delete_invalid_id(self, client):
         r = await client.delete("/api/mealplan/not-an-id")
         assert r.status_code == 400

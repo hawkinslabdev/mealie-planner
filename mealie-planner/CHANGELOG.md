@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.1
+
+- Fix: quick-add defaults to the AI tab when AI import is configured
+- Fix: removing a meal plan entry no longer errors if its recipe was already deleted from Mealie
+
 ## 0.7.0
 
 - Replaced the camera tab with an AI tab to import recipes from links, photos, text, or a mix of all three

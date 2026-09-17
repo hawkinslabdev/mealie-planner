@@ -191,6 +191,11 @@ async def delete_mealplan_entry(entry_id: str, request: Request):
     require_int_id(entry_id, "entry ID")
     if not rate_limiter.check(request, key="mealplan", max_hits=30):
         raise HTTPException(status_code=429, detail="Too many requests.")
-    await mealie_delete(f"/api/households/mealplans/{entry_id}")
+    try:
+        await mealie_delete(f"/api/households/mealplans/{entry_id}")
+    except HTTPException as e:
+        # 404 means Mealie already removed this entry (e.g. its recipe was deleted); lets treat as succes
+        if e.status_code != 404:
+            raise
     _cache_remove(entry_id)
     return Response(status_code=204)
