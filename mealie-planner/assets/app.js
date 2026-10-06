@@ -162,7 +162,7 @@ function planner() {
 
     get recentRecipeObjects() {
       return this._recentRecipes
-        .map(r => this.allRecipes.find(rec => rec.id === r.id) ?? null)
+        .map(r => { const rec = this.allRecipes.find(rec => rec.id === r.id); return rec && { ...rec, _isNew: !!r.isNew }; })
         .filter(Boolean)
         .slice(0, 4);
     },
@@ -885,11 +885,12 @@ function planner() {
     },
 
     /* recent */
-    pushRecentRecipe(recipe) {
+    // isNew: created/imported via quick-add; cleared once the recipe is planned
+    pushRecentRecipe(recipe, isNew = false) {
       const id = typeof recipe === 'string' ? recipe : recipe.id;
       const snap = typeof recipe === 'object'
-        ? { id, name: recipe.name, slug: recipe.slug, image_url: recipe.image_url, addedAt: Date.now() }
-        : { id, addedAt: Date.now() };
+        ? { id, name: recipe.name, slug: recipe.slug, image_url: recipe.image_url, addedAt: Date.now(), isNew }
+        : { id, addedAt: Date.now(), isNew };
       this._recentRecipes = [snap, ...this._recentRecipes.filter(r => r.id !== id)].slice(0, 12);
       localStorage.setItem('recentRecipes', JSON.stringify(this._recentRecipes));
     },
@@ -1312,7 +1313,7 @@ function planner() {
       if (!this.allRecipes.find(r => r.id === prefixed.id)) {
         this.allRecipes = [prefixed, ...this.allRecipes];
       }
-      this.pushRecentRecipe(prefixed);
+      this.pushRecentRecipe(prefixed, true);
       this.quickAddDone = { name: recipe.name, slug: recipe.slug, fromUrl: true };
     },
 
@@ -1334,7 +1335,7 @@ function planner() {
         if (!this.allRecipes.find(r => r.id === prefixed.id)) {
           this.allRecipes = [prefixed, ...this.allRecipes];
         }
-        this.pushRecentRecipe(prefixed);
+        this.pushRecentRecipe(prefixed, true);
         this.quickAddDone = { name: recipe.name, slug: recipe.slug };
       } catch (e) {
         this.quickAddError = this._friendlyError(e);

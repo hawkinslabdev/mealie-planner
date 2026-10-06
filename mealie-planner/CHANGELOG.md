@@ -2,6 +2,7 @@
 
 ## 0.7.2
 
+- Fix: The "new" badge now targets quick-added or imported recipes, not the last used one.
 - Security: updated various dependencies
 
 ## 0.7.1

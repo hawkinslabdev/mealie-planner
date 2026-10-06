@@ -558,11 +558,11 @@
           <div>
             <p class="modal-section-label" x-text="t('modal.recentlyUsed')"></p>
             <div class="recipe-grid">
-              <template x-for="(r, i) in recentRecipeObjects" :key="'recent-' + r.id">
+              <template x-for="r in recentRecipeObjects" :key="'recent-' + r.id">
                 <button @click="selectRecipe(r)" class="recipe-card recipe-card--recent">
                   <img :src="r.image_url" :alt="r.name" loading="lazy" decoding="async" @error="_imgError($event, r.name)">
                   <span class="recipe-card__name" x-text="r.name"></span>
-                  <span class="recipe-card__badge" x-text="i === 0 ? t('modal.badgeNew') : t('modal.badgeRecent')"></span>
+                  <span class="recipe-card__badge" x-text="r._isNew ? t('modal.badgeNew') : t('modal.badgeRecent')"></span>
                 </button>
               </template>
             </div>
