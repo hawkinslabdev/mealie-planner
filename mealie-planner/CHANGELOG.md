@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.2
+
+- Security: updated various dependencies
+
 ## 0.7.1
 
 - Fix: quick-add defaults to the AI tab when AI import is configured
