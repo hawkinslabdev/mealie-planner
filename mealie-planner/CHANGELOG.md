@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.3
+
+- Security: updated certifi to drop the compromised eMudhra / emSign root CA
+
 ## 0.7.2
 
 - Fix: The "new" badge now targets quick-added or imported recipes, not the last used one.
