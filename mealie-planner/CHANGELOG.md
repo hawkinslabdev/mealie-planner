@@ -3,6 +3,7 @@
 ## 0.7.3
 
 - Security: updated certifi to drop the compromised eMudhra / emSign root CA
+- Security: updated various dependencies
 
 ## 0.7.2
 
