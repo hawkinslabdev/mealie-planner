@@ -123,6 +123,16 @@ function planner() {
     mobileHasMore: true,
     _mobileObserver: null,
 
+    navbarCollapsed: false,
+    _navbarScrollBound: false,
+    _navbarScrollRaf: null,
+    _navbarScrollHandler: null,
+    _mobileMq: null,
+    _scrollLocked: false,
+    _lastScrollY: 0,
+    _scrollAnchorY: 0,
+    _scrollDir: 0,
+
     enabledMealTypes: JSON.parse(localStorage.getItem('enabledMealTypes') || '["dinner"]'),
     _recentRecipes: (() => {
       const raw = JSON.parse(localStorage.getItem('recentRecipes') || '[]');
@@ -232,6 +242,7 @@ function planner() {
     async init() {
       this.applyTheme();
       this.applyAccent();
+      this._initNavbarScroll();
       this.buildDays();
 
       const _s = this.days[0]?.date, _e = this.days.at(-1)?.date;
@@ -397,12 +408,14 @@ function planner() {
     },
     scrollToToday() {
       if (this.dayOffset !== 0) return;
+      this.navbarCollapsed = false;
       this.$nextTick(() => {
         document.querySelector('.mobile-week-day--today')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     },
 
     _onSettingsToggle(open) {
+      if (open) this.navbarCollapsed = false;
       if (window.matchMedia('(max-width: 719px)').matches) {
         open ? this._lockBodyScroll() : this._unlockBodyScroll();
       }
@@ -507,6 +520,7 @@ function planner() {
     },
 
     _lockBodyScroll() {
+      this._scrollLocked = true;
       this._scrollY = window.scrollY;
       this._touchStartY = 0;
       document.body.style.overflow = 'hidden';
@@ -532,6 +546,11 @@ function planner() {
       document.removeEventListener('touchstart', this._onTouchStart);
       document.removeEventListener('touchmove', this._onTouchMove);
       window.scrollTo(0, this._scrollY);
+      this._scrollLocked = false;
+      const y = Math.max(0, window.scrollY);
+      this._lastScrollY = y;
+      this._scrollAnchorY = y;
+      this._scrollDir = 0;
     },
 
     /* modal */
@@ -1066,6 +1085,96 @@ function planner() {
       }
     },
 
+    /* mobile navbar collapse on scroll */
+    _resetNavbarScroll() {
+      this.navbarCollapsed = false;
+      this._scrollDir = 0;
+      const y = Math.max(0, window.scrollY);
+      this._lastScrollY = y;
+      this._scrollAnchorY = y;
+    },
+
+    _initNavbarScroll() {
+      if (this._navbarScrollBound) return;
+      this._navbarScrollBound = true;
+      this._mobileMq = window.matchMedia('(max-width: 719px)');
+      this._resetNavbarScroll();
+
+      this._navbarScrollHandler = () => {
+        if (this._navbarScrollRaf) return;
+        this._navbarScrollRaf = requestAnimationFrame(() => {
+          this._navbarScrollRaf = null;
+          this._updateNavbarOnScroll();
+        });
+      };
+      window.addEventListener('scroll', this._navbarScrollHandler, { passive: true });
+
+      const onViewportChange = (e) => {
+        if (!e.matches) this._resetNavbarScroll();
+      };
+      if (this._mobileMq.addEventListener) this._mobileMq.addEventListener('change', onViewportChange);
+      else this._mobileMq.addListener?.(onViewportChange);
+    },
+
+    _updateNavbarOnScroll() {
+      if (!this._mobileMq?.matches || !this.configured || this.enabledMealTypes.length === 0) {
+        if (this.navbarCollapsed) this.navbarCollapsed = false;
+        return;
+      }
+      const logoutModal = document.getElementById('logout-modal');
+      if (
+        this.settingsOpen ||
+        this.modalOpen ||
+        this.quickAddOpen ||
+        this.cookOpen ||
+        this.themeMenuOpen ||
+        this.actionMenuOpen ||
+        this._scrollLocked ||
+        document.body.style.position === 'fixed' ||
+        (logoutModal && !logoutModal.hidden)
+      ) {
+        return;
+      }
+
+      const y = Math.max(0, window.scrollY);
+      const navH = this.$refs.navbar?.offsetHeight || 64;
+
+      if (y <= navH) {
+        this.navbarCollapsed = false;
+        this._scrollDir = 0;
+        this._scrollAnchorY = y;
+        this._lastScrollY = y;
+        return;
+      }
+
+      // Ignore rubber-band bounce at the bottom of the document
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      if (maxScroll > 0 && y >= maxScroll - 2) {
+        this._lastScrollY = y;
+        return;
+      }
+
+      const THRESHOLD = 16;
+      if (y > this._lastScrollY) {
+        if (this._scrollDir !== 1) {
+          this._scrollDir = 1;
+          this._scrollAnchorY = this._lastScrollY;
+        }
+        if (!this.navbarCollapsed && (y - this._scrollAnchorY) >= THRESHOLD) {
+          this.navbarCollapsed = true;
+        }
+      } else if (y < this._lastScrollY) {
+        if (this._scrollDir !== -1) {
+          this._scrollDir = -1;
+          this._scrollAnchorY = this._lastScrollY;
+        }
+        if (this.navbarCollapsed && (this._scrollAnchorY - y) >= THRESHOLD) {
+          this.navbarCollapsed = false;
+        }
+      }
+      this._lastScrollY = y;
+    },
+
     /* mobile infinite scroll */
     _dateStr(d) {
       return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -1098,6 +1207,12 @@ function planner() {
       await this.$nextTick();
       await new Promise(r => requestAnimationFrame(r));
       document.querySelector('.mobile-week-day--today')?.scrollIntoView({ behavior: 'instant', block: 'start' });
+      if (this._navbarScrollRaf) {
+        cancelAnimationFrame(this._navbarScrollRaf);
+        this._navbarScrollRaf = null;
+      }
+      this._resetNavbarScroll();
+      requestAnimationFrame(() => this._resetNavbarScroll());
       const sentinel = document.getElementById('mobile-scroll-sentinel');
       if (!sentinel || !('IntersectionObserver' in window)) return;
       this._mobileObserver = new IntersectionObserver(async ([entry]) => {

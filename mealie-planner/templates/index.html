@@ -22,7 +22,7 @@
 <h1 class="sr-only">Mealie Planner</h1>
 <div x-data="planner()" x-init="$watch('modalOpen', v => v ? $data._lockBodyScroll() : $data._unlockBodyScroll()); $watch('quickAddOpen', v => v ? $data._lockBodyScroll() : $data._unlockBodyScroll()); $watch('settingsOpen', v => $data._onSettingsToggle(v))" x-cloak @keydown.window="onKeydown($event)">
 
-  <nav class="navbar" :class="mode === 'haos' && 'navbar--haos'">
+  <nav class="navbar" x-ref="navbar" :class="{ 'navbar--haos': mode === 'haos', 'navbar--collapsed': navbarCollapsed }" @focusin="navbarCollapsed = false">
     <span class="navbar-brand">
       <span x-show="mode !== 'haos'">Mealie Planner</span>
     </span>
@@ -37,7 +37,7 @@
         </button>
       </div>
       <div style="position:relative">
-        <button @click="themeMenuOpen = !themeMenuOpen" class="icon-btn" :class="themeMenuOpen && 'active'" :title="'Theme: ' + colorTheme" :aria-expanded="themeMenuOpen" aria-haspopup="true">
+        <button @click="themeMenuOpen = !themeMenuOpen; if (themeMenuOpen) navbarCollapsed = false" class="icon-btn" :class="themeMenuOpen && 'active'" :title="'Theme: ' + colorTheme" :aria-expanded="themeMenuOpen" aria-haspopup="true">
           <svg x-show="colorTheme === 'light'" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
           </svg>
@@ -411,7 +411,7 @@
       </div>
     </div>
 
-    <div class="mobile-view" x-show="enabledMealTypes.length > 0">
+    <div class="mobile-view" :class="navbarCollapsed && 'mobile-view--navbar-collapsed'" x-show="enabledMealTypes.length > 0">
       <div x-show="mobileDays.length === 0" class="mobile-init-skel">
         <template x-for="i in [1,2,3,4]" :key="i">
           <div class="mobile-skel-day">
