@@ -1228,6 +1228,24 @@
  .mobile-week-day--today .mobile-week-day__hdr {
      background: color-mix(in oklch, var(--accent) 8%, var(--bg));
 }
+ @media (max-width: 719px) {
+     .navbar {
+         transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+     .navbar--collapsed {
+         transform: translateY(calc(-100% - 1px));
+         pointer-events: none;
+    }
+     .mobile-week-day__hdr {
+         transition: top 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+     .mobile-view--navbar-collapsed .mobile-week-day__hdr {
+         top: 0;
+    }
+     .mobile-view--navbar-collapsed .mobile-week-day {
+         scroll-margin-top: 0;
+    }
+}
  .mobile-week-day__label {
      font-size: 1.125rem;
      font-weight: 700;
