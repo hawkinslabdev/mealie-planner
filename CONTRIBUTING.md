@@ -29,6 +29,12 @@ python3 -m pytest tests/
 ## Packages
 
 ```bash
-# Fetch latest compatible versions using pip-tools, e.g. for updating
-pip-compile requirements.in
+# Install pip-tools in the active virtual environment
+python3 -m pip install pip-tools
+
+# Upgrade all dependencies and write to requirements.txt
+pip-compile --upgrade requirements.in
+
+# Sync the virtual environment with the updated lockfile
+pip-sync requirements.txt
 ```
