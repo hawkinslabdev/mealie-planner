@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.4
+
+- Automatically collapse mobile top-bar on scroll, thanks to @sringesh (#25)
+- Security: updated various dependencies
+
 ## 0.7.3
 
 - Security: updated certifi to drop the compromised eMudhra / emSign root CA
